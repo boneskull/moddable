@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moddable</title>
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata|Open+Sans" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/hljs.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/markdown.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
+</head>
+    <body>
+<div id="header">
+    <div class="package"></div>
+    <a href="https:&#x2F;&#x2F;github.com&#x2F;moddable-opensource&#x2F;moddable" class="badge" title="Github.com"><img src="/assets/images/github.png" alt="Github" /></a>
+    <a href="/" class="home"><strong>Moddable</strong> <span class="headline">Moddable SDK</span></a>
+</div>
+        <div id="container">
+            <div id="sidebar">
+<ul class="list">
+    <li>
+        <h4><a href="/">Home</a></h4>
+        <ul>
+            <li><a href="https://www.moddable.com">Moddable</a></li>
+            <li><a href="/">Documentation</a></li>
+        </ul>
+    </li>
+    <li>
+        <h4><a href="/">Resources</a></h4>
+        <ul>
+            <li><a href="https://github.com/moddable-opensource/moddable">GitHub</a></li>
+            <li><a href="/">Link 2</a></li>
+        </ul>
+    </li>
+</ul>
+            </div>
+
+<div id="content">
+<h1>LPM013M126A display driver</h1>
+<p>Copyright 2017 Moddable Tech, Inc.</p>
+<p>Revised: December 29, 2017</p>
+<p><strong>Warning</strong>: These notes are preliminary. Omissions and errors are likely. If you encounter problems, please ask for assistance.</p>
+<p>The <a href="http://www.j-display.com/product/pdf/Datasheet/4LPM013M126A_specification_Ver02.pdf">LPM013M126A</a> JDI (Japan Display Inc. Group) memory display controller drives 3-bit per pixel displays. The controller allows one bit of color information for the red, green, and blue channels, for a total of 8 colors.</p>
+<h3>Adding LPM013M126A to a project</h3>
+<p>To add the LPM013M126A driver to a project, include its manifest:</p>
+<pre><code>&quot;include&quot;: [
+	/* other includes here */
+	&quot;$(MODULES)/drivers/lpm013m126a/manifest.json&quot;,
+],
+</code></pre>
+<p>If using Commodetto or Piu, set the <code>screen</code> property of the <code>config</code> object in the manifest to <code>lpm013m126a</code> to make LPM013M126A the default display driver. Since there is no touch input, set the touch driver name to an empty string to disable it.</p>
+<pre><code>&quot;config&quot;: {
+	&quot;screen&quot;: &quot;lpm013m126a&quot;,
+	&quot;touch&quot;: &quot;&quot;,
+},
+</code></pre>
+<h3>Pixel format</h3>
+<p>The LPM013M126A driver requires 8-bit color pixels as input. When building with <code>mcconfig</code>, set the pixel format to <code>rgb332</code> on the command line:</p>
+<pre><code>mcconfig -m -p esp -f rgb332
+</code></pre>
+<h3>Defines</h3>
+<p>There are no unique <code>defines</code> in the manifest apart from those described in the Dither and SPI sections below.</p>
+<h3>Dither</h3>
+<p>The LPM013M126A driver implements optional dithering. Dithering provides an approximation of more color levels. Enabling dithering uses about an additional 380 bytes of RAM and renders slower. Whether dithering is best for a given application depends on what it draws and the required frame rate. Dithering is disabled by default. To enable dithering, set the <code>dither</code> property to <code>true</code> in the <code>defines</code> section of the manifest.</p>
+<pre><code>&quot;defines&quot;: {
+	&quot;lpm013m126a&quot;: {
+		/* other properties here */
+		&quot;dither&quot;: true,
+	}
+}
+</code></pre>
+<p>The driver's dithering implementation operates on eight rows of pixels at a time. Therefore, Poco must be configured to render in groups of eight pixels. To do this, set the <code>pixels</code> property in the dictionary passed to the constructor to 8 multiplied by the display width. When using Piu, also set the <code>pixels</code> property and it will be propagated to Poco. In the following example, pixels is set to 8 rows for a display with width of 176 pixels.</p>
+<pre><code>new Application(null, {displayListLength: 4096,
+	touchCount: 0, pixels: 176 * 8 });
+</code></pre>
+<h3>Configuring SPI</h3>
+<p>The <code>defines</code> object must contain the <code>spi_port</code>, along with the <code>CS</code> pin number. If the <code>cs_port</code> property is not provided, it defaults to NULL.</p>
+<pre><code>&quot;defines&quot;: {
+	&quot;lpm013m126a&quot;: {
+		/* other properties here */	
+		&quot;cs_pin&quot;: 4,
+		&quot;spi_port&quot;: &quot;#HSPI&quot;,
+	}
+}
+</code></pre>
+<p>The <code>hz</code> property, when present, specifies the SPI bus speed. The default value is 2,500,000 Hz which is near the maximum SPI speed supported by the LPM013M126A.</p>
+<h3>Drawing</h3>
+<p>The LPM013M126A driver always updates full scan lines, but can update arbitrary scan lines. This allows for partial updates of full rows. Piu automatically takes care of this, so script using Piu do not need to take this into account. Scripts using Poco need to ensure  when calling <code>poco.begin()</code> that the <code>x</code> parameter is zero and the <code>width</code> parameter is equal to <code>poco.width</code>.</p>
+
+</div>
+
+        </div>
+    </body>
+</html>

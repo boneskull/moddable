@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moddable</title>
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata|Open+Sans" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/hljs.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/markdown.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
+</head>
+    <body>
+<div id="header">
+    <div class="package"></div>
+    <a href="https:&#x2F;&#x2F;github.com&#x2F;moddable-opensource&#x2F;moddable" class="badge" title="Github.com"><img src="/assets/images/github.png" alt="Github" /></a>
+    <a href="/" class="home"><strong>Moddable</strong> <span class="headline">Moddable SDK</span></a>
+</div>
+        <div id="container">
+            <div id="sidebar">
+<ul class="list">
+    <li>
+        <h4><a href="/">Home</a></h4>
+        <ul>
+            <li><a href="https://www.moddable.com">Moddable</a></li>
+            <li><a href="/">Documentation</a></li>
+        </ul>
+    </li>
+    <li>
+        <h4><a href="/">Resources</a></h4>
+        <ul>
+            <li><a href="https://github.com/moddable-opensource/moddable">GitHub</a></li>
+            <li><a href="/">Link 2</a></li>
+        </ul>
+    </li>
+</ul>
+            </div>
+
+<div id="content">
+<h1>Adafruit 1.8&quot; ST7735 Wiring Guide</h1>
+<p>Copyright 2018 Moddable Tech, Inc.<br />
+Revised: December 10, 2018</p>
+<p><img src="images/adafruit-st7735-1.8.jpg" alt="Generic SPI Display" /></p>
+<h2>Specs</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"></th>
+<th style="text-align:left"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><strong>Part</strong></td>
+<td style="text-align:left">Adafruit Product ID: 2088</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>Size</strong></td>
+<td style="text-align:left">1.8&quot;, 128 × 160</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>Type</strong></td>
+<td style="text-align:left">TFT LCD</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>Interface</strong></td>
+<td style="text-align:left">SPI</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>Drivers</strong></td>
+<td style="text-align:left">video <a href="../../documentation/drivers/st7735/st7735.html">ST7735</a>, no touch</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>Availability</strong></td>
+<td style="text-align:left"><a href="https://www.adafruit.com/product/358">Adafruit 1.8&quot; Color TFT LCD Display</a><BR><a href="https://www.amazon.com/gp/product/B00LSG51MM/">HiLetgo 1.8&quot; ST7735R</a></td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>Description</strong></td>
+<td style="text-align:left">Colorful, bright display wtih 4-wire SPI.</td>
+</tr>
+</tbody>
+</table>
+<h2>Moddable example code</h2>
+<p>The <a href="../../examples/piu/balls/">balls</a> example is good for testing this display.  To run a debug build, use the following build command:</p>
+<pre><code>cd $MODDABLE/examples/piu/balls
+mcconfig -d -m -p esp/adafruit_st7735
+</code></pre>
+<h2>ESP8266 Pinout</h2>
+<table>
+<thead>
+<tr>
+<th>Adafruit 1.8&quot; TFT</th>
+<th>ESP8266</th>
+<th>ESP8266 Devboard label</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LITE</td>
+<td>3.3v</td>
+<td></td>
+</tr>
+<tr>
+<td>MISO</td>
+<td>GPIO 12</td>
+<td>(D6)</td>
+</tr>
+<tr>
+<td>SCK</td>
+<td>GPIO 14</td>
+<td>(D5)</td>
+</tr>
+<tr>
+<td>MOSI</td>
+<td>GPIO 13</td>
+<td>(D7)</td>
+</tr>
+<tr>
+<td>TFT_CS</td>
+<td>GPIO 15</td>
+<td>(D8)</td>
+</tr>
+<tr>
+<td>DC</td>
+<td>GPIO 2</td>
+<td>(D4)</td>
+</tr>
+<tr>
+<td>RESET</td>
+<td>3.3v</td>
+<td></td>
+</tr>
+<tr>
+<td>VCC</td>
+<td>3.3v</td>
+<td></td>
+</tr>
+<tr>
+<td>GND</td>
+<td>GND</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><img src="images/adafruit-st7735-1.8-wiring.png" alt="Generic 2.4&quot;-2.8&quot; wiring illustration" /></p>
+
+</div>
+
+        </div>
+    </body>
+</html>

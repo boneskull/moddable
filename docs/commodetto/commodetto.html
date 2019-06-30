@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moddable</title>
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata|Open+Sans" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/hljs.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/markdown.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
+</head>
+    <body>
+<div id="header">
+    <div class="package"></div>
+    <a href="https:&#x2F;&#x2F;github.com&#x2F;moddable-opensource&#x2F;moddable" class="badge" title="Github.com"><img src="/assets/images/github.png" alt="Github" /></a>
+    <a href="/" class="home"><strong>Moddable</strong> <span class="headline">Moddable SDK</span></a>
+</div>
+        <div id="container">
+            <div id="sidebar">
+<ul class="list">
+    <li>
+        <h4><a href="/">Home</a></h4>
+        <ul>
+            <li><a href="https://www.moddable.com">Moddable</a></li>
+            <li><a href="/">Documentation</a></li>
+        </ul>
+    </li>
+    <li>
+        <h4><a href="/">Resources</a></h4>
+        <ul>
+            <li><a href="https://github.com/moddable-opensource/moddable">GitHub</a></li>
+            <li><a href="/">Link 2</a></li>
+        </ul>
+    </li>
+</ul>
+            </div>
+
+<div id="content">
+<h1>Commodetto</h1>
+<p>Copyright 2016-2018 Moddable Tech, Inc.<BR>
+Revised: November 26, 2018</p>
+<h2>About This Document</h2>
+<p>Commodetto is a graphics library designed to bring modern user interface rendering to devices powered by a resource-constrained microcontroller. For many applications, Commodetto needs only a few kilobytes of RAM, including the assets for rendering the user interface.</p>
+<p>This document provides a high-level overview of the parts of Commodetto, information about asset format requirements for assets included in Commodetto applications, and details on the objects that define the Commodetto JavaScript API.</p>
+<h2>Table of Contents</h2>
+<ul>
+<li><a href="#overview">Overview of Commodetto</a>
+<ul>
+<li><a href="#native-data-types">Native Data Types</a></li>
+<li><a href="#host-buffers">Host Buffers</a></li>
+</ul>
+</li>
+<li><a href="#bitmap-operations">Bitmap Operations</a>
+<ul>
+<li><a href="#bitmap-class">Bitmap Class</a></li>
+<li><a href="#pixelsout-class">PixelsOut Class</a></li>
+<li><a href="#%22spiout-class">SPIOut Class</a></li>
+<li><a href="#bufferout-class">BufferOut Class</a></li>
+<li><a href="#bmpout-class">BMPOut Class</a></li>
+<li><a href="#rle4out-class">RLE4Out Class</a></li>
+<li><a href="#colorcellout-class">ColorCellOut Class</a></li>
+</ul>
+</li>
+<li><a href="#asset-parsing">Asset Parsing</a>
+<ul>
+<li><a href="#bmp">BMP</a></li>
+<li><a href="#jpeg">JPEG</a></li>
+<li><a href="#png">PNG</a></li>
+<li><a href="#bmfont">BMFont</a></li>
+</ul>
+</li>
+<li><a href="#rendering">Rendering</a>
+<ul>
+<li><a href="#render-class">Render class</a></li>
+</ul>
+</li>
+<li><a href="#pixel-format-conversion">Pixel format conversion</a>
+<ul>
+<li><a href="#convert-class">Convert Class</a></li>
+</ul>
+</li>
+<li><a href="#odds-and-ends">Odds and Ends</a></li>
+</ul>
+<p><a id="overview"></a></p>
+<h2>Overview of Commodetto</h2>
+<p>Commodetto consists of several parts:</p>
+<ul>
+<li>A lightweight <a href="./poco.html">Poco rendering engine</a>--a display list renderer able to efficiently render a single scanline at a time, eliminating the need for a frame buffer</li>
+<li>Asset loaders for working with common file formats</li>
+<li>Pixel outputs for delivering rendered pixels to displays and files</li>
+<li>A JavaScript API for all features</li>
+</ul>
+<p>Every part of Commodetto is a module, making it straightforward to deploy only necessary modules, add new modules, and replace existing modules. Even the rendering capabilities are a module, enabling integration of specialized rendering modules.</p>
+<p>The <strong>Poco rendering engine</strong> contains only the most essential rendering operations: fill or blend a rectangle with a solid color, plus a small set of bitmap drawing operations, including copy, pattern fill, and alpha blend. Text is implemented externally to the rendering engine using Poco bitmap rendering operations, which enables integration of different engines for glyph generation, text layout, and text measurement.</p>
+<p><strong>Asset loaders</strong> prepare graphical assets, such as photos, user interface elements, and fonts, for rendering. Commodetto includes asset loaders for BMP images, JPEG photos, PNG images, BMFont fonts. Additional asset loader modules may be added. The asset loaders enable many types of assets to be rendered directly from flash storage (for example, ROM) without having to be loaded into RAM.</p>
+<p><strong>Pixel outputs</strong> deliver rendered pixels to their destination. Commodetto includes modules to write to files and in-memory bitmaps. Modules may be added to send the pixels to a display over the transports supported by the host device, including SPI, I<sup>2</sup>C, serial, and memory-mapped ports.</p>
+<p><a id="native-data-types"></a></p>
+<h3>Native Data Types</h3>
+<p>Commodetto data types include pixel, coordinate, dimension, and bitmap. These types are described below along with the enumeration that defines pixel formats.</p>
+<h4>Pixel Type</h4>
+<p>To run well on resource-constrained hardware, Commodetto makes simplifying assumptions. One assumption is that only a single output pixel format is supported in a given deployment. A general-purpose graphics library needs to support many different output pixel formats to be compatible with the many different displays and file formats in use. Commodetto assumes the device it is deployed to connects to a single type of screen; this assumption reduces the code size and some runtime overhead.</p>
+<p>Commodetto has the ability to support different pixel formats, with the choice of the pixel format to use set at compile time. Changing the output pixel format--for example, to use a different screen--simply requires recompiling Commodetto with a different output pixel format configured.</p>
+<p>The pixel format is determined at build time by the value of the C #define <code>kCommodettoBitmapFormat</code>.  The following pixel format specifiers are supported for the rendering destination: <code>kCommodettoBitmapRGB565LE</code>, <code>kCommodettoBitmapRGB332</code>, <code>kCommodettoBitmapGray256</code>, <code>kCommodettoBitmapGray16</code>, and <code>kCommodettoBitmapCLUT16</code>.</p>
+<p><code>CommodettoPixel</code> is the data type for pixel. The definition of the type depends on the value of <code>kCommodettoBitmapFormat</code>. For 16-bit pixels, it is <code>uint16_t</code>, for 8-bit and 4-bit pixels it is <code>uint8_t</code>.</p>
+<pre><code class="language-c"><span class="hljs-keyword">typedef</span> <span class="hljs-keyword">uint16_t</span> CommodettoPixel;
+</code></pre>
+<hr />
+<h4>Pixel Formats</h4>
+<p>Commodetto supports multiple source pixel formats at the same time. This allows for efficient storage and rendering of different kinds of assets.</p>
+<p>The output pixel format is always one of the supported source pixel formats. In addition, source pixel formats of 1-bit monochrome and 4-bit gray are always supported.</p>
+<p>The <code>CommodettoBitmapFormat</code> enumeration defines the pixel formats. A subset of pixel formats are supported in each deployment.</p>
+<pre><code class="language-c"><span class="hljs-keyword">typedef</span> <span class="hljs-keyword">enum</span> {
+	kCommodettoBitmapDefault = <span class="hljs-number">1</span>,
+	kCommodettoBitmapMonochrome = <span class="hljs-number">3</span>,
+	kCommodettoBitmapGray16,
+	kCommodettoBitmapGray256,
+	kCommodettoBitmapRGB332,
+	kCommodettoBitmapRGB565LE,
+	kCommodettoBitmapRGB565BE,
+	kCommodettoBitmap24RGB,
+	kCommodettoBitmap32RGBA,
+	kCommodettoBitmapCLUT16,
+
+	kCommodettoBitmapPacked = <span class="hljs-number">0x80</span>
+} CommodettoBitmapFormat;
+</code></pre>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Format</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">kCommodettoBitmapDefault</td>
+<td style="text-align:left">The output pixel format. The format varies depending on the value of <code>kCommodettoBitmapFormat</code> when Commodetto is built.</td>
+</tr>
+<tr>
+<td style="text-align:center">kCommodettoBitmapMonochrome</td>
+<td style="text-align:left">Pixels are 1-bit data, packed into bytes in which the high bit of the byte is the leftmost pixel.</td>
+</tr>
+<tr>
+<td style="text-align:center">kCommodettoBitmapGray16</td>
+<td style="text-align:left">Pixels are 4-bit data, where 0 represents white, 15 represents black, and the values in between are proportionally interpolated gray levels. The pixels are packed into bytes in which the high nybble is the leftmost pixel.</td>
+</tr>
+<tr>
+<td style="text-align:center">kCommodettoBitmapGray16 | kCommodettoBitmapPacked</td>
+<td style="text-align:left">Pixels are the same as in <code>kCommodettoBitmapGray16</code>, and compressed using a weighted RLE algorithm.</td>
+</tr>
+<tr>
+<td style="text-align:center">kCommodettoBitmapGray256</td>
+<td style="text-align:left">Pixels are 8-bit data, where 0 represents white, 255 represents black, and the values in between are proportionally interpolated gray levels.</td>
+</tr>
+<tr>
+<td style="text-align:center">kCommodettoBitmapRGB332</td>
+<td style="text-align:left">Pixels are 8-bit data, with packed RGB values. The high three bits are red, followed by three bits of green, and two bits of blue.</td>
+</tr>
+<tr>
+<td style="text-align:center">kCommodettoBitmapRGB565LE</td>
+<td style="text-align:left">Pixels are 16-bit data, with packed RGB values. The high five are red, followed by six bits of green, and five bits of blue. The 16-bit value is stored in little-endian byte order.</td>
+</tr>
+<tr>
+<td style="text-align:center">kCommodettoBitmapRGB565BE</td>
+<td style="text-align:left">Pixels are 16-bit data, with packed RGB values. The high five are red, followed by six bits of green, and five bits of blue. The 16-bit value is stored in big-endian byte order.</td>
+</tr>
+<tr>
+<td style="text-align:center">kCommodettoBitmap24RGB</td>
+<td style="text-align:left">Pixels are three 8-bit values, in the order of red, green, blue.</td>
+</tr>
+<tr>
+<td style="text-align:center">kCommodettoBitmap24RGBA</td>
+<td style="text-align:left">Pixels are four 8-bit values, in the order of red, green, blue, alpha.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h4>Coordinate Type</h4>
+<p>The <code>CommodettoCoordinate</code> type specifies coordinates.</p>
+<pre><code class="language-c"><span class="hljs-keyword">typedef</span> <span class="hljs-keyword">int16_t</span> CommodettoCoordinate;
+</code></pre>
+<p>The coordinate type is signed to enable applications to render objects that overlap the screen on any edge.</p>
+<p>For devices with very small displays (128 pixels or fewer in each dimension), <code>CommodettoCoordinate</code> may be redefined as an 8-bit value--for example, <code>int8_t</code>--to reduce memory requirements. When doing this, application code must take care not to use coordinates smaller than -128 or larger than 127, or the results will be unpredictable.</p>
+<hr />
+<h4>Dimension Type</h4>
+<p><code>CommodettoDimension</code> is the type used to specify dimensions.</p>
+<pre><code class="language-c"><span class="hljs-keyword">typedef</span> <span class="hljs-keyword">uint16_t</span> CommodettoDimension;
+</code></pre>
+<p>The dimension type is unsigned, as Commodetto assigns no meaning to a negative width or height.</p>
+<p><code>CommodettoDimension</code> may be redefined as <code>uint8_t</code> on devices with very small displays (256 pixels in each dimension) to reduce memory use. When doing this, application code must take care not to specify dimensions larger than 255 pixels.</p>
+<hr />
+<h4>Bitmap Type</h4>
+<p>The <code>CommodettoBitmap</code> structure defines a bitmap.</p>
+<pre><code class="language-c"><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> {</span>
+	CommodettoDimension	w;
+	CommodettoDimension	h;
+	CommodettoBitmapFormat	format;
+	<span class="hljs-keyword">int8_t</span>			havePointer;
+	<span class="hljs-keyword">union</span> {
+		<span class="hljs-keyword">void</span>		*data;
+		<span class="hljs-keyword">int32_t</span>		offset;
+	} bits;
+} CommodettoBitmapRecord, *CommodettoBitmap;
+</code></pre>
+<p>The <code>w</code> and <code>h</code> fields are the width and height of the bitmap in pixels. The coordinates of the top-left corner of a bitmap are always <code>{x: 0, y: 0}</code>, so the bitmap does not contain <em>x</em> and <em>y</em> coordinates. The <code>format</code> field indicates the pixel format of the pixels in the bitmap.</p>
+<p>The remaining fields indicate where the pixel data is located. If the <code>havePointer</code> field is nonzero, the <code>data</code> field in the union is valid and points to the pixel data.</p>
+<pre><code class="language-c">CommodettoBitmap bitmap = ...  <span class="hljs-comment">/* Get bitmap */</span>;
+CommodettoPixel *pixels = bitmap.bits.data;
+</code></pre>
+<p>If the <code>havePointer</code> field is 0, the address of <code>pixels</code> is stored external to this bitmap data structure. The <code>offset</code> field indicates where the pixel data begins, as a number of bytes from that external pixels pointer; it is commonly used to calculate the address of pixels stored in an <code>ArrayBuffer</code>.</p>
+<pre><code class="language-c">CommodettoBitmap bitmap = ...  <span class="hljs-comment">/* Get bitmap */</span>;
+<span class="hljs-keyword">unsigned</span> <span class="hljs-keyword">char</span> *buffer = xsToArrayBuffer(xsArg(<span class="hljs-number">0</span>));
+CommodettoPixel *pixels = (CommodettoPixel *)(bitmap.bits.offset + buffer);
+</code></pre>
+<hr />
+<p><a id="host-buffers"></a></p>
+<h3>Host Buffers</h3>
+<p>The built-in <code>ArrayBuffer</code> object is the standard way to store and manipulate binary data in JavaScript. Commodetto supports storing the pixels of assets in an <code>ArrayBuffer</code>. However, the JavaScript standard effectively requires an <code>ArrayBuffer</code> to reside in RAM. Because many embedded devices have limited RAM but relatively generous ROM (flash memory), it is desirable to use assets directly from ROM without first moving them to RAM.</p>
+<p>To support this situation, the XS JavaScript engine, which Commodetto is built on, adds a <code>HostBuffer</code> object. <code>HostBuffer</code> has no constructor because it can be created only by native code. Once instantiated, the <code>HostBuffer</code> JavaScript API is identical to the <code>ArrayBuffer</code> API. Because the memory referenced by a <code>HostBuffer</code> is in read-only memory, write operations should not be performed, as the results are unpredictable; depending on the target hardware, writes may crash or fail silently.</p>
+<p>In the Moddable SDK, the <code>Resource</code> constructor is a way to create a <code>HostBuffer</code> for a block of data in ROM.</p>
+<blockquote>
+<p><strong>Note:</strong> The Commodetto and Poco JavaScript-to-C bindings support using a <code>HostBuffer</code> anywhere an <code>ArrayBuffer</code> is allowed; however, some JavaScript-to-C bindings do not accept a <code>HostBuffer</code> in place of an <code>ArrayBuffer</code> and so throw an exception.</p>
+</blockquote>
+<hr />
+<p><a id="bitmap-operations"></a></p>
+<h2>Bitmap Operations</h2>
+<p>This section describes the classes used to operate on bitmaps: <code>Bitmap</code>, <code>PixelsOut</code>, and four subclasses of <code>PixelsOut</code>.</p>
+<p><a id="bitmap-class"></a></p>
+<h3>Bitmap Class</h3>
+<p>The Commodetto <code>Bitmap</code> object contains the three pieces of information needed to render a bitmap: the bitmap dimensions, the format of the pixels in the bitmap, and a reference to the pixel data. The following example creates a <code>Bitmap</code> object with 16-bit pixels stored in an <code>ArrayBuffer</code>.</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> Bitmap <span class="hljs-keyword">from</span> <span class="hljs-string">"commodetto/Bitmap"</span>;
+
+<span class="hljs-keyword">let</span> width = <span class="hljs-number">40</span>, height = <span class="hljs-number">30</span>;
+<span class="hljs-keyword">let</span> pixels = <span class="hljs-keyword">new</span> <span class="hljs-built_in">ArrayBuffer</span>(height * width * <span class="hljs-number">2</span>);
+<span class="hljs-keyword">let</span> bitmap = <span class="hljs-keyword">new</span> Bitmap(width, height, Bitmap.RGB565LE, pixels, <span class="hljs-number">0</span>);
+</code></pre>
+<p>The pixels for a <code>Bitmap</code> object are often stored in a <code>HostBuffer</code>, to minimize use of RAM. For example, <code>Resource</code> creates a <code>HostBuffer</code> corresponding to the following resource:</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> pixels = <span class="hljs-keyword">new</span> Resource(<span class="hljs-string">"pixels.dat"</span>);
+<span class="hljs-keyword">let</span> bitmap = <span class="hljs-keyword">new</span> Bitmap(width, height, Bitmap.RGB565LE, pixels, <span class="hljs-number">0</span>);
+</code></pre>
+<h4>Functions</h4>
+<h5><code>constructor(width, height, format, buffer, offset)</code></h5>
+<p>The <code>Bitmap</code> constructor takes the following arguments:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Argument</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><code>width</code></td>
+<td style="text-align:left">number indicating width of bitmap in pixels</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>height</code></td>
+<td style="text-align:left">number indicating height of bitmap in pixels</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>format</code></td>
+<td style="text-align:left">type of pixels in bitmap, taken from <code>Bitmap</code> static properties (for example, <code>Bitmap.RGB565LE</code> or <code>Bitmap.Gray16</code>)</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>buffer</code></td>
+<td style="text-align:left"><code>ArrayBuffer</code> or <code>HostBuffer</code> containing pixel data for bitmap</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>offset</code></td>
+<td style="text-align:left">number indicating offset in bytes from start of <code>buffer</code> to pixel data</td>
+</tr>
+</tbody>
+</table>
+<p>All properties of a bitmap are fixed at the time it is constructed and cannot be changed after that.</p>
+<hr />
+<h4>Properties</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Name</th>
+<th style="text-align:center">Type</th>
+<th style="text-align:center">Read-only</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><code>width</code></td>
+<td style="text-align:center"><code>Number</code></td>
+<td style="text-align:center">✓</td>
+<td style="text-align:left">The width in pixels of the bitmap.</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>height</code></td>
+<td style="text-align:center"><code>Number</code></td>
+<td style="text-align:center">✓</td>
+<td style="text-align:left">The height in pixels of the bitmap.</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>format</code></td>
+<td style="text-align:center"><code>Number</code></td>
+<td style="text-align:center">✓</td>
+<td style="text-align:left">Returns the pixel format of pixels of the bitmap.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h4>Static Functions</h4>
+<h4><code>depth(pixelFormat)</code></h4>
+<p>Returns the number of bits per pixel for the specified pixel format.</p>
+<pre><code class="language-js">Bitmap.depth(Bitmap.RGB565LE);		<span class="hljs-comment">// returns 16</span>
+Bitmap.depth(Bitmap.Monochrome);	<span class="hljs-comment">// returns 1</span>
+Bitmap.depth(Bitmap.Gray256);		<span class="hljs-comment">// returns 8</span>
+</code></pre>
+<hr />
+<h4>Static Properties</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Name</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><code>Bitmap.Default</code></td>
+<td style="text-align:left">A constant corresponding to the value of <code>kCommodettoBitmapDefault</code></td>
+</tr>
+<tr>
+<td style="text-align:center"><code>Bitmap.RLE</code></td>
+<td style="text-align:left">A constant corresponding to the value of <code>kCommodettoBitmapPacked</code></td>
+</tr>
+<tr>
+<td style="text-align:center"><code>Bitmap.Monochrome</code></td>
+<td style="text-align:left">A constant corresponding to the value of <code>kCommodettoBitmapMonochrome</code></td>
+</tr>
+<tr>
+<td style="text-align:center"><code>Bitmap.Gray16</code></td>
+<td style="text-align:left">A constant corresponding to the value of <code>kCommodettoBitmapGray16</code></td>
+</tr>
+<tr>
+<td style="text-align:center"><code>Bitmap.Gray256</code></td>
+<td style="text-align:left">A constant corresponding to the value of <code>kCommodettoBitmapGray256</code></td>
+</tr>
+<tr>
+<td style="text-align:center"><code>Bitmap.RGB332</code></td>
+<td style="text-align:left">A constant corresponding to the value of <code>kCommodettoBitmapRGB332</code></td>
+</tr>
+<tr>
+<td style="text-align:center"><code>Bitmap.RGB565LE</code></td>
+<td style="text-align:left">A constant corresponding to the value of <code>kCommodettoBitmapRGB565LE</code></td>
+</tr>
+<tr>
+<td style="text-align:center"><code>Bitmap.RGB565BE</code></td>
+<td style="text-align:left">A constant corresponding to the value of <code>kCommodettoBitmapRGB565BE</code></td>
+</tr>
+<tr>
+<td style="text-align:center"><code>Bitmap.RGB24</code></td>
+<td style="text-align:left">A constant corresponding to the value of <code>kCommodettoBitmapRGB24</code></td>
+</tr>
+<tr>
+<td style="text-align:center"><code>Bitmap.RGBA32</code></td>
+<td style="text-align:left">A constant corresponding to the value of <code>kCommodettoBitmapRGBA32</code></td>
+</tr>
+<tr>
+<td style="text-align:center"><code>Bitmap.CLUT16</code></td>
+<td style="text-align:left">A constant corresponding to the value of <code>kCommodettoBitmapCLUT16</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><a id="pixelsout-class"></a></p>
+<h3>PixelsOut Class</h3>
+<p>The <code>PixelsOut</code> class is an abstract base class used to output pixels. It is overridden by these other classes to output to different destinations:</p>
+<ul>
+<li><code>SPIOut</code> -- sends pixels to LCD display connected over SPI</li>
+<li><code>BufferOut</code> -- sends pixels to offscreen memory buffer</li>
+<li><code>BMPOut</code> -- writes pixels to BMP file</li>
+<li><code>RLE4Out</code> -- compresses pixels to Commodetto 4-bit gray RLE format</li>
+<li><code>ColorCellOut</code> -- compresses pixels to Moddable variation of ColorCell</li>
+</ul>
+<p>A <code>PixelsOut</code> instance is initialized with a dictionary of values. The dictionary provides an arbitrary number of name-value pairs to the constructor. Different <code>PixelsOut</code> subclasses require different initialization parameters. For example:</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">let</span> display = <span class="hljs-keyword">new</span> SPIOut({<span class="hljs-attr">width</span>: <span class="hljs-number">320</span>, <span class="hljs-attr">height</span>: <span class="hljs-number">240</span>,
+		<span class="hljs-attr">pixelFormat</span>: Bitmap.RGB565BE, <span class="hljs-attr">orientation</span>: <span class="hljs-number">90</span>, <span class="hljs-attr">dataPin</span>: <span class="hljs-number">30</span>});
+	
+<span class="hljs-keyword">let</span> offScreen = <span class="hljs-keyword">new</span> BufferOut({<span class="hljs-attr">width</span>: <span class="hljs-number">40</span>, <span class="hljs-attr">height</span>: <span class="hljs-number">40</span>,
+		<span class="hljs-attr">pixelFormat</span>: Bitmap.RGB565LE});
+
+<span class="hljs-keyword">let</span> bmpOut = <span class="hljs-keyword">new</span> BMPOut({<span class="hljs-attr">width</span>: <span class="hljs-number">240</span>, <span class="hljs-attr">height</span>: <span class="hljs-number">240</span>,
+		<span class="hljs-attr">pixelFormat</span>: Bitmap.RGB565LE, <span class="hljs-attr">path</span>: <span class="hljs-string">"/test.bmp"</span>});
+</code></pre>
+<p>Developers building applications using Commodetto do not need to use the majority of the <code>PixelsOut</code> API directly. An application uses the constructor of a subclass of <code>PixelsOut</code> and then immediately binds it to a <code>Renderer</code> instance that calls the <code>PixelsOut</code> API as needed. The application interacts exclusively with the <code>Renderer</code> instance. The remaining information in this <code>PixelsOut</code> section is intended for developers implementing their own <code>PixelsOut</code> subclasses.</p>
+<p>Once constructed, a <code>PixelsOut</code> instance can receive pixels. Three function calls are used to send pixels to the output: <code>begin</code>, <code>send</code>, and <code>end</code>. The following example shows how to output black pixels to a portion of a <code>PixelsOut</code> instance.</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">let</span> x = <span class="hljs-number">10</span>, y = <span class="hljs-number">20</span>;
+<span class="hljs-keyword">let</span> width = <span class="hljs-number">40</span>, height = <span class="hljs-number">50</span>;
+display.begin(x, y, width, height);
+	
+<span class="hljs-keyword">let</span> scanLine = <span class="hljs-keyword">new</span> <span class="hljs-built_in">ArrayBuffer</span>(display.pixelsToBytes(width));
+<span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> line = <span class="hljs-number">0</span>; line &lt; height; line++)
+	display.send(scanLine);
+	
+display.end();
+</code></pre>
+<p>The <code>begin</code> call indicates the area of the <code>PixelsOut</code> bitmap to update. Following that are one or more calls to <code>send</code> that contain the pixels. In the example above, <code>send</code> is called 50 times, each time with a buffer of 40 black (all 0) pixels. The number of bytes of data passed by the combined calls to <code>send</code> must be exactly the number of bytes needed to fill the area specified in the call to <code>begin</code>. Once all data has been provided, call <code>end</code>.</p>
+<p>The <code>PixelsOut</code> API does not define when the data is transmitted to the output. Different <code>PixelsOut</code> subclasses implement it differently: some transmit the data immediately and synchronously, some use asynchronous transfers, and others buffer the data to display only when <code>end</code> is called.</p>
+<p>The following example shows the definition of the <code>PixelsOut</code> class (with the function bodies omitted).</p>
+<pre><code class="language-javascript"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">PixelsOut</span> </span>{
+	<span class="hljs-keyword">constructor</span>(dictionary) {}
+	begin(x, y, width, height) {}
+	end() {}
+	<span class="hljs-keyword">continue</span>(x, y, width, height) {}
+
+	send(pixels, offset = <span class="hljs-number">0</span>, count = pixels.byteLength - offset) {}
+
+	<span class="hljs-keyword">get</span> width() {}
+	<span class="hljs-keyword">get</span> height() {}
+
+	<span class="hljs-keyword">get</span> pixelFormat() {}
+	pixelsToBytes(count) {}
+}
+</code></pre>
+<h4>Functions</h4>
+<h5><code>constructor(dictionary)</code></h5>
+<p>The <code>PixelsOut</code> constructor takes a single argument: a dictionary of property names and values. The <code>PixelsOut</code> base class defines three properties that are defined for all subclasses of <code>PixelsOut</code>:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Name</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><code>width</code></td>
+<td style="text-align:left">number specifying width of output in pixels</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>height</code></td>
+<td style="text-align:left">number specifying height of output in pixels</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>pixelFormat</code></td>
+<td style="text-align:left">string specifying format of output pixels (for example, <code>Bitmap.RGB565BE</code> for 16-bit 565 little-endian pixels and <code>Bitmap.RGB565BE</code> for 16-bit 565 big-endian pixels)</td>
+</tr>
+</tbody>
+</table>
+<p>Subclasses define additional properties in their dictionary as needed.</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> PixelsOut <span class="hljs-keyword">from</span> <span class="hljs-string">"commodetto/PixelsOut"</span>;
+
+<span class="hljs-keyword">let</span> out = <span class="hljs-keyword">new</span> PixelsOut({<span class="hljs-attr">width</span>: <span class="hljs-number">120</span>, <span class="hljs-attr">height</span>: <span class="hljs-number">160</span>, <span class="hljs-attr">pixelFormat</span>: Bitmap.RGB565BE});
+</code></pre>
+<blockquote>
+<p><strong>Note:</strong> The <code>width</code>, <code>height</code>, and <code>pixelFormat</code> properties of a <code>PixelsOut</code> object are fixed at the time the object is created and cannot be changed. In general, all properties included in the dictionary provided to the constructor should be considered read-only to keep the implementation of the <code>PixelsOut</code> subclasses simple. However, subclasses of <code>PixelsOut</code> may choose to provide ways to modify some properties.</p>
+</blockquote>
+<hr />
+<h5><code>begin(x, y, width, height)</code></h5>
+<p>The <code>begin</code> function starts the delivery of a frame to the output. The <code>x</code> and <code>y</code> arguments indicate the top-left corner of the frame; the <code>width</code> and <code>height</code> arguments, the size of the frame. The area contained by the arguments to the <code>begin</code> function must fit entirely within the dimensions provided to the constructor in its dictionary.</p>
+<hr />
+<h5><code>end()</code></h5>
+<p>The <code>end</code> function indicates that delivery of the current frame to the output is complete. Calling <code>end</code> is required for proper output of the frame.</p>
+<hr />
+<p><a id="PixelsOut-continue"></a></p>
+<h5><code>continue(x, y, width, height)</code></h5>
+<p>The <code>continue</code> function is a way to draw to more than one area of a single frame. Calling <code>continue</code> is similar to calling <code>end</code> following by <code>begin</code>. That is, the following</p>
+<pre><code class="language-javascript">out.continue(<span class="hljs-number">10</span>, <span class="hljs-number">20</span>, <span class="hljs-number">30</span>, <span class="hljs-number">40</span>);
+</code></pre>
+<p>is almost the same as this:</p>
+<pre><code class="language-javascript">out.end();
+out.begin(<span class="hljs-number">10</span>, <span class="hljs-number">20</span>, <span class="hljs-number">30</span>, <span class="hljs-number">40</span>);
+</code></pre>
+<p>The difference is that when <code>continue</code> is used, all output pixels are part of the same frame, whereas with <code>end</code>/<code>begin</code> pixels transmitted before <code>end</code> are part of one frame and pixels transmitted after it are part of the following frame.</p>
+<p>For some outputs--for example, <code>BufferOut</code>--there is no difference. For others--for example, a hardware-accelerated renderer--the results are visually different.</p>
+<blockquote>
+<p><strong>Note:</strong> Not all <code>PixelsOut</code> subclasses implement <code>continue</code>. If it is not supported, an exception is thrown. The subclass descriptions that follow indicate if <code>continue</code> is supported.</p>
+</blockquote>
+<hr />
+<h5><code>send(pixels, offset = 0, count = pixels.byteLength - offset)</code></h5>
+<p>The <code>send</code> function transmits pixels to the output. The <code>pixels</code> argument is an <code>ArrayBuffer</code> or <code>HostBuffer</code> containing the pixels. The <code>offset</code> argument is the offset (in bytes) at which the pixels begin in the buffer, and <code>count</code> is the number of bytes to transmit from the buffer.</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">let</span> pixels = <span class="hljs-keyword">new</span> <span class="hljs-built_in">ArrayBuffer</span>(<span class="hljs-number">40</span>);
+out.send(pixels);		<span class="hljs-comment">// Send all pixels in buffer</span>
+out.send(pixels, <span class="hljs-number">30</span>);	<span class="hljs-comment">// Send last 5 pixels in buffer</span>
+out.send(pixels, <span class="hljs-number">2</span>, <span class="hljs-number">2</span>)	<span class="hljs-comment">// Send 2nd pixel in buffer</span>
+</code></pre>
+<blockquote>
+<p><strong>Note:</strong> The <code>offset</code> and <code>count</code> arguments are in units of bytes, not pixels.</p>
+</blockquote>
+<hr />
+<h5><code>adaptInvalid(r)</code></h5>
+<p>The <code>adaptInvalid</code> function takes a rectangle argument specifying an area inside the <code>PixelsOut</code> area and modifies the rectangle as needed to make it a valid update area for the PixelsOut. The <code>adaptInvalid</code> function is necessary because some display controllers are only able to update the display in certain quanta. For example, one display requires that the x coordinate and width are even numbers, another display can only update complete horizontal scan lines, and another updates the entire display even if only a single pixel changed.</p>
+<pre><code>let r = renderer.rectangle(x, y, w, h);
+pixelsOut.adaptInvalid(r);
+pixelsOut.begin(r.x, r.y, r.w, r.h);
+...
+</code></pre>
+<hr />
+<h5><code>pixelsToBytes(count)</code></h5>
+<p>The <code>pixelsToBytes</code> function calculates the number of bytes required to store the number of pixels specified by the <code>count</code> argument. The following allocates an <code>ArrayBuffer</code> corresponding to a single scanline of pixels:</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">let</span> buffer = <span class="hljs-keyword">new</span> <span class="hljs-built_in">ArrayBuffer</span>(out.pixelsToBytes(width));
+</code></pre>
+<hr />
+<h4>Properties</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Name</th>
+<th style="text-align:center">Type</th>
+<th style="text-align:center">Read-only</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><code>width</code></td>
+<td style="text-align:center"><code>Number</code></td>
+<td style="text-align:center">✓</td>
+<td style="text-align:left">The width of the <code>PixelsOut</code> instance in pixels.</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>height</code></td>
+<td style="text-align:center"><code>Number</code></td>
+<td style="text-align:center">✓</td>
+<td style="text-align:left">The height of the <code>PixelsOut</code> instance in pixels.</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>pixelFormat</code></td>
+<td style="text-align:center"><code>Number</code></td>
+<td style="text-align:center">✓</td>
+<td style="text-align:left">The format of the pixels of the <code>PixelsOut</code> instance.</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>async</code></td>
+<td style="text-align:center"><code>Boolean</code></td>
+<td style="text-align:center">✓</td>
+<td style="text-align:left">Returns true if the PixelsOut supports asynchronous rendering. This means  pixels passed to <code>send</code> are not copied, and must remain unchanged through the completion of the next call to <code>send</code> or <code>end</code>.</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>c_dispatch</code></td>
+<td style="text-align:center"></td>
+<td style="text-align:center">✓</td>
+<td style="text-align:left">Optionally returns a pointer to a <code>HostBuffer</code> that contains a native <code>PixelsOutDispatchRecord</code>. Returns undefined if no native dispatch table is available. The native <code>PixelsOutDispatchRecord</code> allows native code to call the <code>PixelsOut</code>'s <code>begin</code>, <code>send</code>, <code>continue</code>, <code>end</code>, and <code>adaptInvalid</code> functions directly, without going through the XS virtual machine. The native dispatch table is strictly an optimization and provides only functionality in the JavaScript API.</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>clut</code></td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:left">(Not documented yet)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><a id="spiout-class"></a></p>
+<h3>SPIOut Class</h3>
+<p>The <code>SPIOut</code> subclass of <code>PixelsOut</code> is a placeholder for an implementation of a <code>PixelsOut</code> instance that sends pixels to a display connected over SPI.</p>
+<pre><code class="language-javascript"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">SPIOut</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">PixelsOut</span>
+</span></code></pre>
+<hr />
+<p><a id="bufferout-class"></a></p>
+<h3>BufferOut Class</h3>
+<p><code>BufferOut</code> is a subclass of <code>PixelsOut</code> that implements an offscreen in-memory bitmap.</p>
+<pre><code class="language-javascript"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">BufferOut</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">PixelsOut</span></span>;
+</code></pre>
+<p>Because memory tends to be a scarce resource on target devices, applications should use <code>BufferOut</code> sparingly.</p>
+<p>To create a <code>BufferOut</code> instance:</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> BufferOut <span class="hljs-keyword">from</span> <span class="hljs-string">"commodetto/BufferOut"</span>;
+
+<span class="hljs-keyword">let</span> offscreen = <span class="hljs-keyword">new</span> BufferOut({<span class="hljs-attr">width</span>: <span class="hljs-number">40</span>, <span class="hljs-attr">height</span>: <span class="hljs-number">30</span>, <span class="hljs-attr">pixelFormat</span>: Bitmap.RGB565LE});
+</code></pre>
+<p>The <code>BufferOut</code> constructor allocates the buffer for the bitmap pixels. Once the offscreen bitmap has been created, pixels are delivered to it using the <code>send</code> function, as described for the <code>PixelsOut</code> class. The pixels in the <code>BufferOut</code> instance are accessed through the instance's bitmap.</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">let</span> bitmap = offscreen.bitmap;
+</code></pre>
+<p><code>BufferOut</code> implements the optional <code>continue</code> function of <code>PixelsOut</code>.</p>
+<h4>Properties</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Name</th>
+<th style="text-align:center">Type</th>
+<th style="text-align:center">Read-only</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><code>bitmap</code></td>
+<td style="text-align:center"><code>Bitmap</code></td>
+<td style="text-align:center">✓</td>
+<td style="text-align:left">Returns a <code>Bitmap</code> instance to access the pixels of the <code>BufferOut</code> instance.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><a id="bmpout-class"></a></p>
+<h3>BMPOut Class</h3>
+<p><code>BMPOut</code> is a subclass of <code>PixelsOut</code> that receives pixels and writes them in a BMP file in the following formats: <code>Bitmap.Gray16</code>, <code>Bitmap.Gray256</code>, <code>Bitmap.RGB565LE</code>, <code>Bitmap.RGB332</code>, and <code>Bitmap.CLUT16</code>. The <code>BMPOut</code> implementation writes pixels to the file incrementally, so it can create files larger than available free memory.</p>
+<p><code>BMPOut</code> adds the <code>path</code> property to the constructor's dictionary; <code>path</code> is a string containing the full path to the output BMP file.</p>
+<blockquote>
+<p><strong>Note:</strong> The width multiplied by the bit-depth of the BMP file must be a multiple of 32.</p>
+</blockquote>
+<hr />
+<p><a id="rle4out-class"></a></p>
+<h3>RLE4Out Class</h3>
+<p><code>RLE4Out</code> is a subclass of <code>PixelsOut</code> that receives pixels in <code>Bitmap.Gray16</code> format and packs them into an RLE-encoded bitmap.</p>
+<pre><code class="language-javascript"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">RLE4Out</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">PixelsOut</span></span>;
+</code></pre>
+<p>RLE-encoded bitmaps are smaller, reducing the amount of ROM required for assets. Additionally, for many common bitmaps uses, RLE-encoded bitmaps draw more quickly.</p>
+<p>The <code>RLE4Out</code> class may be used on the device. More commonly, however, a bitmap is RLE-encoded and written to storage at build time; this avoids the time and memory required to encode the image on the device, while saving storage space.</p>
+<p>The <code>rle4encode</code> tool in the Moddable SDK compresses 4-bit grayscale BMP files using the <code>RLE4Out</code> class. The <code>compressbmf</code> tool applies the RLE4Out class to each individual glyph in a BMF font.</p>
+<p>The <code>RLE4Out</code> class does not implement the optional <code>continue</code> function.</p>
+<h4>Properties</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Name</th>
+<th style="text-align:center">Type</th>
+<th style="text-align:center">Read-only</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><code>bitmap</code></td>
+<td style="text-align:center"><code>Bitmap</code></td>
+<td style="text-align:center">✓</td>
+<td style="text-align:left">Returns a <code>Bitmap</code> instance to access the pixels of the <code>RLE4Out</code> instance.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><a id="colorcellout-class"></a></p>
+<h3>ColorCellOut Class</h3>
+<p><code>ColorCellOut</code> is a subclass of <code>PixelsOut</code> that receives pixels in <code>Bitmap.RGB565LE</code> format and compresses them using a modified version of the <a href="https://en.wikipedia.org/wiki/Color_Cell_Compression">ColorCell</a> image compression algorithm. ColorCell was widely used in the early 90's, primarily in the <a href="https://en.wikipedia.org/wiki/Apple_Video">Apple Video</a> algorithm.</p>
+<p>The Moddable SDK's <code>image2cs</code> tool uses the <code>ColorCellOut</code> class to compress JPEG, PNG, and GIF images and image sequences.</p>
+<p>The <code>send</code> function of the ColorCellOut class requires that the number of scan lines provided on each call be a multiple of 4. This allows the ColorCellOut implementation to encode complete rows of the image on each call to <code>send</code>.</p>
+<p>The <code>begin</code> function takes an optional 5th parameter, a dictionary of compression options for the frame. The dictionary contains an optional <code>quality</code> property with values from 0 to 1, with 0 being the lowest quality and 1 the highest.</p>
+<h4>Properties</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Name</th>
+<th style="text-align:center">Type</th>
+<th style="text-align:center">Read-only</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><code>bitmap</code></td>
+<td style="text-align:center"><code>Bitmap</code></td>
+<td style="text-align:center">✓</td>
+<td style="text-align:left">Returns a <code>Bitmap</code> instance to access the pixels of the <code>ColorCellOut</code> instance.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><a id="asset-parsing"></a></p>
+<h2>Asset Parsing</h2>
+<p>Building a user interface for a display requires visual assets--icons, bitmaps, photos, fonts, and so on. There are many commonly used file formats for storing these assets, some of which work well on constrained devices. Commodetto includes functions to use several common asset file formats directly; however, Commodetto does not support all features of these file formats. Graphic designers creating assets for use with Commodetto need to be aware of the asset format requirements.</p>
+<blockquote>
+<p><strong>Note:</strong> For optimal render performance and minimum storage size, it is beneficial to convert assets to the preferred format of the target device at build time.</p>
+</blockquote>
+<p><a id="bmp"></a></p>
+<h3>BMP</h3>
+<p>The <a href="https://msdn.microsoft.com/en-us/library/dd183391.aspx">BMP</a> file format was created by Microsoft for use on Windows. It is a flexible container for uncompressed pixels of various formats. The format is unambiguously documented and well supported by graphic tools. BMP is the preferred format for uncompressed bitmaps in Commodetto. The Commodetto BMP file parser supports the following variants of BMP:</p>
+<ul>
+<li><strong>16-bit 565 little-endian pixels</strong> -- The image width must be a multiple of 2. When using Photoshop to save the BMP file, select <strong>Advanced Mode</strong> in the BMP dialog and check <strong>R5 G6 B5</strong>.</li>
+<li><strong>16-bit 555 little-endian pixels</strong> -- The image width must be a multiple of 2. This format is the most common 16-bit format for BMP files; however, it is not recommended, as the pixels must be converted to 565, which takes time and requires memory to store the converted pixels.</li>
+<li><strong>8-bit gray</strong> -- The image width must be a multiple of 4 and must have a gray palette.</li>
+<li><strong>8-bit color</strong> -- The image width must be a multiple of 4 and must have an RGB 332 palette.</li>
+<li><strong>4-bit gray</strong> -- The image width must be a multiple of 8 and must have a gray palette. When working in Photoshop, set <strong>Image Mode</strong> to <strong>Grayscale</strong> before saving the image in BMP format.</li>
+<li><strong>4-bit color</strong> -- The image width must be a multiple of 8.</li>
+<li><strong>1-bit black and white</strong> -- The image width must be a multiple of 32.</li>
+</ul>
+<p>By default, BMP files are stored with the bottom line of the bitmap first in the file--for example, bottom-to-top order. Commodetto requires bitmaps to be stored top to bottom. When saving a BMP file, select the option to store it in top-to-bottom order. In Photoshop, check <strong>Flip row order</strong> to store the BMP in top-to-bottom order.</p>
+<p>The <code>parseBMP</code> function creates a bitmap from an <code>ArrayBuffer</code> or <code>HostBuffer</code> containing BMP data. It performs validation to confirm that the file format is supported, and throws an exception if it detects an unsupported variant of BMP.</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> parseBMP <span class="hljs-keyword">from</span> <span class="hljs-string">"commodetto/parseBMP"</span>;
+
+<span class="hljs-keyword">let</span> bmpData = <span class="hljs-keyword">new</span> Resource(<span class="hljs-string">"image.bmp"</span>);
+<span class="hljs-keyword">let</span> bitmap = parseBMP(bmpData)
+trace(<span class="hljs-string">`Bitmap width <span class="hljs-subst">${bitmap.width}</span>, height <span class="hljs-subst">${bitmap.height}</span>\n`</span>);
+</code></pre>
+<hr />
+<p><a id="jpeg"></a></p>
+<h3>JPEG</h3>
+<p>The JPEG file format is the most common format for storing photos. Many resource-constrained devices have the performance to decompress JPEG images, though not all have the memory to store the result. Commodetto provides a way to render a JPEG image to an output, even if the decompressed JPEG image cannot fit into memory.</p>
+<p>The JPEG decoder in Commodetto supports a subset of the JPEG specification. YUV encoding with H1V1 and H2V2 are supported. Grayscale JPEG images are supported, and there are no restrictions on the width and height of the JPEG image. Progressive JPEG images are not supported.</p>
+<h4>Decompressing entire image</h4>
+<p>To decompress a complete JPEG data to an offscreen bitmap, use the <code>loadJPEG</code> function.</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> loadJPEG <span class="hljs-keyword">from</span> <span class="hljs-string">"commodetto/loadJPEG"</span>;
+
+<span class="hljs-keyword">let</span> jpegData = <span class="hljs-keyword">new</span> Resource(<span class="hljs-string">"image.jpg"</span>);
+<span class="hljs-keyword">let</span> bitmap = loadJPEG(jpegData);
+</code></pre>
+<h4>Decoding block by block</h4>
+<p>The JPEG decoder also implements a block-based decode mode to return a single block of decompressed data at a time.</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> JPEG <span class="hljs-keyword">from</span> <span class="hljs-string">"commodetto/readJPEG"</span>;
+
+<span class="hljs-keyword">let</span> jpegData = <span class="hljs-keyword">new</span> Resource(<span class="hljs-string">"image.jpg"</span>);
+<span class="hljs-keyword">let</span> decoder = <span class="hljs-keyword">new</span> JPEG(jpegData);
+
+<span class="hljs-keyword">while</span> (decoder.ready) {
+	<span class="hljs-keyword">let</span> block = decoder.read();
+	trace(<span class="hljs-string">`block x: <span class="hljs-subst">${block.x}</span>, y: <span class="hljs-subst">${block.y}</span>,
+			width: <span class="hljs-subst">${block.width}</span>, height: <span class="hljs-subst">${block.height}</span>\n`</span>);
+}
+</code></pre>
+<p>Each block returned is a bitmap. The <code>width</code> and <code>height</code> fields of the bitmap indicate the dimensions of the block. The width and height can change from block to block. The <code>x</code> and <code>y</code> properties indicate the placement of the block relative to the top-left corner of the full JPEG image. Blocks are returned in a left-to-right, top-to-bottom order.</p>
+<p>The same bitmap object is used for all blocks, so the contents of the block change after each call to <code>read</code>. This means an application cannot collect all the blocks into an array for later rendering. To do that, the application must copy the data from each block.</p>
+<p>Using a renderer, it is straightforward to incrementally send a JPEG image to a display block-by-block as it is decoded, eliminating the need to copy the data of each block. The Poco renderer documentation includes an example of this technique.</p>
+<h4>Streaming decode</h4>
+<p>The preceding sections explain how to decode a JPEG image when the full compressed JPEG image is available. The JPEG decoder can also be used to decode a streaming JPEG image, that is decode JPEG data as it arrives over the network. This approach has the advantage of eliminating the need to store the entire compressed JPEG image in memory. Instead, network buffers are pushed to the JPEG decoder as they arrive, and <code>read</code> is used to retrieve as many decoded blocks as possible from the available buffers.</p>
+<p>To use the JPEG decoder in streaming mode, call the constructor with no arguments:</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">let</span> decoder = <span class="hljs-keyword">new</span> JPEG();
+</code></pre>
+<p>As data arrives, push <code>ArrayBuffer</code> containing the data to the decoder:</p>
+<pre><code class="language-javascript">decoder.push(buffer);
+</code></pre>
+<p>After the final buffer arrives, call <code>push</code> with parameters to indicate the end of the data stream. Failure to do this may result in blocks missing from the bottom of the image:</p>
+<pre><code class="language-javascript">decoder.push();
+</code></pre>
+<p>The JPEG decoder <code>ready</code> property indicates blocks are available to be read. The first time the <code>ready</code> property returns true also indicates that the JPEG header has been successfully parsed and the JPEG <code>width</code> and <code>height</code> properties have been initialized.</p>
+<pre><code class="language-javascript">decoder.push(buffer);
+<span class="hljs-keyword">while</span> (decoder.ready) {
+	<span class="hljs-keyword">let</span> block = decoder.read();
+	<span class="hljs-comment">// render block</span>
+}
+</code></pre>
+<blockquote>
+<p><strong>Note:</strong> Commodetto uses the excellent public domain <a href="https://code.google.com/archive/p/picojpeg/">picojpeg</a> decoder, which is optimized to minimize memory use. Some quality and performance are sacrificed, but the results are generally quite good. Small changes have been made to picojpeg to eliminate compiler warnings; those changes are included in the Moddable SDK source code distribution.</p>
+</blockquote>
+<hr />
+<p><a id="png"></a></p>
+<h3>PNG</h3>
+<p>The PNG image format is commonly used for the assets of user interface elements such as buttons and sliders. Because the PNG file format is heavily compressed, PNG images must be decompressed to a <code>BufferOut</code> instance for use. Also because of the compression used in PNG, a significant amount of memory is required for decompressing the image. Nonetheless, because PNG is so common in user interface work, Commodetto implements a PNG module for use on devices and scenarios where it is practical.</p>
+<p>The PNG decoder in Commodetto supports most variations of the PNG file format, with two exceptions:</p>
+<ul>
+<li>
+<p>Interlaced images are not supported, as interlacing is incompatible with progressive decoding.</p>
+</li>
+<li>
+<p>Images with 16-bit channels are unsupported because the high resolution exceeds the image quality capabilities of target devices.</p>
+</li>
+</ul>
+<p>To decompress PNG data to an offscreen bitmap, use the static <code>decompress</code> function.</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> PNG <span class="hljs-keyword">from</span> <span class="hljs-string">"commodetto/readPNG"</span>;
+
+<span class="hljs-keyword">let</span> pngData = <span class="hljs-keyword">new</span> Resource(<span class="hljs-string">"image.png"</span>);
+<span class="hljs-keyword">let</span> bitmap = PNG.decompress(pngData);
+</code></pre>
+<p>The PNG <code>decompress</code> function supports the following PNG variants:</p>
+<ul>
+<li>3 channels, 8 bits per channel (24-bit RGB)</li>
+<li>4 channels, 8 bits per channel (32-bit RGBA)</li>
+<li>1 channel, 8 bits per channel (8-bit gray)</li>
+<li>1 channel, 8 bits per channel with palette (8-bit indexed RGB)</li>
+<li>1 channel, 1 bit per channel (1-bit monochrome)</li>
+</ul>
+<p>For images that contain an alpha channel, pass <code>true</code> for the optional second argument to <code>decompress</code>. The alpha channel is returned as a 4-bit gray bitmap in the <code>mask</code> property of the returned bitmap image.</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">let</span> pngData = <span class="hljs-keyword">new</span> Resource(<span class="hljs-string">"image_with_alpha.png"</span>);
+<span class="hljs-keyword">let</span> bitmap = PNG.decompress(pngData, <span class="hljs-literal">true</span>);
+<span class="hljs-keyword">let</span> alpha = bitmap.mask;
+</code></pre>
+<p>The PNG decoder also implements a progressive decoding mode to return a single scanline of decompressed data at a time. The scanline is raw data from the PNG decoder, with no pixel transformations applied. The following example converts a 24-bit (RGB) or 32-bit (RGBA) PNG image to a 16-bit BMP.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> png = <span class="hljs-keyword">new</span> PNG(<span class="hljs-keyword">new</span> Resource(<span class="hljs-string">"image.png"</span>));
+<span class="hljs-keyword">let</span> width = png.width, height = png.height;
+trace(<span class="hljs-string">`width <span class="hljs-subst">${width}</span>, height <span class="hljs-subst">${height}</span>, channels <span class="hljs-subst">${png.channels}</span>, depth <span class="hljs-subst">${png.depth}</span>, bpp <span class="hljs-subst">${png.channels * png.depth}</span>\n`</span>);
+
+<span class="hljs-keyword">if</span> ((<span class="hljs-number">8</span> != png.depth) || ((<span class="hljs-number">3</span> != png.channels) &amp;&amp; (<span class="hljs-number">4</span> != png.channels)))
+	<span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">"unsupported PNG variant"</span>);
+
+<span class="hljs-keyword">let</span> bmp = <span class="hljs-keyword">new</span> BMPOut({<span class="hljs-attr">width</span>: width, <span class="hljs-attr">height</span>: height, <span class="hljs-attr">pixelFormat</span>: Bitmap.RGB565LE, <span class="hljs-attr">path</span>: <span class="hljs-string">"image.bmp"</span>});
+bmp.begin(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, width, height);
+
+<span class="hljs-keyword">let</span> scan16 = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Uint16Array</span>(width);
+<span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &lt; height; i++) {
+	<span class="hljs-keyword">let</span> scanLine = png.read();
+	<span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> j = <span class="hljs-number">0</span>, offset = <span class="hljs-number">0</span>; j &lt; width; j++, offset += png.channels) {
+		<span class="hljs-keyword">let</span> r = scanLine[offset    ];
+		<span class="hljs-keyword">let</span> g = scanLine[offset + <span class="hljs-number">1</span>];
+		<span class="hljs-keyword">let</span> b = scanLine[offset + <span class="hljs-number">2</span>];
+		scan16[j] = ((r &gt;&gt; <span class="hljs-number">3</span>) &lt;&lt; <span class="hljs-number">11</span>) | ((g &gt;&gt; <span class="hljs-number">2</span>) &lt;&lt; <span class="hljs-number">5</span>) | (b &gt;&gt; <span class="hljs-number">3</span>);
+	}
+	bmp.send(scan16.buffer);
+}
+bmp.end();
+</code></pre>
+<p>In addition to the <code>width</code> and <code>height</code> properties, the PNG instance contains <code>depth</code> and <code>channels</code> properties based on the content of the PNG image.</p>
+<p>The PNG decoder uses up to 45 KB of memory while decoding an image. This amount of memory may not be available or practical on all target devices. The memory requirement is primarily due to the zlib compression algorithm used in PNG images.</p>
+<blockquote>
+<p><strong>Note:</strong> Commodetto uses the public domain <a href="https://github.com/richgel999/miniz/">miniz</a> library to decompress the <a href="http://www.zlib.net/manual.html">zlib</a> data contained in PNG images. The PNG parsing is partially based on the Apache-licensed <a href="https://github.com/Kinoma/kinomajs/blob/master/extensions/FskPNGDecode/sources/FskPNGDecodeExtension.c"><code>FskPNGDecodeExtension.c</code></a> from KinomaJS, with significant simplifications.</p>
+</blockquote>
+<hr />
+<p><a id="bmfont"></a></p>
+<h3>BMFont</h3>
+<p><a href="http://www.angelcode.com/products/bmfont/">BMFont</a> is a format for storing bitmap fonts. It is widely used to embed distinctive fonts in games in a format that is efficiently rendered using OpenGL. BMFont is well designed and straightforward to support. Commodetto uses BMFont to store both anti-aliased and multicolor fonts. In addition, BMFont has good tool support--in particular the excellent <a href="https://71squared.com/glyphdesigner">Glyph Designer</a>, which converts macOS fonts to a Commodetto-compatible BMFont.</p>
+<p>BMFont stores a font's metrics data separately from the font's glyph atlas (bitmap). This means that loading a BMFont requires two steps: loading the metrics and loading the glyph atlas. BMFont allows the metrics data to be stored in a variety of formats, including text, XML, and binary. Commodetto supports the binary format for metrics.</p>
+<p>The <code>parseBMF</code> function prepares the BMFont binary metrics file for use with a <code>Render</code> object.</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> parseBMF <span class="hljs-keyword">from</span> <span class="hljs-string">"commodetto/parseBMF"</span>;
+<span class="hljs-keyword">import</span> parseBMP <span class="hljs-keyword">from</span> <span class="hljs-string">"commodetto/parseBMP"</span>;
+
+<span class="hljs-keyword">let</span> palatino36 = parseBMF(<span class="hljs-keyword">new</span> Resource(<span class="hljs-string">"palatino36.fnt"</span>));
+palatino36.bitmap = parseBMP(<span class="hljs-keyword">new</span> Resource(<span class="hljs-string">"palatino36.bmp"</span>);
+</code></pre>
+<p>After the metrics are prepared with <code>parseBMF</code>, the glyph atlas is prepared using <code>parseBMP</code> and is attached to the metrics as the <code>bitmap</code> property.</p>
+<p>The <code>BMFont</code> format allows multiple discontiguous ranges of characters, but <code>parseBMF</code> requires that the characters be a single contiguous range.</p>
+<p>For anti-aliased text, the BMP file containing the glyph atlas bitmap must be in 4-bit gray format. For multicolor text, the bitmap must be in Bitmap.default format (e.g. the pixel format Commodetto is configured to render to).</p>
+<p>Commodetto extends the BMFont format with RLE compressed glyphs. Glyphs are individually compressed using the <code>RLE4Out</code> class. The Moddable SDK tool <code>compressbmf</code> performs the compression.  The tool also appends the compressed glyphs to the <code>.fnt</code> metrics file, storing a single font's metrics and glyph data in a single file.</p>
+<hr />
+<p><a id="rendering"></a></p>
+<h2>Rendering</h2>
+<p>Commodetto is designed to support multiple rendering engines. The initial engine is <a href="./poco.html">Poco</a>, a small bitmap-based scanline renderer. A renderer knows how to draw pixels and relies on a <code>PixelsOut</code> instance to output those pixels, whether to a display, an offscreen buffer, or a file.</p>
+<p>When a renderer is created, it is bound to an output. For example, to render to a BMP file:</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> BMPOut <span class="hljs-keyword">from</span> <span class="hljs-string">"commodetto/BMPOut"</span>;
+<span class="hljs-keyword">import</span> Poco <span class="hljs-keyword">from</span> <span class="hljs-string">"commodetto/Poco"</span>;
+
+<span class="hljs-keyword">let</span> bmpOut = <span class="hljs-keyword">new</span> BMPOut({<span class="hljs-attr">width</span>: decoded.width, <span class="hljs-attr">height</span>: decoded.height,
+		<span class="hljs-attr">pixelFormat</span>: Bitmap.RGB565LE, <span class="hljs-attr">path</span>: <span class="hljs-string">"allegra64.bmp"</span>});
+<span class="hljs-keyword">let</span> render = <span class="hljs-keyword">new</span> Poco(bmpOut);
+</code></pre>
+<p>To render to a display, use <code>SPIOut</code> in place of <code>BMPOut</code>, as follows:</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> SPIOut <span class="hljs-keyword">from</span> <span class="hljs-string">"commodetto/SPIOut"</span>;
+<span class="hljs-keyword">import</span> Poco <span class="hljs-keyword">from</span> <span class="hljs-string">"commodetto/Poco"</span>;
+
+<span class="hljs-keyword">let</span> display = <span class="hljs-keyword">new</span> SPIOut({<span class="hljs-attr">width</span>: <span class="hljs-number">320</span>, <span class="hljs-attr">height</span>: <span class="hljs-number">240</span>,
+		<span class="hljs-attr">pixelFormat</span>: Bitmap.RGB565LE, <span class="hljs-attr">dataPin</span>: <span class="hljs-number">30</span>});
+<span class="hljs-keyword">let</span> render = <span class="hljs-keyword">new</span> Poco(display);
+</code></pre>
+<p>The Poco renderer documentation describes its rendering operations with examples of common uses.</p>
+<hr />
+<p><a id="render-class"></a></p>
+<h3>Render class</h3>
+<p>The <code>Render</code> class is a abstract base class used to generate pixels. It is overridden by specific rendering engines, such as Poco. The <code>Render</code> class has only four functions, which manage the rendering process but do no rendering themselves. The specific rendering operations available are defined by subclasses of <code>Render</code>.</p>
+<p>The following example shows using the Poco renderer with <code>SPIOut</code> to render a screen consisting of a white background with a 10-pixel red square at location <code>{x: 5, y: 5}</code>.</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">let</span> display = <span class="hljs-keyword">new</span> SPIOut({<span class="hljs-attr">width</span>: <span class="hljs-number">320</span>, <span class="hljs-attr">height</span>: <span class="hljs-number">240</span>,
+		<span class="hljs-attr">pixelFormat</span>: Bitmap.RGB565LE, <span class="hljs-attr">dataPin</span>: <span class="hljs-number">30</span>});
+<span class="hljs-keyword">let</span> render = <span class="hljs-keyword">new</span> Poco(display);
+	
+<span class="hljs-keyword">let</span> white = poco.makeColor(<span class="hljs-number">255</span>, <span class="hljs-number">255</span>, <span class="hljs-number">255</span>);
+<span class="hljs-keyword">let</span> red = poco.makeColor(<span class="hljs-number">255</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>);
+	
+render.begin();
+render.fillRectangle(white, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, display.width, display.height);
+render.fillRectangle(red, <span class="hljs-number">5</span>, <span class="hljs-number">5</span>, <span class="hljs-number">10</span>, <span class="hljs-number">10</span>);
+render.end();
+</code></pre>
+<h4>Functions</h4>
+<h5><code>constructor(pixelsOut, dictionary)</code></h5>
+<p>The <code>Render</code> constructor takes two arguments: the <code>PixelsOut</code> instance the <code>Render</code> object sends pixels to for output, and a dictionary to configure rendering options. All dictionary properties are defined by the subclasses of <code>Render</code>.</p>
+<hr />
+<h5><code>begin(x, y, width, height)</code></h5>
+<p>The <code>begin</code> function starts the rendering of a frame. The area to be updated is specified with the <code>x</code> and <code>y</code> coordinates and <code>width</code> and <code>height</code> dimensions. The area must be fully contained within the bounds of the <code>PixelsOut</code> instance bound to the renderer.</p>
+<pre><code class="language-javascript">render.begin(x, y, width, height);
+</code></pre>
+<p>All drawing is clipped to the updated area defined by <code>begin</code>.</p>
+<p>Calling <code>begin</code> with no arguments is equivalent to calling it with <code>x</code> and <code>y</code> equal to 0 and <code>width</code> and <code>height</code> equal to the <code>width</code> and <code>height</code> values of the <code>render</code> instance. That is, the following</p>
+<pre><code class="language-javascript">render.begin()
+</code></pre>
+<p>is equivalent to this:</p>
+<pre><code class="language-javascript">render.begin(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, render.width, render.height);
+</code></pre>
+<p>If <code>width</code> and <code>height</code> are omitted, the update area is the rectangle defined by the <code>x</code> and <code>y</code> coordinates passed to <code>begin</code>. The following bottom-right corner of the <code>render</code> bounds</p>
+<pre><code class="language-javascript">render.begin(x, y);
+</code></pre>
+<p>is equivalent to this:</p>
+<pre><code class="language-javascript">render.begin(x, y, render.width - x, render.height - y);
+</code></pre>
+<hr />
+<h5><code>end()</code></h5>
+<p>The <code>end</code> function completes the rendering of a frame. All pending rendering operations are completed by this function.</p>
+<blockquote>
+<p><strong>Note:</strong> For a display list renderer, such as Poco, all rendering occurs during the execution of <code>end</code>. Consequently, the display is not updated immediately following drawing calls.</p>
+</blockquote>
+<hr />
+<h5><code>continue(x, y, width, height)</code></h5>
+<p>The <code>continue</code> function is used when there are multiple update areas in a single frame. The arguments to <code>continue</code> behave in the same manner as the arguments to <code>begin</code>. The <code>continue</code> function is nearly equivalent to the following sequence:</p>
+<pre><code class="language-javascript">render.end();
+render.begin(x, y, width, height);
+</code></pre>
+<p>The difference is for displays with a buffer--for example, when Commodetto is running on a display with page flipping hardware or on a computer simulator. In such cases the output frame is displayed only when <code>end</code> is called. With <code>continue</code>, intermediate results remain hidden offscreen until the full frame is rendered.</p>
+<p>The following fragment shows three separate update areas for a single frame.</p>
+<pre><code class="language-javascript">render.begin(<span class="hljs-number">10</span>, <span class="hljs-number">10</span>, <span class="hljs-number">20</span>, <span class="hljs-number">20</span>);
+<span class="hljs-comment">// Draw</span>
+...
+render.continue(<span class="hljs-number">200</span>, <span class="hljs-number">100</span>, <span class="hljs-number">40</span>, <span class="hljs-number">40</span>);
+<span class="hljs-comment">// Draw more</span>
+...
+render.continue(<span class="hljs-number">300</span>, <span class="hljs-number">0</span>, <span class="hljs-number">20</span>, <span class="hljs-number">20</span>);
+<span class="hljs-comment">// Draw even more</span>
+...
+render.end();
+</code></pre>
+<hr />
+<h5><code>adaptInvalid(r)</code></h5>
+<p>The renderer's <code>adaptInvalid</code> function is used to adjust the update area defined by the <code>r</code> argument to the update area constraints of the <code>PixelsOut</code> used for rendering. The renderer's implementation of <code>adaptInvalid</code> invokes the <code>PixelsOut</code>'s <code>adaptInvalid</code> function, taking renderer features into consideration, most notably rotation.</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">let</span> r = renderer.rectangle(x, y, w, h);
+renderer.adaptInvalid(r);
+renderer.begin(r.x, r.y, r.w, r.h);
+...
+</code></pre>
+<p>Applications written to work with a single display controller should be able to safely ignore <code>adaptInvalid</code> by applying its constraints themselves. Code written to work with more than a single display controller will likely need to use <code>adaptInvalid</code> for reliable updates to subsections of the display.</p>
+<p>The Piu user interface framework calls <code>adaptInvalid</code> when necessary, so application scripts don't need to call it directly.</p>
+<hr />
+<p><a id="pixel-format-conversion"></a></p>
+<h2>Pixel format conversion</h2>
+<p>Commodetto provides a pixel format conversion capability intended primarily for use in tools that process images running on a computer. They are used, for example, by the <code>image2cs</code> and <code>png2bmp</code> tools in the Moddable SDK. The converters are small and efficient, and so may also be used in deployments to microcontrollers.</p>
+<p><a id="convert-class"></a></p>
+<h3>Convert class</h3>
+<p>The <code>Convert</code> class converts between two pixel formats supported by Commodetto. The conversions are implemented in native code and so run more quickly than they would if written in JavaScript.</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> Convert <span class="hljs-keyword">from</span> <span class="hljs-string">"commodetto/Convert"</span>;
+</code></pre>
+<p>The <code>Convert</code> class operates on an array of pixels. The concepts of Bitmap and row bytes (or stride) are not part of the API. Instead, they must be handled by the code that calls the <code>Convert</code> class.</p>
+<h4><code>constructor(src, dst)</code></h4>
+<p>The constructor accepts two pixel formats, the source and destination formats.</p>
+<p>The following instantiates a converter to convert pixels from RGB565LE to Gray256.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> converter = <span class="hljs-keyword">new</span> Convert(Bitmap.RGB565LE, Bitmap.Gray256);
+</code></pre>
+<hr />
+<h4><code>convert(src, dst)</code></h4>
+<p>The convert function performs a pixel conversion. The <code>src</code> argument is the input pixels in the format specified in the constructor. The input pixels are stored either in an <code>ArrayBuffer</code> or a <code>HostBuffer</code>. The <code>dst</code> argument is where the output pixels will be returned. It must be an <code>ArrayBuffer</code>.</p>
+<pre><code class="language-js">converter.convert(inputPixels, outputPixels);
+</code></pre>
+<p>The caller of convert is responsible for allocating a large enough output buffer. The <code>Bitmap.depth</code> function is useful for this calculation.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> outputPixelFormat = Bitmap.Gray256;
+<span class="hljs-keyword">let</span> inputPixelCount = <span class="hljs-number">240</span>;
+<span class="hljs-keyword">let</span> outputBufferSize = ((Bitmap.depth(outputPixelFormat) * inputPixelCount) + <span class="hljs-number">7</span>) &gt;&gt; <span class="hljs-number">3</span>;
+<span class="hljs-keyword">let</span> outputPixels = <span class="hljs-keyword">new</span> <span class="hljs-built_in">ArrayBuffer</span>(outputBufferSize);
+</code></pre>
+<hr />
+<p><a id="odds-and-ends"></a></p>
+<h2>Odds and Ends</h2>
+<h3>Target Hardware</h3>
+<p>The primary design constraint for Commodetto is to render a modern user interface on a resource-constrained microcontroller. The target devices have the following broad characteristics:</p>
+<ul>
+<li>ARM Cortex M3/M4 CPU</li>
+<li>Single core</li>
+<li>80 to 200 MHZ CPU speed</li>
+<li>128 to 512 KB of RAM</li>
+<li>1 to 4 MB of flash storage</li>
+<li>No graphics rendering hardware</li>
+</ul>
+<p>If a more capable processor is available, Commodetto gets better. More memory allows for more offscreen bitmaps and more complex scenes. More CPU speed allows for greater use of computationally demanding graphics operations. More flash storage allows for more assets to be stored. Hardware graphics acceleration allows for faster rendering of more complex screens.</p>
+<p>Commodetto runs on any target hardware that supports the XS JavaScript engine. Commodetto is written in ANSI C, with only a handful of calls to external functions (<code>memcpy</code>, <code>malloc</code>, and <code>free</code>). The core Poco renderer allocates no memory.</p>
+<hr />
+<h3>About the Name &quot;Commodetto&quot;</h3>
+<p>The word <em>commodetto</em> is a term used in music meaning &quot;leisurely.&quot; The use of the name Commodetto here is taken from a set of piano variations by Beethoven, specifically the third variation of WoO 66. A sample of the variation is <a href="http://www.prestoclassical.co.uk/r/Warner%2BClassics/5857612">available for listening</a>. The feeling of the variation is light and leisurely, though there is nothing simple or trivial about the composition or the performance.</p>
+
+</div>
+
+        </div>
+    </body>
+</html>

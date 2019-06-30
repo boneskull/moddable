@@ -1,0 +1,2457 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moddable</title>
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata|Open+Sans" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/hljs.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/markdown.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
+</head>
+    <body>
+<div id="header">
+    <div class="package"></div>
+    <a href="https:&#x2F;&#x2F;github.com&#x2F;moddable-opensource&#x2F;moddable" class="badge" title="Github.com"><img src="/assets/images/github.png" alt="Github" /></a>
+    <a href="/" class="home"><strong>Moddable</strong> <span class="headline">Moddable SDK</span></a>
+</div>
+        <div id="container">
+            <div id="sidebar">
+<ul class="list">
+    <li>
+        <h4><a href="/">Home</a></h4>
+        <ul>
+            <li><a href="https://www.moddable.com">Moddable</a></li>
+            <li><a href="/">Documentation</a></li>
+        </ul>
+    </li>
+    <li>
+        <h4><a href="/">Resources</a></h4>
+        <ul>
+            <li><a href="https://github.com/moddable-opensource/moddable">GitHub</a></li>
+            <li><a href="/">Link 2</a></li>
+        </ul>
+    </li>
+</ul>
+            </div>
+
+<div id="content">
+<h1>BLE</h1>
+<p>Copyright 2017-19 Moddable Tech, Inc.</p>
+<p>Revised: June 5, 2019</p>
+<p><strong>Warning</strong>: These notes are preliminary. Omissions and errors are likely. If you encounter problems, please ask for assistance.</p>
+<h2>About This Document</h2>
+<p>This document describes the Moddable SDK Bluetooth Low Energy (BLE) modules. Both client (master) and server (slave) roles are supported on Espressif ESP32 and Silicon Labs Blue Gecko devices.</p>
+<blockquote>
+<p><strong>Note:</strong> A BLE server/slave is also commonly referred to as a BLE peripheral. The terms <em>server</em>, <em>slave</em> and <em>peripheral</em> in this document are used interchangeably.</p>
+</blockquote>
+<h2>Table of Contents</h2>
+<ul>
+<li><a href="#addingble">Adding BLE to a Project</a></li>
+<li><a href="#usingble">Using BLE</a></li>
+<li><a href="#bleclient">BLE Client</a>
+<ul>
+<li><a href="#classbleclient">Class BLEClient</a></li>
+<li><a href="#classdevice">Class Device</a></li>
+<li><a href="#classservice">Class Service</a></li>
+<li><a href="#classcharacteristic">Class Characteristic</a></li>
+<li><a href="#classdescriptor">Class Descriptor</a></li>
+<li><a href="#classadvertisement">Class Advertisement</a></li>
+<li><a href="#classbytes">Class Bytes</a></li>
+</ul>
+</li>
+<li><a href="#bleserver">BLE Server</a>
+<ul>
+<li><a href="#classbleserver">Class BLEServer</a></li>
+<li><a href="#gattservices">GATT Services</a></li>
+</ul>
+</li>
+<li><a href="#blesecurity">BLE Security</a>
+<ul>
+<li><a href="#classsm">Class SM</a></li>
+</ul>
+</li>
+<li><a href="#esp32platform">BLE Apps on ESP32 Platform</a></li>
+<li><a href="#geckoplatform">BLE Apps on Blue Gecko Platform</a></li>
+<li><a href="#exampleapps">BLE Example Apps</a></li>
+</ul>
+<p><a id="addingble"></a></p>
+<h2>Adding BLE to a Project</h2>
+<p>The BLE client and server are implemented as separate modules to accomodate the limited memory and storage available on embedded devices. BLE applications instantiate a BLE client or BLE server, but never both.</p>
+<p>Pre-made manifests are available for the BLE client and BLE server. Add them to the <code>include</code> array of your application's manifest to use them in your project.</p>
+<p>To add the BLE client to a project:</p>
+<pre><code>&quot;include&quot;: [
+	/* other includes here */
+	&quot;$(MODDABLE)/modules/network/ble/manifest_client.json&quot;,
+],
+</code></pre>
+<p>To add the BLE server to a project:</p>
+<pre><code>&quot;include&quot;: [
+	/* other includes here */
+	&quot;$(MODDABLE)/modules/network/ble/manifest_server.json&quot;,
+],
+</code></pre>
+<p><a id="usingble"></a></p>
+<h2>Using BLE</h2>
+<p>BLE applications typically subclass <code>BLEClient</code> or <code>BLEServer</code> and then add device and/or application specific code. The following BLE client example subclasses <code>BLEClient</code> to scan for and discover peripherals:</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> BLEClient <span class="hljs-keyword">from</span> <span class="hljs-string">"bleclient"</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Scanner</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">BLEClient</span> </span>{
+	onReady() {
+		<span class="hljs-keyword">this</span>.startScanning();
+	}
+	onDiscovered(device) {
+		<span class="hljs-keyword">let</span> scanResponse = device.scanResponse;
+		<span class="hljs-keyword">let</span> completeName = scanResponse.completeName;
+		<span class="hljs-keyword">if</span> (completeName)
+			trace(completeName + <span class="hljs-string">"\n"</span>);
+	}
+}
+	
+<span class="hljs-keyword">let</span> scanner = <span class="hljs-keyword">new</span> Scanner;
+</code></pre>
+<p>The following BLE server example subclasses <code>BLEServer</code> to advertise the device as a BLE Health Thermometer peripheral:</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> BLEServer <span class="hljs-keyword">from</span> <span class="hljs-string">"bleserver"</span>;
+<span class="hljs-keyword">import</span> {uuid} <span class="hljs-keyword">from</span> <span class="hljs-string">"btutils"</span>;
+	
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">HealthThermometerService</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">BLEServer</span> </span>{
+	onReady() {
+		<span class="hljs-keyword">this</span>.startAdvertising({
+			<span class="hljs-attr">advertisingData</span>: {<span class="hljs-attr">flags</span>: <span class="hljs-number">6</span>, <span class="hljs-attr">completeName</span>: <span class="hljs-string">"Moddable HTM"</span>, <span class="hljs-attr">completeUUID16List</span>: [uuid<span class="hljs-string">`1809`</span>, uuid<span class="hljs-string">`180F`</span>]}
+		});
+	}
+}
+	
+<span class="hljs-keyword">let</span> htm = <span class="hljs-keyword">new</span> HealthThermometerService;
+</code></pre>
+<p><a id="bleclient"></a></p>
+<h2>BLE Client</h2>
+<p>A BLE client can connect to one or more BLE peripherals. The maximum number of concurrent connections is defined at build time and ultimately limited by what the underlying embedded platform supports. To override the default maximum of two connections, override the <code>max_connections</code> value in the manifest <code>defines</code> section:</p>
+<pre><code>&quot;defines&quot;: {
+	&quot;ble&quot;: {
+		&quot;max_connections&quot;: 3
+	}
+},
+</code></pre>
+<p>A BLE client typically performs the following steps to receive notifications from a BLE peripheral:</p>
+<ol>
+<li>Start scanning for peripherals</li>
+<li>Find the peripheral of interest by matching the advertised complete name or UUID(s) in the scan response</li>
+<li>Establish a connection with the peripheral</li>
+<li>Discover the primary service(s) of interest</li>
+<li>Discover the characteristic(s) within the service(s) of interest</li>
+<li>Enable notifications for characteristic(s) of interest</li>
+</ol>
+<p>The following code from the <a href="../../../examples/network/ble/powermate">powermate</a> example app shows a typical client flow:</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">const</span> DEVICE_NAME = <span class="hljs-string">'PowerMate Bluetooth'</span>;
+<span class="hljs-keyword">const</span> SERVICE_UUID = uuid<span class="hljs-string">`25598CF7-4240-40A6-9910-080F19F91EBC`</span>;
+<span class="hljs-keyword">const</span> CHARACTERISTIC_UUID = uuid<span class="hljs-string">`9CF53570-DDD9-47F3-BA63-09ACEFC60415`</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">PowerMate</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">BLEClient</span> </span>{
+	onReady() {
+		<span class="hljs-keyword">this</span>.startScanning();
+	}
+	onDiscovered(device) {
+		<span class="hljs-keyword">if</span> (DEVICE_NAME == device.scanResponse.completeName) {
+			<span class="hljs-keyword">this</span>.stopScanning();
+			<span class="hljs-keyword">this</span>.connect(device);
+		}
+	}
+	onConnected(device) {
+		device.discoverPrimaryService(SERVICE_UUID);
+	}
+	onServices(services) {
+		<span class="hljs-keyword">let</span> service = services.find(<span class="hljs-function"><span class="hljs-params">service</span> =&gt;</span> service.uuid.equals(SERVICE_UUID));
+		<span class="hljs-keyword">if</span> (service)
+			service.discoverCharacteristic(CHARACTERISTIC_UUID);
+	}
+	onCharacteristics(characteristics) {
+		<span class="hljs-keyword">let</span> characteristic = characteristics.find(<span class="hljs-function"><span class="hljs-params">characteristic</span> =&gt;</span> characteristic.uuid.equals(CHARACTERISTIC_UUID));
+		<span class="hljs-keyword">if</span> (characteristic)
+			characteristic.enableNotifications();
+	}
+	onCharacteristicNotification(characteristic, buffer) {
+		<span class="hljs-keyword">let</span> value = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Uint8Array</span>(buffer)[<span class="hljs-number">0</span>];
+		trace(<span class="hljs-string">`value: <span class="hljs-subst">${value}</span>\n`</span>);
+	}
+}
+</code></pre>
+<p>A BLE client is fundamentally asynchronous and results are always delivered to the <code>BLEClient</code> class callback methods, e.g. <code>onReady</code>, <code>onConnected</code>, etc. above. The following sections describe the BLE client classes, properties, and callbacks.</p>
+<p><a id="classbleclient"></a></p>
+<h2>Class BLEClient</h2>
+<p>The <code>BLEClient</code> class provides access to the BLE client features.</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> BLEClient <span class="hljs-keyword">from</span> <span class="hljs-string">"bleclient"</span>;
+</code></pre>
+<h3>Functions</h3>
+<h4><code>onReady()</code></h4>
+<p>Applications must wait for the <code>onReady</code> callback before calling other <code>BLEClient</code> functions:</p>
+<pre><code class="language-javascript"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Client</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">BLEClient</span> </span>{
+	onReady() {
+		<span class="hljs-comment">/* stack is ready to use */</span>
+	}
+}
+<span class="hljs-keyword">let</span> client = <span class="hljs-keyword">new</span> BLEClient;
+</code></pre>
+<hr />
+<h4><code>startScanning([params])</code></h4>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>params</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">Object containing scan properties.</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>params</code> object contains the following properties:</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>active</code></td>
+<td><code>boolean</code></td>
+<td style="text-align:left">Set <code>true</code> for active scanning, <code>false</code> for passing scanning. Default is <code>true</code>.</td>
+</tr>
+<tr>
+<td><code>interval</code></td>
+<td><code>number</code></td>
+<td style="text-align:left">Scan interval value in units of 0.625 ms. Default is <code>0x50</code>.</td>
+</tr>
+<tr>
+<td><code>window</code></td>
+<td><code>number</code></td>
+<td style="text-align:left">Scan window value in units of 0.625 ms. Default is <code>0x30</code>.</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>startScanning</code> function enables scanning for nearby peripherals.</p>
+<p>If no <code>params</code> argument is provided, the default scan properties are used:</p>
+<pre><code class="language-javascript"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Scanner</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">BLEClient</span> </span>{
+	onReady() {
+		<span class="hljs-keyword">this</span>.startScanning();
+	}
+	onDiscovered(device) {
+		trace(<span class="hljs-string">"device discovered\n"</span>);
+	}
+}
+</code></pre>
+<p>Passing in a <code>params</code> object overrides the defaults. This example uses passive scanning at a 70ms interval:</p>
+<pre><code class="language-javascript"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Scanner</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">BLEClient</span> </span>{
+	onReady() {
+		<span class="hljs-keyword">this</span>.startScanning({ <span class="hljs-attr">active</span>:<span class="hljs-literal">false</span>, <span class="hljs-attr">interval</span>:<span class="hljs-number">0x70</span> });
+	}
+	onDiscovered(device) {
+		trace(<span class="hljs-string">"device discovered\n"</span>);
+	}
+}
+</code></pre>
+<hr />
+<h4><code>onDiscovered(device)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>device</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">A <code>device</code> object. See the section <a href="#classdevice">Class Device</a> for more information.</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>onDiscovered</code> callback function is called one or more times for each peripheral device discovered.</p>
+<p>To connect to a device named &quot;Brian&quot; from the <code>onDiscovered</code> callback:</p>
+<pre><code class="language-javascript">onDiscovered(device) {
+	<span class="hljs-keyword">if</span> (<span class="hljs-string">"Brian"</span> == 	device.scanResponse.completeName) {
+		<span class="hljs-keyword">this</span>.connect(device);
+	}
+}
+</code></pre>
+<hr />
+<h4><code>stopScanning()</code></h4>
+<p>The <code>stopScanning</code> function disables scanning for nearby peripherals.</p>
+<hr />
+<h4><code>connect(device)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>device</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">A <code>device</code> object. See the section <a href="#classdevice">Class Device</a> for more information.</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>connect</code> function initiates a connection request between the <code>BLEClient</code> and a target peripheral <code>device</code>.</p>
+<pre><code class="language-javascript">onDiscovered(device) {
+	<span class="hljs-keyword">this</span>.connect(device);
+}
+onConnected(device) {
+	trace(<span class="hljs-string">"Connected to device\n"</span>);
+}
+</code></pre>
+<hr />
+<h4><code>onConnected(device)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>device</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">A <code>device</code> object. See the section <a href="#classdevice">Class Device</a> for more information.</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>onConnected</code> callback function is called when the client connects to a target peripheral <code>device</code>.</p>
+<hr />
+<h4><code>securityParameters</code></h4>
+<p>BLE clients can optionally request link-layer security to protect data transferred between devices. The <code>securityParameters</code> property accessor function is used to configure the device security requirements and I/O capabilities.</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>encryption</code></td>
+<td><code>boolean</code></td>
+<td style="text-align:left">Optional property to enable encryption. Default is <code>true</code></td>
+</tr>
+<tr>
+<td><code>bonding</code></td>
+<td><code>boolean</code></td>
+<td style="text-align:left">Optional property to enable bonding. Default is <code>false</code></td>
+</tr>
+<tr>
+<td><code>mitm</code></td>
+<td><code>boolean</code></td>
+<td style="text-align:left">Optional property to enable man-in-the-middle (MITM) protection. Default is <code>false</code></td>
+</tr>
+<tr>
+<td><code>ioCapability</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">Optional <code>IOCapability</code> instance to configure the device I/O capabilities. Default is <code>IOCapability.NoInputNoOutput</code>. See the section <a href="#classsm">Class SM</a> for more information.</td>
+</tr>
+</tbody>
+</table>
+<p>To request MITM protection with encryption for a display-only device. The device will display a passkey when requested:</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> {IOCapability} <span class="hljs-keyword">from</span> <span class="hljs-string">"sm"</span>;
+
+onReady() {
+	<span class="hljs-keyword">this</span>.securityParameters = { <span class="hljs-attr">mitm</span>:<span class="hljs-literal">true</span>, <span class="hljs-attr">ioCapability</span>:IOCapability.DisplayOnly };
+}
+</code></pre>
+<p>To request MITM protection with encryption and bonding for a device with both a display and keyboard. The device will request a passkey to be entered and encryption keys will be saved:</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> {IOCapability} <span class="hljs-keyword">from</span> <span class="hljs-string">"sm"</span>;
+
+onReady() {
+	<span class="hljs-keyword">this</span>.securityParameters = { <span class="hljs-attr">mitm</span>:<span class="hljs-literal">true</span>, <span class="hljs-attr">bonding</span>:<span class="hljs-literal">true</span>, <span class="hljs-attr">ioCapability</span>:IOCapability.KeyboardDisplay };
+}
+</code></pre>
+<hr />
+<blockquote>
+<p><strong>Note:</strong> The <code>BLEClient</code> object hosts all callbacks for classes used with <code>BLEClient</code>.</p>
+</blockquote>
+<p><a id="classdevice"></a></p>
+<h2>Class Device</h2>
+<p>An instance of the <code>Device</code> class is instantiated by <code>BLEClient</code> and provided to the host app in the <code>BLEClient</code> <code>onDiscovered</code> and <code>onConnected</code> callbacks. While applications never instantiate a <code>Device</code> class instance directly, applications do call <code>Device</code> class functions to perform GATT service/characteristic discovery and close the peripheral connection.</p>
+<h3>Properties</h3>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>connection</code></td>
+<td><code>number</code></td>
+<td style="text-align:left">Connection identifier.</td>
+</tr>
+<tr>
+<td><code>address</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">Instance of <a href="#classbytes">Bytes</a> class containing Bluetooth address bytes.</td>
+</tr>
+<tr>
+<td><code>scanResponse</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">Instance of <a href="#classadvertisement">Advertisement</a> class containing advertisement and scan response packet values.</td>
+</tr>
+</tbody>
+</table>
+<h3>Functions</h3>
+<h4><code>readRSSI()</code></h4>
+<p>Use the <code>readRSSI</code> function to read the connected peripheral's signal strength.</p>
+<hr />
+<h4><code>onRSSI(device, rssi)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>device</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">A <code>device</code> object. See the section <a href="#classdevice">Class Device</a> for more information.</td>
+</tr>
+<tr>
+<td><code>rssi</code></td>
+<td><code>number</code></td>
+<td style="text-align:left">Received signal strength</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>onRSSI</code> callback function is called when the peripheral signal strength is read.</p>
+<p>To read the signal strength of the connected device:</p>
+<pre><code class="language-javascript">onConnected(device) {
+	device.readRSSI();
+}
+onRSSI(device, rssi) {
+	trace(<span class="hljs-string">`signal strength is <span class="hljs-subst">${rssi}</span>\n`</span>);
+}
+</code></pre>
+<hr />
+<h4><code>discoverAllPrimaryServices()</code></h4>
+<p>Use the <code>discoverAllPrimaryServices</code> function to discover all the peripheral's GATT primary services. Discovered services are returned to the <code>onServices</code> callback.</p>
+<hr />
+<h4><code>discoverPrimaryService(uuid)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>uuid</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">A <a href="#classbytes">Bytes</a> object containing the UUID to discover</td>
+</tr>
+</tbody>
+</table>
+<p>Use the <code>discoverPrimaryService</code> function to discover a single GATT primary service by UUID.</p>
+<hr />
+<h4><code>findServiceByUUID(uuid)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>uuid</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">A <a href="#classbytes">Bytes</a> object containing the Service UUID to find</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>findServiceByUUID</code> function finds and returns the service identified by <code>uuid</code>. This function searches the <code>services</code> property array.</p>
+<hr />
+<h4><code>onServices(services)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>services</code></td>
+<td><code>array</code></td>
+<td style="text-align:left">An array of <code>service</code> objects, or an empty array if no services are discovered. See the section <a href="#classservice">Class Service</a> for more information.</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>onServices</code> callback function is called when service discovery completes. If <code>findServiceByUUID</code> was called to find a single service, the <code>services</code> array contains the single service found.</p>
+<p>To discover all primary services:</p>
+<pre><code class="language-javascript">onConnected(device) {
+	device.discoverAllPrimaryServices();
+}
+onServices(services) {
+	trace(<span class="hljs-string">`<span class="hljs-subst">${services.length}</span> services found\n`</span>);
+}
+</code></pre>
+<p>To discover a single primary service:</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">const</span> SERVICE_UUID = uuid<span class="hljs-string">`0xFF00`</span>;
+
+onConnected(device) {
+	device.discoverPrimaryService(SERVICE_UUID);
+}
+onServices(services) {
+	<span class="hljs-keyword">if</span> (services.length)
+		trace(<span class="hljs-string">"found service\n"</span>);
+}
+</code></pre>
+<blockquote>
+<p><strong>Note:</strong> The <code>uuid</code> tagged template allows applications to represent UUID values as strings. Refer to the <a href="#classbytes">Bytes</a> class section for details.</p>
+</blockquote>
+<hr />
+<h4><code>close()</code></h4>
+<p>The <code>close</code> function terminates the peripheral connection.</p>
+<pre><code class="language-javascript">onConnected(device) {
+	trace(<span class="hljs-string">"connected to device\n"</span>);
+	device.close();
+}
+onDisconnected() {
+	trace(<span class="hljs-string">"connection closed\n"</span>);
+}
+</code></pre>
+<hr />
+<h4><code>onDisconnected()</code></h4>
+<p>The <code>onDisconnected</code> callback is called when the connection is closed.</p>
+<p><a id="classservice"></a></p>
+<h2>Class Service</h2>
+<p>The <code>Service</code> class provides access to a single peripheral GATT service.</p>
+<h3>Properties</h3>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>connection</code></td>
+<td><code>number</code></td>
+<td style="text-align:left">Connection identifier.</td>
+</tr>
+<tr>
+<td><code>uuid</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">Instance of <a href="#classbytes">Bytes</a> class containing service UUID.</td>
+</tr>
+<tr>
+<td><code>start</code></td>
+<td><code>number</code></td>
+<td style="text-align:left">Starting handle of included characteristics.</td>
+</tr>
+<tr>
+<td><code>end</code></td>
+<td><code>number</code></td>
+<td style="text-align:left">Ending handle of included characteristics.</td>
+</tr>
+<tr>
+<td><code>characteristics</code></td>
+<td><code>array</code></td>
+<td style="text-align:left">Array of service characteristics discovered.</td>
+</tr>
+</tbody>
+</table>
+<h3>Functions</h3>
+<h4><code>discoverAllCharacteristics()</code></h4>
+<p>Use the <code>discoverAllCharacteristics()</code> function to discover all the service characteristics. Discovered characteristics are returned to the <code>onCharacteristics</code> callback.</p>
+<hr />
+<h4><code>discoverCharacteristic(uuid)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>uuid</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">A <a href="#classbytes">Bytes</a> object containing the Characteristic UUID to discover</td>
+</tr>
+</tbody>
+</table>
+<p>Use the <code>discoverCharacteristic</code> function to discover a single service characteristic by UUID.</p>
+<hr />
+<h4><code>findCharacteristicByUUID(uuid)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>uuid</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">A <a href="#classbytes">Bytes</a> object containing the Characteristic UUID to find</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>findCharacteristicByUUID</code> function finds and returns the characteristic identified by <code>uuid</code>. This function searches the <code>characteristics</code> property array.</p>
+<hr />
+<h4><code>onCharacteristics(characteristics)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>characteristics</code></td>
+<td><code>array</code></td>
+<td style="text-align:left">An array of <code>characteristic</code> objects, or an empty array if no characteristics are discovered. See the section <a href="#classcharacteristic">Class Characteristic</a> for more information.</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>onCharacteristics</code> callback function is called when characteristic discovery completes. If <code>findCharacteristicByUUID</code> was called to find a single characteristic, the <code>characteristics</code> array contains the single characteristic found.</p>
+<hr />
+<p>To discover all the characteristics in the <a href="https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.service.device_information.xml">Device Information</a> service:</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">const</span> DEVICE_INFORMATION_SERVICE_UUID = uuid<span class="hljs-string">`180A`</span>;
+
+onServices(services) {
+	<span class="hljs-keyword">let</span> service = services.find(<span class="hljs-function"><span class="hljs-params">service</span> =&gt;</span> service.uuid.equals(DEVICE_INFORMATION_SERVICE_UUID));
+	<span class="hljs-keyword">if</span> (service)
+		service.discoverAllCharacteristics();
+}
+onCharacteristics(characteristics) {
+	trace(<span class="hljs-string">`<span class="hljs-subst">${characteristics.length}</span> characteristics found\n`</span>);
+}
+</code></pre>
+<p>To find the <a href="https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.heart_rate_measurement.xml">Heart Rate Measurement</a> characteristic in the <a href="https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.service.heart_rate.xml">Heart Rate</a> service:</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">const</span> HEART_RATE_SERVICE_UUID = uuid<span class="hljs-string">`180A`</span>;
+<span class="hljs-keyword">const</span> HEART_RATE_MEASUREMENT_UUID = uuid<span class="hljs-string">`2A37`</span>;
+
+onConnected(device) {
+	device.discoverPrimaryService(HEART_RATE_SERVICE_UUID);
+}
+onServices(services) {
+	<span class="hljs-keyword">if</span> (services.length)
+		services[<span class="hljs-number">0</span>].discoverCharacteristic(HEART_RATE_MEASUREMENT_UUID);
+}
+onCharacteristics(characteristics) {
+	<span class="hljs-keyword">if</span> (characteristics.length)
+		trace(<span class="hljs-string">`found heart rate measurement characteristic\n`</span>);
+}
+</code></pre>
+<hr />
+<p><a id="classcharacteristic"></a></p>
+<h2>Class Characteristic</h2>
+<p>The <code>Characteristic</code> class provides access to a single service characteristic.</p>
+<h3>Properties</h3>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>connection</code></td>
+<td><code>number</code></td>
+<td style="text-align:left">Connection identifier.</td>
+</tr>
+<tr>
+<td><code>uuid</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">Instance of <a href="#classbytes">Bytes</a> class containing characteristic UUID.</td>
+</tr>
+<tr>
+<td><code>service</code></td>
+<td><code>object</code></td>
+<td style="text-align:left"><code>Service</code> object containing characteristic.</td>
+</tr>
+<tr>
+<td><code>handle</code></td>
+<td><code>number</code></td>
+<td style="text-align:left">Chararacteristic handle.</td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td style="text-align:left">Characteristic name defined in the optional service JSON. When the characteristic is not defined in the service JSON, this property is <code>undefined</code>.</td>
+</tr>
+<tr>
+<td><code>type</code></td>
+<td><code>string</code></td>
+<td style="text-align:left">Characteristic type defined in the optional service JSON. When the characteristic is not defined in the service JSON, this property is <code>undefined</code>.</td>
+</tr>
+<tr>
+<td><code>descriptors</code></td>
+<td><code>array</code></td>
+<td style="text-align:left">Array of characteristic descriptors discovered.</td>
+</tr>
+</tbody>
+</table>
+<h3>Functions</h3>
+<h4><code>discoverAllDescriptors()</code></h4>
+<p>Use the <code>discoverAllDescriptors</code> function to discover all the characteristic's descriptors. Discovered descriptors are returned to the <code>onDescriptors</code> callback.</p>
+<hr />
+<h4><code>onDescriptors(descriptors)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>descriptors</code></td>
+<td><code>array</code></td>
+<td style="text-align:left">An array of <code>descriptor</code> objects, or an empty array if no descriptors are discovered. See the section <a href="#classdescriptor">Class Descriptor</a> for more information.</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>onDescriptors</code> callback function is called when descriptor discovery completes.</p>
+<p>To discover the <a href="https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.descriptor.gatt.characteristic_presentation_format.xml">Characteristic Presentation Format Descriptor</a> for a characteristic with UUID 0xFF00:</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">const</span> CHARACTERISTIC_UUID = uuid<span class="hljs-string">`FF00`</span>;
+<span class="hljs-keyword">const</span> PRESENTATION_FORMAT_UUID = uuid<span class="hljs-string">`2904`</span>;
+
+onCharacteristics(characteristics) {
+	<span class="hljs-keyword">let</span> characteristic = characteristics.find(<span class="hljs-function"><span class="hljs-params">characteristic</span> =&gt;</span> characteristic.uuid.equals(CHARACTERISTIC_UUID));
+	<span class="hljs-keyword">if</span> (characteristic)
+		characteristic.discoverAllDescriptors();
+}
+onDescriptors(descriptors) {
+	<span class="hljs-keyword">let</span> descriptor = descriptors.find(<span class="hljs-function"><span class="hljs-params">descriptor</span> =&gt;</span> descriptor.uuid.equals(PRESENTATION_FORMAT_UUID));
+	<span class="hljs-keyword">if</span> (descriptor)
+		trace(<span class="hljs-string">"found characteristic presentation format descriptor\n"</span>);
+}
+</code></pre>
+<hr />
+<h4><code>enableNotifications()</code></h4>
+<p>Use the <code>enableNotifications</code> function to enable characteristic value change notifications.</p>
+<hr />
+<h4><code>onCharacteristicNotificationEnabled(characteristic)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>characteristic</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">A <code>characteristic</code> object.</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>onCharacteristicNotificationEnabled</code> callback function is called when notifications have been enabled for the <code>characteristic</code>.</p>
+<hr />
+<h4><code>disableNotifications()</code></h4>
+<p>Use the <code>disableNotifications</code> function to disable characteristic value change notifications.</p>
+<hr />
+<h4><code>onCharacteristicNotificationDisabled(characteristic)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>characteristic</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">A <code>characteristic</code> object.</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>onCharacteristicNotificationDisabled</code> callback function is called when notifications have been disabled for the <code>characteristic</code>.</p>
+<hr />
+<h4><code>onCharacteristicNotification(characteristic, value)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>characteristic</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">A <code>characteristic</code> object.</td>
+</tr>
+<tr>
+<td><code>value</code></td>
+<td><code>varies</code></td>
+<td style="text-align:left">The <code>characteristic</code> value. The value is automatically converted to the <code>type</code> defined in the service JSON, when available. Otherwise <code>value</code> is an <code>ArrayBuffer</code>.</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>onCharacteristicNotification</code> callback function is called when notifications are enabled and the peripheral notifies the characteristic value.</p>
+<p>To enable and receive characteristic value change notifications for the <a href="https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.battery_level.xml">Battery Level</a> characteristic in the <a href="https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.service.battery_service.xml">Battery Service</a>:</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">const</span> BATTERY_SERVICE_UUID = uuid<span class="hljs-string">`180F`</span>;
+<span class="hljs-keyword">const</span> BATTERY_LEVEL_UUID = uuid<span class="hljs-string">`2A19`</span>;
+
+onConnected(device) {
+	device.discoverPrimaryService(BATTERY_SERVICE_UUID);
+}
+onServices(services) {
+	<span class="hljs-keyword">if</span> (services.length)
+		services[<span class="hljs-number">0</span>].discoverCharacteristic(BATTERY_LEVEL_UUID);
+}
+onCharacteristics(characteristics) {
+	<span class="hljs-keyword">if</span> (characteristics.length)
+		characteristics[<span class="hljs-number">0</span>].enableNotifications();
+}
+onCharacteristicNotification(characteristic, value) {
+	<span class="hljs-keyword">let</span> level = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Uint8Array</span>(value)[<span class="hljs-number">0</span>];
+	trace(<span class="hljs-string">`battery level: <span class="hljs-subst">${level}</span>%\n`</span>);
+}
+</code></pre>
+<hr />
+<h4><code>readValue([auth])</code></h4>
+<p>Use the <code>readValue</code> function to read a characteristic value on demand.</p>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>auth</code></td>
+<td><code>number</code></td>
+<td style="text-align:left">Optional <code>SM.Authorization</code> applied to the read request.</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>Authorization</code> object contains the following properties:</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>None</code></td>
+<td><code>number</code></td>
+<td style="text-align:left">No authorization</td>
+</tr>
+<tr>
+<td><code>NoMITM</code></td>
+<td><code>number</code></td>
+<td style="text-align:left">Unauthenticated encryption</td>
+</tr>
+<tr>
+<td><code>MITM</code></td>
+<td><code>number</code></td>
+<td style="text-align:left">Authenticated encryption</td>
+</tr>
+<tr>
+<td><code>SignedNoMITM</code></td>
+<td><code>number</code></td>
+<td style="text-align:left">Signed unauthenticated encryption</td>
+</tr>
+<tr>
+<td><code>SignedMITM</code></td>
+<td><code>number</code></td>
+<td style="text-align:left">Signed authenticated encryption</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h4><code>onCharacteristicValue(characteristic, value)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>characteristic</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">A <code>characteristic</code> object.</td>
+</tr>
+<tr>
+<td><code>value</code></td>
+<td><code>varies</code></td>
+<td style="text-align:left">The <code>characteristic</code> value read. The value <code>type</code> is defined by the service JSON, when available. Otherwise <code>value</code> is an <code>ArrayBuffer</code>.</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>onCharacteristicValue</code> callback function is called when a characteristic is read by the <code>readValue</code> function.</p>
+<p>To read the <a href="https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.gap.device_name.xml">Device Name</a> from the <a href="https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.service.generic_access.xml">Generic Access Service</a>:</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">const</span> GENERIC_ACCESS_SERVICE_UUID = uuid<span class="hljs-string">`1800`</span>;
+<span class="hljs-keyword">const</span> DEVICE_NAME_UUID = uuid<span class="hljs-string">`2A00`</span>;
+
+onConnected(device) {
+	device.discoverPrimaryService(GENERIC_ACCESS_SERVICE_UUID);
+}
+onServices(services) {
+	<span class="hljs-keyword">if</span> (services.length)
+		services[<span class="hljs-number">0</span>].discoverCharacteristic(DEVICE_NAME_UUID);
+}
+onCharacteristics(characteristics) {
+	<span class="hljs-keyword">if</span> (characteristics.length)
+		characteristics[<span class="hljs-number">0</span>].readValue();
+}
+onCharacteristicValue(characteristic, value) {
+	<span class="hljs-keyword">let</span> name = <span class="hljs-built_in">String</span>.fromArrayBuffer(value);
+	trace(<span class="hljs-string">`device name: <span class="hljs-subst">${name}</span>\n`</span>);
+}
+</code></pre>
+<hr />
+<h4><code>writeWithoutResponse(value)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>value</code></td>
+<td><code>varies</code></td>
+<td style="text-align:left">The <code>characteristic</code> value to write. The value <code>type</code> is defined by the service JSON, when available. Otherwise <code>value</code> is an <code>ArrayBuffer</code>.</td>
+</tr>
+</tbody>
+</table>
+<p>Use the <code>writeWithoutResponse</code> function to write a characteristic value on demand.</p>
+<p>To write the <a href="https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.characteristic.uri.xml">URI</a> characteristic value in the <a href="https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.service.http_proxy.xml">HTTP Proxy</a> service:</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">const</span> HTTP_PROXY_SERVICE_UUID = uuid<span class="hljs-string">`1823`</span>;
+<span class="hljs-keyword">const</span> URI_UUID = uuid<span class="hljs-string">`2AB6`</span>;
+
+onConnected(device) {
+	device.discoverPrimaryService(HTTP_PROXY_SERVICE_UUID);
+}
+onServices(services) {
+	<span class="hljs-keyword">if</span> (services.length)
+		services[<span class="hljs-number">0</span>].discoverCharacteristic(URI_UUID);
+}
+onCharacteristics(characteristics) {
+	<span class="hljs-keyword">if</span> (characteristics.length)
+		characteristics[<span class="hljs-number">0</span>].writeWithoutResponse(<span class="hljs-built_in">ArrayBuffer</span>.fromString(<span class="hljs-string">"http://moddable.tech"</span>));
+}
+</code></pre>
+<hr />
+<p><a id="classdescriptor"></a></p>
+<h2>Class Descriptor</h2>
+<p>The <code>Descriptor</code> class provides access to a single characteristic descriptor.</p>
+<h3>Properties</h3>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>connection</code></td>
+<td><code>number</code></td>
+<td style="text-align:left">Connection identifier.</td>
+</tr>
+<tr>
+<td><code>uuid</code></td>
+<td><code>string</code></td>
+<td style="text-align:left">Instance of <a href="#classbytes">Bytes</a> class containing descriptor UUID.</td>
+</tr>
+<tr>
+<td><code>characteristic</code></td>
+<td><code>object</code></td>
+<td style="text-align:left"><code>Characteristic</code> object containing descriptor.</td>
+</tr>
+<tr>
+<td><code>handle</code></td>
+<td><code>number</code></td>
+<td style="text-align:left">Descriptor handle.</td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td style="text-align:left">Descriptor name defined in the optional service JSON. When the descriptor is not defined in the service JSON, this property is <code>undefined</code>.</td>
+</tr>
+<tr>
+<td><code>type</code></td>
+<td><code>string</code></td>
+<td style="text-align:left">Descriptor type defined in the optional service JSON. When the descriptor is not defined in the service JSON, this property is <code>undefined</code>.</td>
+</tr>
+</tbody>
+</table>
+<h3>Functions</h3>
+<h4><code>readValue([auth])</code></h4>
+<p>Use the <code>readValue</code> function to read a descriptor value on demand.</p>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>auth</code></td>
+<td><code>number</code></td>
+<td style="text-align:left">Optional <code>SM.Authorization</code> applied to the read request.</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>Authorization</code> object contains the following properties:</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>None</code></td>
+<td><code>number</code></td>
+<td style="text-align:left">No authorization</td>
+</tr>
+<tr>
+<td><code>NoMITM</code></td>
+<td><code>number</code></td>
+<td style="text-align:left">Unauthenticated encryption</td>
+</tr>
+<tr>
+<td><code>MITM</code></td>
+<td><code>number</code></td>
+<td style="text-align:left">Authenticated encryption</td>
+</tr>
+<tr>
+<td><code>SignedNoMITM</code></td>
+<td><code>number</code></td>
+<td style="text-align:left">Signed unauthenticated encryption</td>
+</tr>
+<tr>
+<td><code>SignedMITM</code></td>
+<td><code>number</code></td>
+<td style="text-align:left">Signed authenticated encryption</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h4><code>onDescriptorValue(descriptor, value)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>descriptor</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">A <code>descriptor</code> object.</td>
+</tr>
+<tr>
+<td><code>value</code></td>
+<td><code>varies</code></td>
+<td style="text-align:left">The <code>descriptor</code> value read. The value <code>type</code> is defined by the service JSON, when available. Otherwise <code>value</code> is an <code>ArrayBuffer</code>.</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>onDescriptorValue</code> callback function is called when a descriptor is read by the <code>readValue</code> function.</p>
+<p>To read a descriptor with unauthenticated encryption:</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> {SM, IOCapability, Authorization} <span class="hljs-keyword">from</span> <span class="hljs-string">"sm"</span>;
+
+<span class="hljs-keyword">const</span> REPORT_REFERENCE_DESCRIPTOR_UUID = uuid<span class="hljs-string">`2908`</span>;
+
+onDescriptors(descriptors) {
+	<span class="hljs-keyword">let</span> descriptor = descriptors.find(<span class="hljs-function"><span class="hljs-params">descriptor</span> =&gt;</span> descriptor.uuid.equals(REPORT_REFERENCE_DESCRIPTOR_UUID));
+	<span class="hljs-keyword">if</span> (descriptor)
+		descriptor.readValue(Authorization.NoMITM);
+}
+onDescriptorValue(descriptor, value) {
+	<span class="hljs-keyword">let</span> report = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Uint8Array</span>(value);
+}
+</code></pre>
+<h4><code>writeValue(value)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>value</code></td>
+<td><code>varies</code></td>
+<td style="text-align:left">The <code>descriptor</code> value to write. The value <code>type</code> is defined by the service JSON, when available. Otherwise <code>value</code> is an <code>ArrayBuffer</code>.</td>
+</tr>
+</tbody>
+</table>
+<p>Use the <code>writeValue</code> function to write a descriptor value.</p>
+<p>To enable characteristic value change notifications by writing 0x0001 to the <a href="https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.descriptor.gatt.client_characteristic_configuration.xml">Client Characteristic Configuration</a> descriptor:</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">const</span> CCCD_UUID = uuid<span class="hljs-string">`2902`</span>;
+
+onDescriptors(descriptors) {
+	<span class="hljs-keyword">let</span> descriptor = descriptors.find(<span class="hljs-function"><span class="hljs-params">descriptor</span> =&gt;</span> descriptor.uuid.equals(CCCD_UUID));
+	<span class="hljs-keyword">if</span> (descriptor) {
+		<span class="hljs-keyword">let</span> value = <span class="hljs-built_in">Uint8Array</span>.of(<span class="hljs-number">0x01</span>, <span class="hljs-number">0x00</span>);	<span class="hljs-comment">// little endian</span>
+		descriptor.writeValue(value.buffer);
+	}
+}
+</code></pre>
+<blockquote>
+<p><strong>Note:</strong> The <code>Characteristic</code> <code>enableNotifications</code> convenience function is typically used for this purpose, though writing the CCCD descriptor directly provides the same net result.</p>
+</blockquote>
+<p><a id="classadvertisement"></a></p>
+<h2>Class Advertisement</h2>
+<p>The <code>Advertisement</code> class provides accessor functions to read common advertisement and scan response data types as JavaScript properties. The class is primarily used to parse the <code>scanResponseData</code> provided to BLE clients via the <code>onDiscovered</code> callback function's <code>device</code> parameter. The accessor functions return <code>undefined</code> if the associated data type is not available in the <code>scanResponseData</code>.</p>
+<h3>Properties</h3>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>completeName</code></td>
+<td><code>string</code></td>
+<td style="text-align:left">The advertised complete local name.</td>
+</tr>
+<tr>
+<td><code>shortName</code></td>
+<td><code>string</code></td>
+<td style="text-align:left">The advertised shortened local name.</td>
+</tr>
+<tr>
+<td><code>manufacturerSpecific</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">An object containing the advertised manufacturer specific data.</td>
+</tr>
+<tr>
+<td><code>flags</code></td>
+<td><code>number</code></td>
+<td style="text-align:left">The advertised flags value.</td>
+</tr>
+</tbody>
+</table>
+<h3>Examples</h3>
+<p>To identify an advertised device with the complete name &quot;Zip&quot;:</p>
+<pre><code class="language-javascript">onDiscovered(device) {
+	<span class="hljs-keyword">let</span> completeName = device.scanResponse.completeName;
+	<span class="hljs-keyword">if</span> (completeName == <span class="hljs-string">"ZIP"</span>)
+		trace(<span class="hljs-string">"Found ZIP device\n"</span>);
+	}
+}
+</code></pre>
+<p>To identify a <a href="https://www.bluemaestro.com/product/tempo-environment-monitor/">Blue Maestro Environment Monitor</a> and read the temperature from the manufacturer specific data:</p>
+<pre><code class="language-javascript">onDiscovered(device) {
+	<span class="hljs-keyword">let</span> manufacturerSpecific = device.scanResponse.manufacturerSpecific;
+	<span class="hljs-keyword">const</span> TempoManufacturerID = <span class="hljs-number">307</span>; 
+	
+	<span class="hljs-comment">// If this is a Tempo device...</span>
+	<span class="hljs-keyword">if</span> (manufacturerSpecific &amp;&amp; (TempoManufacturerID == manufacturerSpecific.identifier)) {
+		<span class="hljs-keyword">let</span> data = manufacturerSpecific.data;
+		<span class="hljs-keyword">if</span> (data[<span class="hljs-number">0</span>] == <span class="hljs-number">0</span> || data[<span class="hljs-number">0</span>] == <span class="hljs-number">1</span>) {	<span class="hljs-comment">// ...and product model T30 or THP</span>
+			<span class="hljs-keyword">let</span> temperature = (data[<span class="hljs-number">3</span>] | (data[<span class="hljs-number">4</span>] &lt;&lt; <span class="hljs-number">8</span>)) / <span class="hljs-number">10</span>;
+			trace(<span class="hljs-string">`Temperature: <span class="hljs-subst">${temperature}</span> ˚C\n`</span>);
+		}
+	}
+}
+</code></pre>
+<p><a id="classbytes"></a></p>
+<h2>Class Bytes</h2>
+<p>The private <code>Bytes</code> class extends <code>ArrayBuffer</code>. Applications typically use the provided <code>uuid</code> and <code>address</code> tagged templates to create a <code>Bytes</code> instance from hex strings.</p>
+<h4>Constructor Description</h4>
+<h4><code>Bytes(bytes [,littleEndian])</code></h4>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>bytes</code></td>
+<td><code>object</code> or <code>string</code></td>
+<td style="text-align:left">The ArrayBuffer <code>bytes</code> to set. The bytes can be a String or ArrayBuffer.</td>
+</tr>
+<tr>
+<td><code>littleEndian</code></td>
+<td><code>boolean</code></td>
+<td style="text-align:left">When set <code>true</code> the contents of the ArrayBuffer are stored in reverse order. Default is <code>false</code>.</td>
+</tr>
+</tbody>
+</table>
+<h3>Functions</h3>
+<h4><code>address</code>``string``</h4>
+<p>The <code>address</code> tagged template is used to convert a Bluetooth address expressed as a hex string to a <code>Bytes</code> instance.</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> {address} <span class="hljs-keyword">from</span> <span class="hljs-string">"btutils"</span>;
+
+<span class="hljs-keyword">const</span> DEVICE_ADDRESS = address<span class="hljs-string">`66:55:44:33:22:11`</span>;
+</code></pre>
+<h4><code>uuid</code>``string``</h4>
+<p>The <code>uuid</code> tagged template is used to convert a Bluetooth UUID expressed as a hex string to a <code>Bytes</code> instance.</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> {uuid} <span class="hljs-keyword">from</span> <span class="hljs-string">"btutils"</span>;
+
+<span class="hljs-keyword">const</span> HTM_SERVICE = uuid<span class="hljs-string">`1809`</span>;
+<span class="hljs-keyword">const</span> CHARACTERISTIC_RX_UUID = uuid<span class="hljs-string">`6E400002-B5A3-F393-E0A9-E50E24DCCA9E`</span>;
+</code></pre>
+<h4><code>equals(buffer)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>buffer</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">The <code>Bytes</code> instance to compare.</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>equals</code> function returns <code>true</code> if the instance ArrayBuffer data equals the data contained in <code>buffer</code>.</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> {uuid} <span class="hljs-keyword">from</span> <span class="hljs-string">"btutils"</span>;
+
+<span class="hljs-keyword">const</span> HTM_SERVICE = uuid<span class="hljs-string">`1809`</span>;
+onServices(services) {
+	<span class="hljs-keyword">let</span> found = services[<span class="hljs-number">0</span>].uuid.equals(HTM_SERVICE);
+	<span class="hljs-keyword">if</span> (found)
+		trace(<span class="hljs-string">"found HTM service\n"</span>);
+}
+</code></pre>
+<p><a id="bleserver"></a></p>
+<h2>BLE Server</h2>
+<p>A BLE server/peripheral can connect to one BLE client and typically performs the following steps to send notifications to a BLE client:</p>
+<ol>
+<li>Start advertising so that clients can discover the peripheral</li>
+<li>Establish a connection with a client</li>
+<li>Accept characteristic value change notification request(s)</li>
+<li>Notify characteristic value changes.</li>
+</ol>
+<p>The following abbreviated code from the <a href="../../../examples/network/ble/heart-rate-server">heart-rate-server</a> example app shows a typical server flow:</p>
+<pre><code class="language-javascript">onReady() {
+	<span class="hljs-keyword">this</span>.bpm = [<span class="hljs-number">0</span>, <span class="hljs-number">60</span>]; <span class="hljs-comment">// flags, beats per minute</span>
+	<span class="hljs-keyword">this</span>.startAdvertising({
+		<span class="hljs-attr">advertisingData</span>: {<span class="hljs-attr">flags</span>: <span class="hljs-number">6</span>, <span class="hljs-attr">completeName</span>: <span class="hljs-string">"Moddable HRS"</span>, <span class="hljs-attr">completeUUID16List</span>: [uuid<span class="hljs-string">`180D`</span>, uuid<span class="hljs-string">`180F`</span>]}
+	});
+}
+onConnected() {
+	<span class="hljs-keyword">this</span>.stopAdvertising();
+}
+onCharacteristicNotifyEnabled(characteristic) {
+	<span class="hljs-keyword">this</span>.startMeasurements(characteristic);
+}
+startMeasurements(characteristic) {
+	<span class="hljs-keyword">this</span>.bump = +<span class="hljs-number">1</span>;
+	<span class="hljs-keyword">this</span>.timer = Timer.repeat(<span class="hljs-function"><span class="hljs-params">id</span> =&gt;</span> {
+		<span class="hljs-keyword">this</span>.notifyValue(characteristic, <span class="hljs-keyword">this</span>.bpm);
+		<span class="hljs-keyword">this</span>.bpm[<span class="hljs-number">1</span>] += <span class="hljs-keyword">this</span>.bump;
+		<span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.bpm[<span class="hljs-number">1</span>] == <span class="hljs-number">65</span>) {
+			<span class="hljs-keyword">this</span>.bump = <span class="hljs-number">-1</span>;
+			<span class="hljs-keyword">this</span>.bpm[<span class="hljs-number">1</span>] == <span class="hljs-number">64</span>;
+		}
+		<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.bpm[<span class="hljs-number">1</span>] == <span class="hljs-number">55</span>) {
+			<span class="hljs-keyword">this</span>.bump = +<span class="hljs-number">1</span>;
+			<span class="hljs-keyword">this</span>.bpm[<span class="hljs-number">1</span>] == <span class="hljs-number">56</span>;
+		}
+	}, <span class="hljs-number">1000</span>);
+}
+</code></pre>
+<p>GATT services are automatically deployed by the BLE server when launched. A BLE server is fundamentally asynchronous and results are always delivered to the <code>BLEServer</code> class callback methods, e.g. <code>onReady</code>, <code>onConnected</code>, etc. above. The following sections describe the <code>BLEServer</code> class, properties, and callbacks.</p>
+<p><a id="classbleserver"></a></p>
+<h2>Class BLEServer</h2>
+<p>The <code>BLEServer</code> class provides access to the BLE server features.</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> BLEServer <span class="hljs-keyword">from</span> <span class="hljs-string">"bleserver"</span>;
+</code></pre>
+<h3>Functions</h3>
+<h4><code>onReady()</code></h4>
+<p>Applications must wait for the <code>onReady</code> callback before calling other <code>BLEServer</code> functions:</p>
+<pre><code class="language-javascript"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Server</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">BLEServer</span> </span>{
+	onReady() {
+		<span class="hljs-comment">/* stack is ready to use */</span>
+	}
+}
+<span class="hljs-keyword">let</span> server = <span class="hljs-keyword">new</span> BLEServer;
+</code></pre>
+<hr />
+<h4><code>deviceName</code></h4>
+<p>The <code>deviceName</code> property accessor function is used to set/get the Bluetooth peripheral device name.</p>
+<pre><code class="language-javascript"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Advertiser</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">BLEServer</span> </span>{
+	onReady() {
+		<span class="hljs-keyword">this</span>.deviceName = <span class="hljs-string">"My BLE Device"</span>;
+		trace(<span class="hljs-string">`My device is named <span class="hljs-subst">${<span class="hljs-keyword">this</span>.deviceName}</span>\n`</span>);
+	}
+}
+<span class="hljs-keyword">let</span> advertiser = <span class="hljs-keyword">new</span> BLEServer;
+</code></pre>
+<hr />
+<h4><code>localAddress</code></h4>
+<p>The read-only <code>localAddress</code> property accessor function returns the Bluetooth peripheral's local address as a <a href="#classbytes">Bytes</a> object.</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> Hex <span class="hljs-keyword">from</span> <span class="hljs-string">"hex"</span>;
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Advertiser</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">BLEServer</span> </span>{
+	onReady() {
+		trace(<span class="hljs-string">`device address: <span class="hljs-subst">${Hex.toString(<span class="hljs-keyword">this</span>.localAddress, <span class="hljs-string">":"</span>)}</span>\n`</span>);
+	}
+}
+</code></pre>
+<hr />
+<h4><code>securityParameters</code></h4>
+<p>BLE servers can optionally request link-layer security to protect data transferred between devices. The <code>securityParameters</code> property accessor function is used to configure the device security requirements and I/O capabilities.</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>encryption</code></td>
+<td><code>boolean</code></td>
+<td style="text-align:left">Optional property to enable encryption. Default is <code>true</code></td>
+</tr>
+<tr>
+<td><code>bonding</code></td>
+<td><code>boolean</code></td>
+<td style="text-align:left">Optional property to enable bonding. Default is <code>false</code></td>
+</tr>
+<tr>
+<td><code>mitm</code></td>
+<td><code>boolean</code></td>
+<td style="text-align:left">Optional property to enable man-in-the-middle (MITM) protection. Default is <code>false</code></td>
+</tr>
+<tr>
+<td><code>ioCapability</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">Optional <code>IOCapability</code> instance to configure the device I/O capabilities. Default is <code>IOCapability.NoInputNoOutput</code>. See the section <a href="#classsm">Class SM</a> for more information.</td>
+</tr>
+</tbody>
+</table>
+<p>To request MITM protection with encryption for a display-only device. The device will display a passkey when requested:</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> {IOCapability} <span class="hljs-keyword">from</span> <span class="hljs-string">"sm"</span>;
+
+onReady() {
+	<span class="hljs-keyword">this</span>.securityParameters = { <span class="hljs-attr">mitm</span>:<span class="hljs-literal">true</span>, <span class="hljs-attr">ioCapability</span>:IOCapability.DisplayOnly };
+}
+</code></pre>
+<p>To request MITM protection with encryption and bonding for a device with both a display and keyboard. The device will request a passkey to be entered and encryption keys will be saved:</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> {IOCapability} <span class="hljs-keyword">from</span> <span class="hljs-string">"sm"</span>;
+
+onReady() {
+	<span class="hljs-keyword">this</span>.securityParameters = { <span class="hljs-attr">mitm</span>:<span class="hljs-literal">true</span>, <span class="hljs-attr">bonding</span>:<span class="hljs-literal">true</span>, <span class="hljs-attr">ioCapability</span>:IOCapability.KeyboardDisplay };
+}
+</code></pre>
+<hr />
+<h4><code>startAdvertising(params)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>params</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">Object containing advertisement properties.</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>params</code> object contains the following properties:</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>advertisingData</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">Object containing advertisement data properties.</td>
+</tr>
+<tr>
+<td><code>connectable</code></td>
+<td><code>boolean</code></td>
+<td style="text-align:left">Optional property to specify connectable mode. Set to <code>true</code> to specify unidirected connectable mode; <code>false</code> to specify non-connectable mode. Defaults to <code>true</code>.</td>
+</tr>
+<tr>
+<td><code>discoverable</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">Optional property to specify discoverable mode. Set to <code>true</code> to use the general discovery procedure; <code>false</code> to specify non-discoverable. Defaults to <code>true</code>.</td>
+</tr>
+<tr>
+<td><code>fast</code></td>
+<td><code>boolean</code></td>
+<td style="text-align:left">Optional property to specify the GAP advertisement interval. Set to <code>true</code> to specify TGAP(adv_fast_interval1); <code>false</code> to specify TGAP(adv_slow_interval). Defaults to <code>true</code>.</td>
+</tr>
+<tr>
+<td><code>scanResponseData</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">Optional object containing scan response data properties.</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>startAdvertising</code> function starts broadcasting advertisement and scan response packets. The function is also used to configure discoverable and connectable modes.</p>
+<p>The <code>advertisementData</code> and <code>scanResponseData</code> contain one or more properties corresponding to the <a href="https://www.bluetooth.com/specifications/assigned-numbers/generic-access-profile">Bluetooth Advertisement Data Types</a>:</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>incompleteUUID16List</code></td>
+<td><code>array</code></td>
+<td style="text-align:left">Array of UUID objects corresponding to <em>Incomplete List of 16 bit Service UUIDs</em>.</td>
+</tr>
+<tr>
+<td><code>completeUUID16List</code></td>
+<td><code>array</code></td>
+<td style="text-align:left">Array of UUID objects corresponding to <em>Complete List of 16 bit Service UUIDs</em>.</td>
+</tr>
+<tr>
+<td><code>incompleteUUID128List</code></td>
+<td><code>array</code></td>
+<td style="text-align:left">Array of UUID objects corresponding to <em>Incomplete List of 128 bit Service UUIDs</em>.</td>
+</tr>
+<tr>
+<td><code>completeUUID128List</code></td>
+<td><code>array</code></td>
+<td style="text-align:left">Array of UUID objects corresponding to <em>Complete List of 128 bit Service UUIDs</em>.</td>
+</tr>
+<tr>
+<td><code>shortName</code></td>
+<td><code>string</code></td>
+<td style="text-align:left">String corresponding to the <em>Shortened Local Name</em>.</td>
+</tr>
+<tr>
+<td><code>completeName</code></td>
+<td><code>string</code></td>
+<td style="text-align:left">String corresponding to the <em>Complete Local Name</em>.</td>
+</tr>
+<tr>
+<td><code>manufacturerSpecific</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">Object corresponding to the <em>Manufacturer Specific Data</em>. The <code>identifier</code> property is a number corresponding to the <em>Company Identifier Code</em>. The <code>data</code> property is an array of numbers corresponding to additional manufacturer specific data.</td>
+</tr>
+<tr>
+<td><code>txPowerLevel</code></td>
+<td><code>number</code></td>
+<td style="text-align:left">Number corresponding to the <em>TX Power Level</em>.</td>
+</tr>
+<tr>
+<td><code>connectionInterval</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">Object corresponding to the <em>Slave Connection Interval Range</em>. The <code>intervalMin</code> property is a number corresponding to the minimum connection interval value. The <code>intervalMax</code> property is a number corresponding to the maximum connection interval value.</td>
+</tr>
+<tr>
+<td><code>solicitationUUID16List</code></td>
+<td><code>array</code></td>
+<td style="text-align:left">Array of UUID objects corresponding to the <em>List of 16 bit Service Solicitation UUIDs</em>.</td>
+</tr>
+<tr>
+<td><code>solicitationUUID128List</code></td>
+<td><code>array</code></td>
+<td style="text-align:left">Array of UUID objects corresponding to the <em>List of 128 bit Service Solicitation UUIDs</em>.</td>
+</tr>
+<tr>
+<td><code>serviceDataUUID16</code></td>
+<td><code>array</code></td>
+<td style="text-align:left">Object corresponding to the <em>Service Data - 16 bit UUID</em>. The <code>uuid</code> property is an object corresponding to the 16-bit Service UUID. The <code>data</code> property is an array of numbers corresponding to additional service data.</td>
+</tr>
+<tr>
+<td><code>serviceDataUUID128</code></td>
+<td><code>array</code></td>
+<td style="text-align:left">Object corresponding to the <em>Service Data - 128 bit UUID</em>. The <code>uuid</code> property is an object corresponding to the 128-bit Service UUID. The <code>data</code> property is an array of numbers corresponding to additional service data.</td>
+</tr>
+<tr>
+<td><code>appearance</code></td>
+<td><code>number</code></td>
+<td style="text-align:left">Number corresponding to the <em>Appearance</em>.</td>
+</tr>
+<tr>
+<td><code>publicAddress</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">Address object corresponding to the <em>Public Target Address</em>.</td>
+</tr>
+<tr>
+<td><code>randomAddress</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">Address object corresponding to the <em>Random Target Address</em>.</td>
+</tr>
+<tr>
+<td><code>advertisingInterval</code></td>
+<td><code>number</code></td>
+<td style="text-align:left">Number corresponding to the <em>Advertising Interval</em>.</td>
+</tr>
+<tr>
+<td><code>role</code></td>
+<td><code>number</code></td>
+<td style="text-align:left">Number corresponding to the <em>LE Role</em>.</td>
+</tr>
+<tr>
+<td><code>uri</code></td>
+<td><code>string</code></td>
+<td style="text-align:left">String corresponding to the <em>Uniform Resource Identifier</em>.</td>
+</tr>
+</tbody>
+</table>
+<p>To advertise a <a href="https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.service.health_thermometer.xml">Health Thermometer Sensor</a> BLE-only connectable device with the complete local name &quot;Thermometer&quot; and one service with UUID 0x1809:</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> {uuid} <span class="hljs-keyword">from</span> <span class="hljs-string">"btutils"</span>;
+
+<span class="hljs-keyword">this</span>.startAdvertising({
+	<span class="hljs-attr">advertisingData</span>: {<span class="hljs-attr">flags</span>: <span class="hljs-number">6</span>, <span class="hljs-attr">completeName</span>: <span class="hljs-string">"Thermometer"</span>, <span class="hljs-attr">completeUUID16List</span>: [uuid<span class="hljs-string">`1809`</span>]}
+});
+</code></pre>
+<p>To advertise a <a href="https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.service.heart_rate.xml">Heart Rate Sensor</a> BLE-only connectable device with the complete local name &quot;Moddable HRS&quot; and two services with UUIDs 0x180D and 0x180F:</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> {uuid} <span class="hljs-keyword">from</span> <span class="hljs-string">"btutils"</span>;
+
+<span class="hljs-keyword">this</span>.startAdvertising({
+	<span class="hljs-attr">advertisingData</span>: {<span class="hljs-attr">flags</span>: <span class="hljs-number">6</span>, <span class="hljs-attr">completeName</span>: <span class="hljs-string">"Moddable HRS"</span>, <span class="hljs-attr">completeUUID16List</span>: completeUUID16List: [uuid<span class="hljs-string">`180D`</span>, uuid<span class="hljs-string">`180F`</span>]}
+});
+</code></pre>
+<p>To advertise a BLE-only non-connectable and limited discoverable device with the complete local name &quot;Moddable HRS&quot; and the short name &quot;Moddable&quot; and random target address 00:11:22:33:44:55 provided in the scan response:</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> {address} <span class="hljs-keyword">from</span> <span class="hljs-string">"btutils"</span>;
+
+<span class="hljs-keyword">this</span>.startAdvertising({
+	<span class="hljs-attr">connectable</span>: <span class="hljs-literal">false</span>,
+	<span class="hljs-attr">advertisingData</span>: {<span class="hljs-attr">flags</span>: <span class="hljs-number">5</span>, <span class="hljs-attr">completeName</span>: <span class="hljs-string">"Moddable HRS"</span>},
+	<span class="hljs-attr">scanResponseData</span>: {<span class="hljs-attr">shortName</span>: <span class="hljs-string">"Moddable"</span>, <span class="hljs-attr">randomAddress</span>: address<span class="hljs-string">`00:11:22:33:44:55`</span>} 
+});
+</code></pre>
+<hr />
+<h4><code>stopAdvertising()</code></h4>
+<p>Call the <code>stopAdvertising</code> function to stop broadcasting Bluetooth advertisements.</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> {uuid} <span class="hljs-keyword">from</span> <span class="hljs-string">"btutils"</span>;
+
+onReady() {
+	<span class="hljs-keyword">this</span>.startAdvertising({
+		<span class="hljs-attr">advertisingData</span>: {<span class="hljs-attr">flags</span>: <span class="hljs-number">6</span>, <span class="hljs-attr">completeName</span>: <span class="hljs-string">"Thermometer Example"</span>, <span class="hljs-attr">completeUUID16List</span>: [uuid<span class="hljs-string">`1809`</span>]}
+	});
+}
+onConnected(device) {
+	<span class="hljs-keyword">this</span>.stopAdvertising();
+}
+</code></pre>
+<h4><code>notifyValue(characteristic, value)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>characteristic</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">The <code>characteristic</code> object to notify.</td>
+</tr>
+<tr>
+<td><code>value</code></td>
+<td><code>varies</code></td>
+<td style="text-align:left">The <code>characteristic</code> notification value. The value is automatically converted from the <code>type</code> defined in the service JSON.</td>
+</tr>
+</tbody>
+</table>
+<p>Call the <code>notifyValue</code> function to send a characteristic value change notification to the connected client.</p>
+<p>To notify a characteristic with the string &quot;hello&quot; every 250 ms:</p>
+<pre><code class="language-javascript">onCharacteristicNotifyEnabled(characteristic) {
+	<span class="hljs-keyword">this</span>.startNotifications(characteristic);
+}
+startNotifications(characteristic) {
+	<span class="hljs-keyword">this</span>.timer = Timer.repeat(<span class="hljs-function"><span class="hljs-params">id</span> =&gt;</span> {
+		<span class="hljs-keyword">this</span>.notifyValue(characteristic, <span class="hljs-built_in">ArrayBuffer</span>.fromString(<span class="hljs-string">"hello"</span>));
+	}, <span class="hljs-number">250</span>);
+}
+</code></pre>
+<hr />
+<h4><code>onCharacteristicNotifyEnabled(characteristic)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>characteristic</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">The <code>characteristic</code> object with notifications enabled.</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>onCharacteristicNotifyEnabled</code> callback function is called when a client enables notifications on the <code>characteristic</code>.</p>
+<hr />
+<h4><code>onCharacteristicWritten(characteristic, value)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>characteristic</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">The <code>characteristic</code> object written.</td>
+</tr>
+<tr>
+<td><code>value</code></td>
+<td><code>varies</code></td>
+<td style="text-align:left">The value written. The value is automatically converted to the <code>type</code> defined in the service JSON.</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>characteristic</code> object contains the following properties:</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>uuid</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">Instance of <a href="#classbytes">Bytes</a> class containing Characteristic UUID.</td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td style="text-align:left">Characteristic name defined in the service JSON.</td>
+</tr>
+<tr>
+<td><code>type</code></td>
+<td><code>string</code></td>
+<td style="text-align:left">Characteristic type defined in the service JSON.</td>
+</tr>
+<tr>
+<td><code>handle</code></td>
+<td><code>number</code></td>
+<td style="text-align:left">Characteristic handle.</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>onCharacteristicWritten</code> callback is called when a client writes a service characteristic value on demand. The <code>BLEServer</code> application is responsible for handling the write request.</p>
+<p>The following abbreviated example from the <a href="../../../examples/network/ble/wifi-connection-server">wifi-connection-server</a> example shows how characteristic write requests are handled. The <code>SSID</code> and <code>password</code> characteristics are strings and the <code>control</code> characteristic is a numeric value. When the BLE client writes the value 1 to the <code>control</code> characteristic, the app closes the client connection and initiates a WiFi connection:</p>
+<pre><code class="language-javascript">onCharacteristicWritten(characteristic, value) {
+	<span class="hljs-keyword">if</span> (<span class="hljs-string">"SSID"</span> == characteristic.name)
+		<span class="hljs-keyword">this</span>.ssid = value;
+	<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (<span class="hljs-string">"password"</span> == characteristic.name)
+		<span class="hljs-keyword">this</span>.password = value;
+	<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (<span class="hljs-string">"control"</span> == characteristic.name) {
+		<span class="hljs-keyword">if</span> ((<span class="hljs-number">1</span> == value) &amp;&amp; <span class="hljs-keyword">this</span>.ssid) {
+			<span class="hljs-keyword">this</span>.close();
+			<span class="hljs-keyword">this</span>.connectToWiFiNetwork(<span class="hljs-keyword">this</span>.ssid, <span class="hljs-keyword">this</span>.password);
+		}
+	}
+}
+</code></pre>
+<hr />
+<h4><code>onCharacteristicRead(characteristic)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>characteristic</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">The characteristic object being read.</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>characteristic</code> object contains the following properties:</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>uuid</code></td>
+<td><code>string</code></td>
+<td style="text-align:left">Instance of <a href="#classbytes">Bytes</a> class containing Characteristic UUID.</td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td style="text-align:left">Characteristic name defined in the service JSON.</td>
+</tr>
+<tr>
+<td><code>type</code></td>
+<td><code>string</code></td>
+<td style="text-align:left">Characteristic type defined in the service JSON.</td>
+</tr>
+<tr>
+<td><code>handle</code></td>
+<td><code>number</code></td>
+<td style="text-align:left">Characteristic handle.</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>onCharacteristicRead</code> callback is called when a client reads a service characteristic value on demand. The <code>BLEServer</code> application is responsible for handling the read request.</p>
+<p>To respond to a read request corresponding to a numeric &quot;status&quot; characteristic:</p>
+<pre><code class="language-javascript">onReady() {
+	<span class="hljs-keyword">this</span>.status = <span class="hljs-number">10</span>;
+}
+onCharacteristicRead(characteristic) {
+	<span class="hljs-keyword">if</span> (<span class="hljs-string">"status"</span> == characteristic.name)
+		<span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.status;
+}
+</code></pre>
+<hr />
+<h4><code>disconnect()</code></h4>
+<p>Use the <code>disconnect</code> function to terminate the BLE client connection.</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> {address} <span class="hljs-keyword">from</span> <span class="hljs-string">"btutils"</span>;
+
+onReady() {
+	<span class="hljs-keyword">this</span>.allowed = address<span class="hljs-string">`11:22:33:44:55:66`</span>;
+}
+onConnected(device) {
+	<span class="hljs-keyword">this</span>.stopAdvertising();
+	<span class="hljs-keyword">if</span> (!device.address.equals(<span class="hljs-keyword">this</span>.allowed))
+		<span class="hljs-keyword">this</span>.disconnect();
+}
+onDisconnected(device) {
+	trace(<span class="hljs-string">"device disconnected\n"</span>);
+}
+</code></pre>
+<hr />
+<h4><code>onConnected(device)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>connection</code></td>
+<td><code>number</code></td>
+<td style="text-align:left">Connection identifier.</td>
+</tr>
+<tr>
+<td><code>address</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">Instance of <a href="#classbytes">Bytes</a> class containing Bluetooth address bytes.</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>onConnected</code> callback function is called when a client connects to the <code>BLEServer</code>.</p>
+<hr />
+<h4><code>onDisconnected(device)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>connection</code></td>
+<td><code>number</code></td>
+<td style="text-align:left">Connection identifier.</td>
+</tr>
+<tr>
+<td><code>address</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">Instance of <a href="#classbytes">Bytes</a> class containing Bluetooth address bytes.</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>onDisconnected</code> callback function is called when the client connection is closed.</p>
+<hr />
+<h4><code>close()</code></h4>
+<p>Use the <code>close</code> function to terminate any BLE client connection and release all BLE resources.</p>
+<pre><code class="language-javascript">onDisconnected(device) {
+	<span class="hljs-keyword">this</span>.close();
+}
+</code></pre>
+<hr />
+<p><a id="gattservices"></a></p>
+<h2>GATT Services</h2>
+<p>GATT services are defined by JSON files located in a BLE server or client project's <code>bleservices</code> directory. The JSON files are optional for BLE clients. Each JSON file defines a single service with one or more characteristics. The JSON is automatically converted to platform-specific native code by the Moddable <code>mcconfig</code> command line tool and the compiled object code is linked to the app.</p>
+<p>The JSON file for a service consists of an object with a single <code>service</code> property. The <code>service</code> property is an object that includes the following top-level properties:</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>uuid</code></td>
+<td><code>string</code></td>
+<td style="text-align:left">Service UUID.</td>
+</tr>
+<tr>
+<td><code>characteristics</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">An object with details about the service characteristic(s). Each key corresponds to a characteristic name.</td>
+</tr>
+</tbody>
+</table>
+<p>Each item in the <code>characteristics</code> object contains the following properties. Note that only the <code>uuid</code> and <code>type</code> properties are required for BLE client applications that include GATT services JSON files:</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Description</th>
+<th style="text-align:left">Required by BLE client</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>uuid</code></td>
+<td><code>string</code></td>
+<td>Characteristic UUID.</td>
+<td style="text-align:left">Y</td>
+</tr>
+<tr>
+<td><code>maxBytes</code></td>
+<td><code>number</code></td>
+<td>Maximum number of bytes required to store the characteristic value.</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td><code>type</code></td>
+<td><code>string</code></td>
+<td>Optional JavaScript data value type. Supported types include <code>Array</code>, <code>ArrayBuffer</code>, <code>String</code>, <code>Uint8</code>, <code>Uint8Array</code>, <code>Int8Array</code>, <code>Int16Array</code>, <code>Uint16</code>, <code>Uint16Array</code>, and <code>Uint32</code>. If the <code>type</code> property is not present, the data value type defaults to <code>ArrayBuffer</code>. The <code>BLEServer</code> and <code>BLEClient</code> classes automatically convert characteristic values delivered in buffers by the underlying BLE implementation to the requested <code>type</code>.</td>
+<td style="text-align:left">Y</td>
+</tr>
+<tr>
+<td><code>permissions</code></td>
+<td><code>string</code></td>
+<td>Characteristic permissions. Supported permissions include <code>read</code>, <code>readEncrypted</code>, <code>write</code>, and <code>writeEncrypted</code>. Multiple permissions can be specified by comma-separating permission strings, but only one of read/readEncrypted and write/writeEncrypted can be specified for each characteristic.</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td><code>properties</code></td>
+<td><code>string</code></td>
+<td>Characteristic properties. Supported properties include <code>read</code>, <code>write</code>, <code>writeNoResponse</code>, <code>notify</code> and <code>indicate</code>. Multiple properties can be specified by comma-separating property strings.</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td><code>value</code></td>
+<td><code>array</code>, <code>string</code>, or <code>number</code></td>
+<td>Optional characteristic value. The <code>BLEServer</code> class automatically converts the value specified here to the type specified by the <code>type</code> property.</td>
+<td style="text-align:left"></td>
+</tr>
+</tbody>
+</table>
+<p>Characteristics that include a <code>value</code> property are considered static. The <code>BLEServer</code> class automatically responds to read requests for static characteristic values, further reducing the script code required to host a GATT service.</p>
+<p>The following is an example of JSON corresponding to a Bluetooth <a href="https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.service.battery_service.xml">Battery Service</a>:</p>
+<pre><code>{
+	&quot;service&quot;: {
+		&quot;uuid&quot;: &quot;180F&quot;,
+		&quot;characteristics&quot;: {
+			&quot;battery&quot;: {
+				&quot;uuid&quot;: &quot;2A19&quot;,
+				&quot;maxBytes&quot;: 1,
+				&quot;type&quot;: &quot;Uint8&quot;,
+				&quot;permissions&quot;: &quot;read&quot;,
+				&quot;properties&quot;: &quot;read&quot;,
+				&quot;value&quot;: 85
+			},
+		}
+	}
+}
+</code></pre>
+<p>The service is defined as follows:</p>
+<ul>
+<li>The service UUID is 0x180F</li>
+<li>The service contains a single characteristic named &quot;battery&quot;
+<ul>
+<li>The characteristic UUID is 0x2A19</li>
+<li>The characteristic represents an unsigned 8-bit value</li>
+<li>The characteristic value is 85 and clients only have permission to read the characteristic</li>
+</ul>
+</li>
+</ul>
+<p><a id="blesecurity"></a></p>
+<h2>BLE Security</h2>
+<p>BLE clients and servers use the <code>securityParameters</code> property accessor to optionally request link-layer security to protect data transferred between devices. Passkey pairing requires both devices to exchange and confirm the code before establishing a connection. Once the pairing process is complete, the connection and data transferred is encrypted. The BLE Security Manager (SM) defines the methods and protocols for pairing and key distribution.</p>
+<p><a id="classsm"></a></p>
+<h2>Class SM</h2>
+<p>The <code>SM</code> class provides objects used to configure BLE client and server security requirements and device capabilities. The <code>SM</code> class is available to both <code>BLEClient</code> and <code>BLEServer</code> classes. The security callback functions defined here are hosted by the <code>BLEClient</code> and <code>BLEServer</code> classes.</p>
+<p>The <code>IOCapability</code> object contains the following properties:</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>NoInputNoOutput</code></td>
+<td><code>number</code></td>
+<td style="text-align:left">Device has no input or output capabilities</td>
+</tr>
+<tr>
+<td><code>DisplayOnly</code></td>
+<td><code>number</code></td>
+<td style="text-align:left">Device has only output capability</td>
+</tr>
+<tr>
+<td><code>KeyboardOnly</code></td>
+<td><code>number</code></td>
+<td style="text-align:left">Device has only input capability</td>
+</tr>
+<tr>
+<td><code>KeyboardDisplay</code></td>
+<td><code>number</code></td>
+<td style="text-align:left">Device has input and output capabilities</td>
+</tr>
+<tr>
+<td><code>DisplayYesNo</code></td>
+<td><code>number</code></td>
+<td style="text-align:left">Device has output capability and button feedback for a Yes or No response</td>
+</tr>
+</tbody>
+</table>
+<p>To request MITM protection with encryption on a keyboard device:</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> {IOCapability} <span class="hljs-keyword">from</span> <span class="hljs-string">"sm"</span>;
+
+onReady() {
+	<span class="hljs-keyword">this</span>.securityParameters = { <span class="hljs-attr">mitm</span>:<span class="hljs-literal">true</span>, <span class="hljs-attr">ioCapability</span>:IOCapability.KeyboardOnly };
+}
+</code></pre>
+<h3>Functions</h3>
+<h4><code>deleteAllBondings()</code></h4>
+<p>Use the <code>deleteAllBondings</code> function to delete all bonding information and encryption keys from persistent storage:</p>
+<pre><code class="language-javascript">onReady() {
+	SM.deleteAllBondings();
+}
+</code></pre>
+<hr />
+<h4><code>passkeyInput(address, value)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>address</code></td>
+<td><code>object</code></td>
+<td style="text-align:left"><code>ArrayBuffer</code> containing peer device Bluetooth address</td>
+</tr>
+<tr>
+<td><code>value</code></td>
+<td><code>number</code></td>
+<td style="text-align:left">passkey value input</td>
+</tr>
+</tbody>
+</table>
+<p>Call the <code>passkeyInput</code> function from the <code>onPasskeyInput</code> callback function to provide an input passkey value:</p>
+<pre><code class="language-javascript">onPasskeyInput(params) {
+	<span class="hljs-keyword">let</span> passkeyValue = <span class="hljs-number">123456</span>;
+	<span class="hljs-keyword">this</span>.passkeyInput(params.address, passkeyValue);
+}
+</code></pre>
+<hr />
+<h4><code>passkeyReply(address, result)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>address</code></td>
+<td><code>object</code></td>
+<td style="text-align:left"><code>ArrayBuffer</code> containing peer device Bluetooth address</td>
+</tr>
+<tr>
+<td><code>result</code></td>
+<td><code>boolean</code></td>
+<td style="text-align:left">Set <code>true</code> to confirm passkey value, <code>false</code> otherwise</td>
+</tr>
+</tbody>
+</table>
+<p>Call the <code>passkeyReply</code> function from the <code>onPasskeyConfirm</code> callback function to confirm the passkey displayed by the peer device:</p>
+<pre><code class="language-javascript">onPasskeyConfirm(params) {
+	<span class="hljs-comment">// passkey is valid</span>
+	<span class="hljs-keyword">this</span>.passkeyReply(params.address, <span class="hljs-literal">true</span>);
+}
+</code></pre>
+<hr />
+<h4><code>onSecurityParameters(params)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>params</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">Device security properties applied.</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>onSecurityParameters</code> callback is called after the device security requirements and I/O capabilities have been set.</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> {IOCapability} <span class="hljs-keyword">from</span> <span class="hljs-string">"sm"</span>;
+
+onReady() {
+	<span class="hljs-keyword">this</span>.securityParameters = { <span class="hljs-attr">mitm</span>:<span class="hljs-literal">true</span>, <span class="hljs-attr">ioCapability</span>:IOCapability.NoInputNoOutput };
+}
+onSecurityParameters() {
+	<span class="hljs-keyword">this</span>.startScanning();
+}
+</code></pre>
+<hr />
+<h4><code>onAuthenticated()</code></h4>
+<p>The <code>onAuthenticated</code> callback is called when an authentication procedure completes, i.e. after successful device pairing.</p>
+<pre><code class="language-javascript">onAuthenticated() {
+	trace(<span class="hljs-string">"authentication success\n"</span>);
+}
+</code></pre>
+<hr />
+<h4><code>onPasskeyConfirm(params)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>params</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">Properties associated with the passkey confirmation.</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>params</code> object contains the following properties:</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>address</code></td>
+<td><code>object</code></td>
+<td style="text-align:left"><code>ArrayBuffer</code> containing peer device Bluetooth address</td>
+</tr>
+<tr>
+<td><code>passkey</code></td>
+<td><code>number</code></td>
+<td style="text-align:left">The passkey to confirm</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>onPasskeyConfirm</code> callback is called when the user needs to confirm a passkey value displayed on a peer device. The callback calls <code>passkeyReply</code> passing <code>true</code> or <code>false</code> to confirm the passkey value.</p>
+<pre><code class="language-javascript">onPasskeyConfirm(params) {
+	trace(<span class="hljs-string">`confirm passkey: <span class="hljs-subst">${params.passkey}</span>\n`</span>);
+	
+	<span class="hljs-comment">// passkey is valid</span>
+	<span class="hljs-keyword">this</span>.passkeyReply(params.address, <span class="hljs-literal">true</span>);
+}
+</code></pre>
+<hr />
+<h4><code>onPasskeyDisplay(params)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>params</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">Properties associated with the passkey display.</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>params</code> object contains the following properties:</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>address</code></td>
+<td><code>object</code></td>
+<td style="text-align:left"><code>ArrayBuffer</code> containing peer device Bluetooth address</td>
+</tr>
+<tr>
+<td><code>passkey</code></td>
+<td><code>number</code></td>
+<td style="text-align:left">The passkey to display</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>onPasskeyDisplay</code> callback is called when the device needs to display a passkey.</p>
+<pre><code class="language-javascript">onPasskeyDisplay(params) {
+	<span class="hljs-comment">// display passkey on screen</span>
+	trace(<span class="hljs-string">`display passkey: <span class="hljs-subst">${params.passkey}</span>\n`</span>);
+}
+</code></pre>
+<hr />
+<h4><code>onPasskeyInput(params)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>params</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">Properties associated with the passkey input.</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>params</code> object contains the following properties:</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>address</code></td>
+<td><code>object</code></td>
+<td style="text-align:left"><code>ArrayBuffer</code> containing peer device Bluetooth address</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>onPasskeyInput</code> callback is called when the device needs to input the passkey displayed by the peer device. The <code>inputPasskey</code> function is called to return the input passkey value.</p>
+<pre><code class="language-javascript">onPasskeyInput(params) {
+	<span class="hljs-comment">// display keyboard to enter passkey displayed by peer</span>
+	<span class="hljs-comment">//let passkey = 123456;</span>
+	<span class="hljs-keyword">this</span>.passkeyInput(params.address, passkey);
+}
+</code></pre>
+<hr />
+<h4><code>onPasskeyRequested(params)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>params</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">Properties associated with the passkey to request.</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>params</code> object contains the following properties:</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>address</code></td>
+<td><code>object</code></td>
+<td style="text-align:left"><code>ArrayBuffer</code> containing peer device Bluetooth address</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>onPasskeyRequested</code> callback is called when the device needs to request a passkey entry. The callback returns a numeric passkey value between 0 and 999,999.</p>
+<pre><code class="language-javascript">onPasskeyRequested(params) {
+	<span class="hljs-comment">// display keyboard to enter passkey</span>
+	<span class="hljs-keyword">let</span> passkey = <span class="hljs-built_in">Math</span>.round(<span class="hljs-built_in">Math</span>.random() * <span class="hljs-number">999999</span>);
+	<span class="hljs-keyword">return</span> passkey;
+}
+</code></pre>
+<blockquote>
+<p><strong>Note:</strong> Passkey values are integers, but must always include six digits. The host application is responsible for padding with leading zeros for display.</p>
+</blockquote>
+<hr />
+<p><a id="esp32platform"></a></p>
+<h2>BLE Apps on ESP32 Platform</h2>
+<p>The <code>mcconfig</code> command line tool <strong>automatically</strong> configures the required ESP-IDF BLE options required by the host app.
+The <a href="https://github.com/Moddable-OpenSource/moddable/blob/public/build/devices/esp32/xsProj/sdkconfig.defaults">sdkconfig.defaults</a> configuration file in the Moddable SDK presets the following core BLE options:</p>
+<pre><code>CONFIG_BTDM_CONTROLLER_PINNED_TO_CORE=0
+CONFIG_BTDM_CONTROLLER_HCI_MODE_VHCI=y
+CONFIG_BLUEDROID_ENABLED=y
+CONFIG_BLUEDROID_PINNED_TO_CORE=0
+CONFIG_BTC_TASK_STACK_SIZE=3072
+CONFIG_BLE_SMP_ENABLE=y
+CONFIG_BT_ACL_CONNECTIONS=1
+CONFIG_SMP_ENABLE=y
+CONFIG_BT_RESERVE_DRAM=0x10000
+</code></pre>
+<p>When building a BLE client or server app, the <code>mcconfig</code> tool enables the ESP-IDF BLE components by setting the corresponding option:</p>
+<pre><code>CONFIG_BT_ENABLED=y
+</code></pre>
+<p>When building a BLE client app, the <code>CONFIG_GATTC_ENABLE</code> option is also set:</p>
+<pre><code>CONFIG_GATTC_ENABLE=y
+</code></pre>
+<p>When building a BLE server app, the <code>CONFIG_GATTS_ENABLE</code> option is also set:</p>
+<pre><code>CONFIG_GATTS_ENABLE=y
+</code></pre>
+<blockquote>
+<p><strong>Note:</strong> BLE options can be further customized, if necessary, by editing the <code>sdkconfig.defaults</code> file before building the host app. For example, the <code>CONFIG_BT_ACL_CONNECTIONS</code> value can be increased to support more than one BLE client connection. This value should match the <code>max_connections</code> value in the application manifest.</p>
+</blockquote>
+<p>Once any sdkconfig.defaults file changes have been made, build the <a href="../../../examples/network/ble/scanner">scanner</a> BLE app for the ESP32 platform:</p>
+<pre><code>cd $MODDABLE/examples/network/ble/scanner
+mcconfig -d -m -p esp32
+</code></pre>
+<p><a id="geckoplatform"></a></p>
+<h2>BLE Apps on Blue Gecko Platform</h2>
+<p>Building and deploying BLE apps on Blue Gecko follow the same workflow outlined in our <a href="https://github.com/Moddable-OpenSource/moddable/blob/public/documentation/devices/gecko/GeckoBuild.html">Gecko developer documentation</a>. For BLE apps, we recommend starting from the <code>soc-ibeacon</code> Simplicity Studio example project.</p>
+<p>The <a href="../../../tools/mcconfig/geck0/make.blue.mk">make.blue.mk</a> makefile includes variables that define the Gecko target platform, kit and part. The makefile is configured by default to build apps for the Blue Gecko <a href="https://www.silabs.com/products/wireless/bluetooth/blue-gecko-bluetooth-low-energy-socs/device.efr32bg13p632f512gm48">EFR32BG13P632F512GM48</a> Bluetooth low energy chip mounted on the <a href="https://www.silabs.com/documents/login/reference-manuals/brd4104a-rm.pdf">BRD4104A</a> 2.4 GHz 10 dBm Radio Board. To configure the build for a different Blue Gecko target, change the makefile <code>GECKO_BOARD</code>, <code>GECKO_PART</code>, <code>HWKIT</code> and <code>HWINC</code> variables accordingly.</p>
+<p>To build the <a href="../../../examples/network/ble/scanner">scanner</a> BLE app <code>xs_gecko.a</code> archive for Blue Gecko:</p>
+<pre><code>cd $MODDABLE/examples/network/ble/scanner
+mcconfig -d -m -p gecko/blue
+</code></pre>
+<p>After building the BLE archive, the archive is linked to the native app hosted in Simplicity Studio. The <code>main()</code> native code function for a basic BLE client/server app can be reduced to the following:</p>
+<pre><code>void main(void)
+{
+	initMcu();
+	initBoard();
+	initApp();
+	
+	xs_setup();
+	
+	while (1) {
+		xs_loop();
+	}
+}
+</code></pre>
+<p>BLE apps require additional stack and heap. We've been able to run the Moddable BLE example apps using the following values:</p>
+<pre><code>__STACK_SIZE=0x2000
+__HEAP_SIZE=0xA000
+</code></pre>
+<p>Simplicity Studio includes a <strong>BLE GATT Configurator</strong> to define BLE services. Moddable apps define BLE services in JSON files and hence don't use the <code>gatt_db.c</code> and <code>gatt_db.h</code> files generated by the configurator tool. These two files must be removed from the Simplicity Studio project.</p>
+<p><a id="exampleapps"></a></p>
+<h2>BLE Example Apps</h2>
+<p>The Moddable SDK includes many BLE client and server example apps to build from. We recommend starting from an example app, since the apps demonstrate how to implement common use cases:</p>
+<h3>Client Apps</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Name</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><a href="../../../examples/network/ble/ble-friend">ble-friend</a></td>
+<td style="text-align:left">Shows how to interact with the Adafruit BLE Friend <a href="https://learn.adafruit.com/introducing-adafruit-ble-bluetooth-low-energy-friend/uart-service">UART service</a> RX and TX characteristics.</td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="../../../examples/network/ble/colorific">colorific</a></td>
+<td style="text-align:left">Randomly changes the color of a BLE bulb every 100 ms.</td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="../../../examples/network/ble/discovery">discovery</a></td>
+<td style="text-align:left">Demonstrates how to discover a specific GATT service and characteristic.</td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="../../../examples/network/ble/hid-keyboard">hid-keyboard</a></td>
+<td style="text-align:left">Demonstrates how to connect to a BLE keyboard that implements the HID over GATT profile.</td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="../../../examples/network/ble/hid-mouse">hid-mouse</a></td>
+<td style="text-align:left">Demonstrates how to connect to a BLE mouse that implements the HID over GATT profile.</td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="../../../examples/network/ble/ios-media-sync">ios-media-sync</a></td>
+<td style="text-align:left"><a href="https://github.com/Moddable-OpenSource/moddable/blob/public/documentation/commodetto/commodetto.html">Commodetto</a> app that demonstrates how to implement an <a href="https://developer.apple.com/library/archive/documentation/CoreBluetooth/Reference/AppleMediaService_Reference/Specification/Specification.html#//apple_ref/doc/uid/TP40014716-CH1-SW48">Apple Media Service</a> client.</td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="../../../examples/network/ble/ios-time-sync">ios-time-sync</a></td>
+<td style="text-align:left">Demonstrates how to set the device clock by connecting to the iPhone <a href="https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.service.current_time.xml">Current Time Service</a>.</td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="../../../examples/network/ble/powermate">powermate</a></td>
+<td style="text-align:left">Receives button spin and press notifications from the <a href="https://griffintechnology.com/us/powermate-bluetooth">Griffin BLE Multimedia Control Knob</a>.</td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="../../../examples/network/ble/scanner">scanner</a></td>
+<td style="text-align:left">Scans for and displays peripheral advertised names.</td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="../../../examples/network/ble/security-client">security-client</a></td>
+<td style="text-align:left">Demonstrates how to implement a secure health thermometer BLE client using SMP. The <code>security-client</code> can connect to the <a href="../../../examples/network/ble/security-server">security-server</a> app.</td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="../../../examples/network/ble/sensortag">sensortag</a></td>
+<td style="text-align:left">Receives sensor notifications from the <a href="http://www.ti.com/tool/CC2541DK-SENSOR#technicaldocuments">TI CC2541 SensorTag</a> on-board sensors.</td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="../../../examples/network/ble/tempo">tempo</a></td>
+<td style="text-align:left">Reads temperature, humidity and barometric pressure from a <a href="https://www.bluemaestro.com/product/tempo-environment-monitor/">Blue Maestro Environment Monitor</a> beacon.</td>
+</tr>
+</tbody>
+</table>
+<h3>Server Apps</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Name</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><a href="../../../examples/network/ble/advertiser">advertiser</a></td>
+<td style="text-align:left">Broadcasts advertisements until a BLE client connects.</td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="../../../examples/network/ble/health-thermometer-server">health-thermometer-server</a></td>
+<td style="text-align:left">Implements the Bluetooth <a href="https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.service.health_thermometer.xml">Health Thermometer Service</a>.</td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="../../../examples/network/ble/health-thermometer-server-gui">health-thermometer-server-gui</a></td>
+<td style="text-align:left"><a href="../../../documentation/piu/piu.html">Piu</a> app for ESP32 that implements the Bluetooth <a href="https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.service.health_thermometer.xml">Health Thermometer Service</a>.</td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="../../../examples/network/ble/security-server">security-server</a></td>
+<td style="text-align:left">Demonstrates how to implement a secure health thermometer BLE server using SMP. The <code>security-server</code> can connect to the <a href="../../../examples/network/ble/security-client">security-client</a> app.</td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="../../../examples/network/ble/uri-beacon">uri-beacon</a></td>
+<td style="text-align:left">Implements a <a href="https://github.com/google/uribeacon/tree/uribeacon-final/specification">UriBeacon</a> compatible with Google's <a href="https://github.com/google/physical-web">Physical Web</a> discovery service.</td>
+</tr>
+<tr>
+<td style="text-align:center"><a href="../../../examples/network/ble/wifi-connection-server">wifi-connection-server</a></td>
+<td style="text-align:left">Deploys a BLE WiFi connection service on ESP32. The connection service allows BLE clients to connect the BLE device to a WiFi access point, by writing the SSID and password characteristics.</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+
+        </div>
+    </body>
+</html>

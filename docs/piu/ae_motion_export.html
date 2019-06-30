@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moddable</title>
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata|Open+Sans" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/hljs.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/markdown.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
+</head>
+    <body>
+<div id="header">
+    <div class="package"></div>
+    <a href="https:&#x2F;&#x2F;github.com&#x2F;moddable-opensource&#x2F;moddable" class="badge" title="Github.com"><img src="/assets/images/github.png" alt="Github" /></a>
+    <a href="/" class="home"><strong>Moddable</strong> <span class="headline">Moddable SDK</span></a>
+</div>
+        <div id="container">
+            <div id="sidebar">
+<ul class="list">
+    <li>
+        <h4><a href="/">Home</a></h4>
+        <ul>
+            <li><a href="https://www.moddable.com">Moddable</a></li>
+            <li><a href="/">Documentation</a></li>
+        </ul>
+    </li>
+    <li>
+        <h4><a href="/">Resources</a></h4>
+        <ul>
+            <li><a href="https://github.com/moddable-opensource/moddable">GitHub</a></li>
+            <li><a href="/">Link 2</a></li>
+        </ul>
+    </li>
+</ul>
+            </div>
+
+<div id="content">
+<h1>Using Adobe After Effects to export Moddable motion data</h1>
+<p>Copyright 2017 Moddable Tech, Inc.</p>
+<p>Revised: September 26, 2017</p>
+<p>Warning: These notes are preliminary. Omissions and errors are likely. If you encounter problems, please ask for assistance.</p>
+<h2>Introduction</h2>
+<p>Adobe After Effects can be used to export motion data into a Moddable sample app for use in development.</p>
+<p>Moddable motion control only supports position.</p>
+<p>In AE only layers with assets are exported and only positions are exported. Scaling, rotation, transparncy, etc. are not exported.</p>
+<p>Piu interpolates linearly between values in the array. You can reduce the frame rate in After Effects to reduce the size of the arrays. Piu will animate between values based on defined time length of the motion effect.</p>
+<h3>Installing the export script in After Effects</h3>
+<p>Install the ae2piu.jsx script in the &quot;scripts&quot; folder within your After Effects application folder.</p>
+<img src="../assets/ae-motion/ae_script_install.png" height="233"/> 
+<h3>Exporting motion data</h3>
+<p>To run the script select &quot;ae2piu.jsx&quot; from the File -&gt; Scripts menu.</p>
+<img src="../assets/ae-motion//ae2piu-screen.png" width="600"/> 
+<p>When you run the export script in After Effects, it displays a dialog box to select a folder. Create a new folder the first time. The export script copies the assets and creates the manifest.json and main.js files for a complete Moddable application. To build the project and run in the Moddable Simulator use the following command.</p>
+<pre><code>cd &lt;the folder you selected&gt;
+mcconfig -m
+</code></pre>
+<h3>Notes</h3>
+<p>The length of the total animation is taken from the AE composition.</p>
+<p>Time values are exported as milliseconds.</p>
+<p>AE easing is not exported but Moddable easing can be added to the exported code.</p>
+<p>Example: (null replaced by Math.quadEaseOut)</p>
+<pre><code>this.steps(ball, { x:ballX, y:ballY }, 2333, null, 0, 0);
+
+this.steps(ball, { x:ballX, y:ballY }, 2333, Math.quadEaseOut, 0, 0);
+</code></pre>
+
+</div>
+
+        </div>
+    </body>
+</html>

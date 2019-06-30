@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moddable</title>
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata|Open+Sans" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/hljs.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/markdown.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
+</head>
+    <body>
+<div id="header">
+    <div class="package"></div>
+    <a href="https:&#x2F;&#x2F;github.com&#x2F;moddable-opensource&#x2F;moddable" class="badge" title="Github.com"><img src="/assets/images/github.png" alt="Github" /></a>
+    <a href="/" class="home"><strong>Moddable</strong> <span class="headline">Moddable SDK</span></a>
+</div>
+        <div id="container">
+            <div id="sidebar">
+<ul class="list">
+    <li>
+        <h4><a href="/">Home</a></h4>
+        <ul>
+            <li><a href="https://www.moddable.com">Moddable</a></li>
+            <li><a href="/">Documentation</a></li>
+        </ul>
+    </li>
+    <li>
+        <h4><a href="/">Resources</a></h4>
+        <ul>
+            <li><a href="https://github.com/moddable-opensource/moddable">GitHub</a></li>
+            <li><a href="/">Link 2</a></li>
+        </ul>
+    </li>
+</ul>
+            </div>
+
+<div id="content">
+<h1>Die Cut</h1>
+<p>Copyright 2016 Moddable Tech, Inc.</p>
+<p>Revised: November 22, 2016</p>
+<p><strong>Warning</strong>: These notes are preliminary. Omissions and errors are likely. If you encounter problems, please ask for assistance.</p>
+<h2>Introduction</h2>
+<p>To get animations on a screen connected to a microcontroller by a serial interface (SPI), the game is to minimize the number of pixels that change from frame to frame.</p>
+<blockquote>
+<p>FYI, here is what is happening at every frame when changes in the appearance or the layout invalidate and update the screen:</p>
+<ul>
+<li>The dirty region accumulates the invalidations.</li>
+<li>The containment hierarchy is traversed once to build the command list that will update the screen.</li>
+<li>The dirty region and the command list are decomposed into rectangles and display lists.</li>
+<li>Rectangles and display lists are processed to send blocks of pixels to the screen.</li>
+</ul>
+</blockquote>
+<p>The <code>die</code> object is a <code>layout</code> object that allows animations and transitions to “die cut” contents with a region. Thanks to regions operations, the <code>die</code> object minimizes the areas to invalidate and to update. It can give the illusion of full screen animations while few pixels are in fact changing.</p>
+<h2>Examples</h2>
+<p>Let us begin with a static example:</p>
+<pre><code>let TestContainer = Container.template($ =&gt; ({
+	left:0, right:0, top:0, bottom:0, skin:blueSkin,
+	contents: [
+		Die($, {
+			left:0, right:0, top:0, bottom:0,
+			Behavior: class extends Behavior {
+				onDisplaying(die) {
+					let w = die.width, h = die.height;
+					die.empty()
+						.or(10, 10, 40, 40)
+						.or(w - 50, 10, 40, 40)
+						.or(w - 50, h - 50, 40, 40)
+						.or(10, h - 50, 40, 40)
+						.xor(30, 30, w - 60, h - 60)
+						.sub(70, 70, w - 140, h - 140)
+						.cut();
+				}
+			},
+			contents: [
+				Content($, { left:0, right:0, top:0, bottom:0, skin:whiteSkin,
+			]
+		}),
+	]
+}));
+</code></pre>
+<p>The <code>empty</code>, <code>or</code>, <code>xor</code> and <code>sub</code> methods are chainable operations to build the region. The <code>cut</code> method changes the region.</p>
+<p>If you add the <code>TestContainer</code> to an application, here is what it will look like:</p>
+<p><img src="./../assets/die-cut/die-cut.png" alt="" /></p>
+<p>But of course the <code>die</code> object is mostly interesting to build animations and transitions. You will find examples in the Piu libraries: WipeTransition and CombTransition.</p>
+<p>Let us build a &quot;venitian blind&quot; transition:</p>
+<pre><code>class VenitianBlindTransition extends Transition {
+	constructor(duration) {
+		super(duration);
+	}
+	onBegin(container, former, current) {
+		container.add(current);
+		this.container = container;
+		this.die = new Die(null, {});
+		this.die.attach(current);
+	}
+	onEnd(container, former, current) {
+		this.die.detach();
+		container.remove(former);
+	}
+	onStep(fraction) {
+		let die = this.die;
+		die.empty();
+		let width = die.width;
+		let height = die.height;
+		let y = 0;
+		let step = height &gt;&gt; 3;
+		let delta = Math.round(fraction * step);
+		for (let i = 0; i &lt; 8; i++) {
+			die.or(0, y, width, delta);
+			y += step;
+		}
+		die.cut();
+	}
+}
+</code></pre>
+<p>The <code>attach</code> and <code>detach</code> methods allow to temporarily insert a <code>die</code> object in the containment hierarchy. At every step of the transition the region changes to progressively close the &quot;venitian blind&quot;.</p>
+<h2>Reference</h2>
+<p>The <code>die</code> object is a <code>layout</code> object that allows to “die cut” its contents with a region. The <code>die</code> object maintains two regions:</p>
+<ul>
+<li>the work region that the available operations build,</li>
+<li>the clip region that clips the contents of the <code>die</code> object</li>
+</ul>
+<p>Both regions are initially empty.</p>
+<h4>Prototype Description</h4>
+<p>Prototype inherits from <code>Layout.prototype</code>.</p>
+<p>#####<code>Die.prototype.and(x, y, width, height)</code></p>
+<blockquote>
+<p><code>x, y, width, height</code> a local rectangle, in pixels</p>
+<p>Intersect the rectangle with the work region. Return this.</p>
+</blockquote>
+<p>#####<code>Die.prototype.attach(content)</code></p>
+<blockquote>
+<p><code>content</code> the <code>content</code> object to attach</p>
+<p>Bind the <code>die</code> object to the content hierarchy by replacing the specified <code>content</code> object in the content's container with this <code>die</code> object and adding the <code>content</code> object to this <code>die</code> object.</p>
+</blockquote>
+<p>#####<code>Die.prototype.cut()</code></p>
+<blockquote>
+<p>Copy the work region into the current region. Invalidate only the difference between the work and the clip regions.</p>
+</blockquote>
+<p>#####<code>Die.prototype.empty()</code></p>
+<blockquote>
+<p>Empty the work region. Return <code>this</code></p>
+</blockquote>
+<p>#####<code>Die.prototype.detach()</code></p>
+<blockquote>
+<p>Unbind this <code>die</code> object from the content hierarchy by removing the first <code>content</code> object from this <code>die</code> object and replacing this <code>die</code> object in its container with the removed <code>content</code> object.</p>
+</blockquote>
+<p>#####<code>Die.prototype.fill()</code></p>
+<blockquote>
+<p>Set the work region to the bounds of this <code>die</code> object. Return <code>this</code></p>
+</blockquote>
+<p>#####<code>Die.prototype.or(x, y, width, height)</code></p>
+<blockquote>
+<p><code>x, y, width, height</code> a local rectangle, in pixels</p>
+<p>Inclusively union the rectangle with the work region. Return <code>this</code>.</p>
+</blockquote>
+<p>#####<code>Die.prototype.set(x, y, width, height)</code></p>
+<blockquote>
+<p><code>x, y, width, height</code> a local rectangle, in pixels</p>
+<p>Set the work region to the rectangle. Return <code>this</code>.</p>
+</blockquote>
+<p>#####<code>Die.prototype.sub(x, y, width, height)</code></p>
+<blockquote>
+<p><code>x, y, width, height</code> a local rectangle, in pixels</p>
+<p>Subtract the rectangle from the work region. Return <code>this</code>.</p>
+</blockquote>
+<p>#####<code>Die.prototype.xor(x, y, width, height)</code></p>
+<blockquote>
+<p><code>x, y, width, height</code> a local rectangle, in pixels</p>
+<p>Exclusively union the work region with the rectangle. Return <code>this</code>.</p>
+</blockquote>
+
+</div>
+
+        </div>
+    </body>
+</html>

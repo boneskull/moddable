@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moddable</title>
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata|Open+Sans" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/hljs.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/markdown.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
+</head>
+    <body>
+<div id="header">
+    <div class="package"></div>
+    <a href="https:&#x2F;&#x2F;github.com&#x2F;moddable-opensource&#x2F;moddable" class="badge" title="Github.com"><img src="/assets/images/github.png" alt="Github" /></a>
+    <a href="/" class="home"><strong>Moddable</strong> <span class="headline">Moddable SDK</span></a>
+</div>
+        <div id="container">
+            <div id="sidebar">
+<ul class="list">
+    <li>
+        <h4><a href="/">Home</a></h4>
+        <ul>
+            <li><a href="https://www.moddable.com">Moddable</a></li>
+            <li><a href="/">Documentation</a></li>
+        </ul>
+    </li>
+    <li>
+        <h4><a href="/">Resources</a></h4>
+        <ul>
+            <li><a href="https://github.com/moddable-opensource/moddable">GitHub</a></li>
+            <li><a href="/">Link 2</a></li>
+        </ul>
+    </li>
+</ul>
+            </div>
+
+<div id="content">
+<h1>JavaScript language considerations on embedded devices using the XS engine</h1>
+<p>Copyright 2018 Moddable Tech, Inc.</p>
+<p>Revised: October 10, 2018</p>
+<h2>Ultra-light JavaScript</h2>
+<p>XS is the JavaScript engine at the core of Moddable applications and tools. XS has existed since the beginning of this century. You can get the latest version on <a href="https://github.com/Moddable-OpenSource/moddable">GitHub</a>.</p>
+<p>Other JavaScript engines are primarily used for client or server side web development. Their main focus is speed, their main cost is the significant resources they consume to get that speed.</p>
+<p>The XS engine targets embedded platforms built around microcontrollers like the <a href="https://www.espressif.com/en/products/hardware/esp8266ex/overview">ESP8266</a> or <a href="https://www.espressif.com/en/products/hardware/esp32/overview">ESP32</a>. XS also runs on the usual desktop and mobile platforms.</p>
+<p>The challenges of embedded development are well known: limited memory and limited performance. Compared to hardware that usually runs JavaScript for the web on the client or the server sides, the differences are measured in orders of magnitude, not percentages. Moreover battery life is often critical.</p>
+<p>Despite such constraints, and unlike other scripting libraries available on microcontrollers, XS always strives to fully implement the quite extensive <a href="https://tc39.github.io/ecma262/">ECMAScript Language Specification</a>.</p>
+<p>These constraints have consequences. This document highlights key differences between XS, with its focus on embedded devices, and  JavaScript engines focused on web development.</p>
+<h2>Spare runtime resources</h2>
+<p>Embedded platforms do not exist alone. You need a computer to develop applications for them. Therefore, you should prepare in advance of execution, at <em>compile</em> time, everything you can in order to spare <em>run</em>-time resources.</p>
+<p>On the web, JavaScript engines currently execute scripts and modules from their source code. For microcontrollers, the XS compiler transforms modules source code into byte code on your computer, so the XS engine on the microcontroller only has to execute byte code.</p>
+<p>At Moddable, we generalized this approach beyond scripts to all kinds of assets. Fonts, movies, pictures, sounds, and textures are always encoded on your computer into the most practical format for the specific hardware target.</p>
+<blockquote>
+<p>It is a common to mischaracterize web applications as static or dynamic based on whether its assets are adapted for a specific target device. Using content negotiation, for example, web applications can be as live as you want while still running optimized modules and assets. In this case, the <em>compile</em>-time is on the server side, the <em>run</em>-time is on the client side, with caches in between.</p>
+</blockquote>
+<p>Despite being based on JavaScript, embedded development with XS is more similar to mobile development than web development. Applications built with XS are described by a manifest and built with a tool chain that includes the XS compiler and linker, asset encoders, C compiler and linker, a debugger, and ROM flasher.</p>
+<h2>Prepare the environment</h2>
+<p>On embedded platforms, the amount of RAM is extremely small, often under 64 KB. The amount of ROM is larger, 512 KB to 4 MB, roughly the same amount of data downloaded for a typical modern web page. An application's native code and data are flashed into ROM.</p>
+<p>JavaScript modules compiled to byte code and encoded assets are stored in flash ROM as part of the native data. This allows the byte code and assets to be used in place, rather than being copied to RAM first. For example, the XS engine executes byte code directly from ROM. Still, a significant amount of RAM is needed for the JavaScript environment your application runs in. For example:</p>
+<ul>
+<li>JavaScript Built-ins including <code>Object</code>, <code>Function</code>, <code>Boolean</code>, <code>Symbol</code>, <code>Error</code>, <code>Number</code>, <code>Math</code>, <code>Date</code>, <code>String</code>, <code>RegExp</code>, <code>Array</code>, <code>TypedArray</code>, <code>Map</code>, <code>Set</code>, <code>WeakMap</code>, <code>WeakSet</code>, <code>ArrayBuffer</code>, <code>SharedArrayBuffer</code>, <code>DataView</code>, <code>Atomics</code>, <code>JSON</code>, <code>Generator</code>, <code>AsyncGenerator</code>, <code>AsyncFunction</code>, <code>Promise</code>, <code>Reflect</code>, <code>Proxy</code>, etc.</li>
+<li>Modules your application uses to do something useful, like a user interface framework, a secure network framework, etc.</li>
+</ul>
+<p>Constructing built-ins and loading modules creates many classes, functions, and prototype objects. These objects often require more RAM than is present on a modest microcontroller.</p>
+<p>To solve this problem, the XS linker allows you to prepare a JavaScript environment on your computer. The XS linker constructs all built-ins and preloads most modules, then saves the result as native data, which is flashed into ROM.</p>
+<p>The benefits are significant:</p>
+<ul>
+<li>Since almost nothing is ever copied from ROM to RAM, your application runs with a small amount of RAM.</li>
+<li>Since everything is ready in ROM, your application boots instantaneously.</li>
+</ul>
+<blockquote>
+<p>The XS linker cannot preload a module with a body that calls a native function that is only available on the microcontroller. Typically there will be only one module like that to start your application.</p>
+</blockquote>
+<h2>Freeze most objects</h2>
+<p>But what happens when applications want to modify objects that the XS linker prepared in ROM?</p>
+<p>The XS engine maintains a a table of aliases which is initially empty. All aliasable objects in ROM have an index in that table. When an application modifies an aliasable object, the aliasable object is cloned into RAM and inserted into the table to override the aliasable object.</p>
+<p>Such a mechanism has a cost in memory footprint and performance, but is essential for conformance with the JavaScript language specification. However JavaScript has a feature to specify that an object cannot be modified: <code>Object.freeze</code>. When objects are frozen, the XS linker does not index them as aliasable.</p>
+<p>Modules can use <code>Object.freeze</code> in their body to tell the XS linker which objects do not need to be indexed as aliasable. Calling that for each object is tedious enough, so the XS linker can automatically freeze all class, function and prototype objects, as well as other built-in objects like <code>Atomics</code>, <code>JSON</code>, <code>Math</code> and <code>Reflect</code>.</p>
+<p>In ECMAScript parlance, that is related to a <a href="https://github.com/tc39/proposal-frozen-realms">frozen realm</a>.</p>
+<blockquote>
+<p>Freezing most objects is healthy, especially for dynamic applications, since you can be sure that nothing can modify the JavaScript environment.</p>
+</blockquote>
+<h2>Strip unused features</h2>
+<p>As mentioned above, JavaScript defines many of built-ins, which are all implemented in the XS engine with native code. It is often the case that your application does not use all built-in language features.</p>
+<p>Based on the byte code of your modules, the XS linker can strip unused native code from the XS engine itself. So your application will run its own version of the XS engine, tailored to reduce its ROM footprint.</p>
+<p>That is automatic for applications that are self-contained and updated as a whole, which is still common on embedded platforms for the sake of consistency, safety, and security.</p>
+<p>For applications that expect to be customized or updated with separate modules, you can manually specify the built-in features to strip from the XS engine and to document the profiled JavaScript environment. For instance you can strip <code>eval</code>, <code>Function</code>, etc to get rid of the XS parser and byte coder.</p>
+<blockquote>
+<p>Although there are no profiles in JavaScript, your application can define its own.</p>
+</blockquote>
+<h2>Use native code</h2>
+<p>That may seem contradictory when talking about a JavaScript engine! But the simplicity of <a href="./XS%20in$20C.html">XS in C</a>, the C programming interface of XS, has always been essential to develop efficient applications.</p>
+<p>Web development often claims to be &quot;pure&quot; Javascript while it is in fact relying on the huge amount of native code required to implement web browsers. The reality is of course that web development is restricted to JavaScript on the client side.</p>
+<p>At Moddable, we use native code only when necessary, for instance to build drivers, or when the memory footprint or performance gains are obvious, for instance in our graphics library and user interface framework.</p>
+<p>Indeed a reasonable solution to sparing resources is to sometimes use native code instead of JavaScript. Remember that your application is in charge of everything.</p>
+<blockquote>
+<p>Since the tool chain always requires compiling and linking native code, there is no overhead in your development cycle.</p>
+</blockquote>
+<h2>Conformance</h2>
+<p>When its environment is not frozen and when its engine is not stripped, XS passes <strong>99.5%</strong> of the tests that are part of the <a href="https://github.com/tc39/test262">Official ECMAScript Conformance Test Suite</a>. The <a href="./XS%20Conformance.html">XS Conformance</a> document describes the results and test procedures.</p>
+<p>Here are a few incompatibilities that you should be aware of:</p>
+<ul>
+<li>
+<p><strong>Function</strong>: XS does not store the source code of functions so <code>Function.prototype.toString</code> always fails.</p>
+</li>
+<li>
+<p><strong>RegExp</strong>: By default the Unicode property escapes are not built-in because of the size of the tables they require.</p>
+</li>
+<li>
+<p><strong>String</strong>: Strings are UTF-8 encoded, their length is the number of code points instead of the number of code units they contain and they are indexed by code points instead of code units.</p>
+</li>
+<li>
+<p><strong>Tagged Template</strong>: XS supports tagged templates but does not currently implement the tagged templates cache.</p>
+</li>
+</ul>
+<p>No XS hosts are web browsers, so the Annex B of the ECMAScript Language Specification is not supported. However XS implements <code>Date.prototype.getYear</code>, <code>Date.prototype.setYear</code>, <code>Object.prototype.__proto__</code>, <code>String.prototype.substr</code>, <code>escape</code>, and <code>unescape</code>.</p>
+<p>The ECMAScript Internationalization API Specification is separate from the ECMAScript Language Specification and is not supported by XS.</p>
+
+</div>
+
+        </div>
+    </body>
+</html>

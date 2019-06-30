@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moddable</title>
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata|Open+Sans" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/hljs.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/markdown.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
+</head>
+    <body>
+<div id="header">
+    <div class="package"></div>
+    <a href="https:&#x2F;&#x2F;github.com&#x2F;moddable-opensource&#x2F;moddable" class="badge" title="Github.com"><img src="/assets/images/github.png" alt="Github" /></a>
+    <a href="/" class="home"><strong>Moddable</strong> <span class="headline">Moddable SDK</span></a>
+</div>
+        <div id="container">
+            <div id="sidebar">
+<ul class="list">
+    <li>
+        <h4><a href="/">Home</a></h4>
+        <ul>
+            <li><a href="https://www.moddable.com">Moddable</a></li>
+            <li><a href="/">Documentation</a></li>
+        </ul>
+    </li>
+    <li>
+        <h4><a href="/">Resources</a></h4>
+        <ul>
+            <li><a href="https://github.com/moddable-opensource/moddable">GitHub</a></li>
+            <li><a href="/">Link 2</a></li>
+        </ul>
+    </li>
+</ul>
+            </div>
+
+<div id="content">
+<h1>Generic 2.4&quot; &amp; 2.8&quot; Displays (Resistive Touch) Wiring Guide - ESP8266</h1>
+<p>Copyright 2018 Moddable Tech, Inc.<br />
+Revised: October 23, 2018</p>
+<p><img src="./images/spi-touch-display.jpg" alt="" /></p>
+<h2>Specs</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"></th>
+<th style="text-align:left"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><strong>Size</strong></td>
+<td style="text-align:left">2.4&quot; &amp; 2.8&quot;, 320 x 240</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>Type</strong></td>
+<td style="text-align:left">TFT LCD</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>Interface</strong></td>
+<td style="text-align:left">SPI</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>Drivers</strong></td>
+<td style="text-align:left">video <a href="../../documentation/drivers/ili9341/ili9341.html">ILI9341</a>, touch XPT2046</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>Availability</strong></td>
+<td style="text-align:left"><a href="https://www.ebay.com/sch/i.html?_odkw=spi+display+2.4&amp;_osacat=0&amp;_from=R40&amp;_trksid=p2045573.m570.l1313.TR0.TRC0.H0.Xspi+display+2.4+touch.TRS0&amp;_nkw=spi+display+2.4+touch&amp;_sacat=0">Generic SPI Displays on eBay</a></td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>Description</strong></td>
+<td style="text-align:left">These inexpensive displays are available on eBay and other resources. <BR><BR>Note: They are available in touch and non-touch versions which appear very similar.</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>At this time Moddable sample code does not include display SD card support.</p>
+</blockquote>
+<h2>Moddable example code</h2>
+<p>The <a href="../../examples/piu/drag/">drag</a> example is good for testing this display.  To run a debug build, use the following build command:</p>
+<pre><code>cd $MODDABLE/examples/piu/drag
+mcconfig -d -m -p esp/moddable_zero
+</code></pre>
+<h2>ESP8266 Pinout</h2>
+<table>
+<thead>
+<tr>
+<th>ILI9341 Display</th>
+<th>ESP8266</th>
+<th>ESP8266 Devboard label</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SDO / MISO</td>
+<td>GPIO 12</td>
+<td>(D6)</td>
+</tr>
+<tr>
+<td>LED</td>
+<td>3.3V</td>
+<td></td>
+</tr>
+<tr>
+<td>SCK</td>
+<td>GPIO 14</td>
+<td>(D5)</td>
+</tr>
+<tr>
+<td>SDI / MOSI</td>
+<td>GPIO 13</td>
+<td>(D7)</td>
+</tr>
+<tr>
+<td>CS</td>
+<td>GPIO 15</td>
+<td>(D8)</td>
+</tr>
+<tr>
+<td>DC</td>
+<td>GPIO 2</td>
+<td>(D4)</td>
+</tr>
+<tr>
+<td>RESET</td>
+<td>3.3V</td>
+<td></td>
+</tr>
+<tr>
+<td>GND</td>
+<td>GND</td>
+<td></td>
+</tr>
+<tr>
+<td>VCC</td>
+<td>3.3V</td>
+<td></td>
+</tr>
+<tr>
+<td>T_DO</td>
+<td>GPIO 12</td>
+<td>(D6)</td>
+</tr>
+<tr>
+<td>T_DIn</td>
+<td>GPIO 13</td>
+<td>(D7)</td>
+</tr>
+<tr>
+<td>T_CLK</td>
+<td>GPIO 14</td>
+<td>(D5)</td>
+</tr>
+<tr>
+<td>T_IRQ</td>
+<td>GPIO 16</td>
+<td>(D0)</td>
+</tr>
+<tr>
+<td>T_CS</td>
+<td>GPIO 0</td>
+<td>(D3)</td>
+</tr>
+</tbody>
+</table>
+<p><img src="images/esp-generic-2.4-display.png" alt="Generic 2.4&quot;-2.8&quot; wiring illustration" /></p>
+
+</div>
+
+        </div>
+    </body>
+</html>

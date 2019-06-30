@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moddable</title>
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata|Open+Sans" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/hljs.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/markdown.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
+</head>
+    <body>
+<div id="header">
+    <div class="package"></div>
+    <a href="https:&#x2F;&#x2F;github.com&#x2F;moddable-opensource&#x2F;moddable" class="badge" title="Github.com"><img src="/assets/images/github.png" alt="Github" /></a>
+    <a href="/" class="home"><strong>Moddable</strong> <span class="headline">Moddable SDK</span></a>
+</div>
+        <div id="container">
+            <div id="sidebar">
+<ul class="list">
+    <li>
+        <h4><a href="/">Home</a></h4>
+        <ul>
+            <li><a href="https://www.moddable.com">Moddable</a></li>
+            <li><a href="/">Documentation</a></li>
+        </ul>
+    </li>
+    <li>
+        <h4><a href="/">Resources</a></h4>
+        <ul>
+            <li><a href="https://github.com/moddable-opensource/moddable">GitHub</a></li>
+            <li><a href="/">Link 2</a></li>
+        </ul>
+    </li>
+</ul>
+            </div>
+
+<div id="content">
+<h1>DotStar Wiring Guide</h1>
+<p>Copyright 2018 Moddable Tech, Inc.<br />
+Revised: December 11, 2018</p>
+<p><img src="images/dotstar.jpg" alt="Generic SPI Display" /></p>
+<h2>Specs</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"></th>
+<th style="text-align:left"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><strong>Size</strong></td>
+<td style="text-align:left">144 LED strip (5mm x 5mm LEDs)</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>Type</strong></td>
+<td style="text-align:left">ADA102 LED</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>Interface</strong></td>
+<td style="text-align:left">SPI</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>Drivers</strong></td>
+<td style="text-align:left"><a href="../../documentation/drivers/dotstar/dotstar.html">dotstar</a></td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>Availability</strong></td>
+<td style="text-align:left"><a href="https://www.adafruit.com/product/2241">Adafruit DotStar</a></td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>Description</strong></td>
+<td style="text-align:left">Adafruit uses the ADA102 LED's in their DotStar digital LEDs. This allows individual LED control with 2 wire SPI. These LEDs are not strictly a display, but they can be seen as one row of a display. There are options to purchase them in a organized in a rectangular grid, which is like a display.</td>
+</tr>
+</tbody>
+</table>
+<h2>Moddable example code</h2>
+<p>The <a href="../../examples/drivers/dotstar/">dotstar</a> example works with a 144 LED strip. It scans through an image one row at a time to update the pixels on the DotStar string.</p>
+<pre><code>cd $MODDABLE/examples/drivers/dotstar
+mcconfig -d -m -p esp
+</code></pre>
+<h2>ESP8266 Pinout</h2>
+<p><strong>Note:</strong> Dotstar requires 5V data signals so signal lines must be run through a logic converter to boost them to 5V. The <a href="https://www.adafruit.com/product/1787">74AHCT125</a> or a similar shifter will work.</p>
+<table>
+<thead>
+<tr>
+<th>Dotstar Display</th>
+<th>ESP8266</th>
+<th>ESP8266 Devboard label</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>5V</td>
+<td>N/A (connect to 5V supply)</td>
+<td></td>
+</tr>
+<tr>
+<td>GND</td>
+<td>GND</td>
+<td></td>
+</tr>
+<tr>
+<td>CI</td>
+<td>GPIO 14/SCLK</td>
+<td>D5</td>
+</tr>
+<tr>
+<td>DI</td>
+<td>GPIO 13/MOSI</td>
+<td>D7</td>
+</tr>
+</tbody>
+</table>
+<p><img src="images/dotstar-wiring.png" alt="ESP32 - Generic 2.4&quot;-2.8&quot; wiring" /></p>
+
+</div>
+
+        </div>
+    </body>
+</html>

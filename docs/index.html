@@ -1,0 +1,2293 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moddable</title>
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata|Open+Sans" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/hljs.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/markdown.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
+</head>
+    <body>
+<div id="header">
+    <div class="package"></div>
+    <a href="https:&#x2F;&#x2F;github.com&#x2F;moddable-opensource&#x2F;moddable" class="badge" title="Github.com"><img src="/assets/images/github.png" alt="Github" /></a>
+    <a href="/" class="home"><strong>Moddable</strong> <span class="headline">Moddable SDK</span></a>
+</div>
+        <div id="container">
+            <div id="sidebar">
+<ul class="list">
+    <li>
+        <h4><a href="/">Home</a></h4>
+        <ul>
+            <li><a href="https://www.moddable.com">Moddable</a></li>
+            <li><a href="/">Documentation</a></li>
+        </ul>
+    </li>
+    <li>
+        <h4><a href="/">Resources</a></h4>
+        <ul>
+            <li><a href="https://github.com/moddable-opensource/moddable">GitHub</a></li>
+            <li><a href="/">Link 2</a></li>
+        </ul>
+    </li>
+</ul>
+            </div>
+
+<div id="content">
+<h3><a href="/Moddable_SDK_-_Getting_Started.html">moddable_sdk_-_getting_started</a></h3>
+<ul>
+<li><a href="/Moddable_SDK_-_Getting_Started.md#moddable-sdk---getting-started">Moddable SDK - Getting Started</a>
+<ul>
+<li><a href="/Moddable_SDK_-_Getting_Started.md#table-of-contents">Table of Contents</a></li>
+<li><a href="/Moddable_SDK_-_Getting_Started.md#overview">Overview</a></li>
+<li><a href="/Moddable_SDK_-_Getting_Started.md#macos">macOS</a>
+<ul>
+<li><a href="/Moddable_SDK_-_Getting_Started.md#host-environment-setup">Host environment setup</a></li>
+<li><a href="/Moddable_SDK_-_Getting_Started.md#esp8266-moddable-zero-setup">ESP8266 (Moddable Zero) setup</a></li>
+<li><a href="/Moddable_SDK_-_Getting_Started.md#esp32-setup">ESP32 setup</a></li>
+</ul>
+</li>
+<li><a href="/Moddable_SDK_-_Getting_Started.md#windows">Windows</a>
+<ul>
+<li><a href="/Moddable_SDK_-_Getting_Started.md#host-environment-setup-1">Host environment setup</a></li>
+</ul>
+<ul>
+<li><a href="/Moddable_SDK_-_Getting_Started.md#esp8266-moddable-zero-setup-1">ESP8266 (Moddable Zero) setup</a></li>
+<li><a href="/Moddable_SDK_-_Getting_Started.md#esp32-setup-1">ESP32 setup</a></li>
+</ul>
+</li>
+<li><a href="/Moddable_SDK_-_Getting_Started.md#linux">Linux</a>
+<ul>
+<li><a href="/Moddable_SDK_-_Getting_Started.md#host-environment-setup-2">Host environment setup</a></li>
+<li><a href="/Moddable_SDK_-_Getting_Started.md#esp8266-moddable-zero-setup-2">ESP8266 (Moddable Zero) setup</a></li>
+<li><a href="/Moddable_SDK_-_Getting_Started.md#esp32-setup-2">ESP32 setup</a></li>
+</ul>
+</li>
+<li><a href="/Moddable_SDK_-_Getting_Started.md#debugging-applications">Debugging applications</a></li>
+<li><a href="/Moddable_SDK_-_Getting_Started.md#esp8266-arduino-version-24">ESP8266 Arduino version 2.4</a></li>
+</ul>
+</li>
+</ul>
+<h3><a href="/base/base.html">base</a></h3>
+<ul>
+<li><a href="/base/base.md#table-of-contents">Table of Contents</a></li>
+<li><a href="/base/base.md#class-timer">class Timer</a>
+<ul>
+<li><a href="/base/base.md#timersetcallback-interval-repeat"><code>Timer.set(callback[, interval, repeat])</code></a></li>
+<li><a href="/base/base.md#timerrepeatcallback-interval"><code>Timer.repeat(callback, interval)</code></a></li>
+<li><a href="/base/base.md#timerscheduleid-interval-repeat"><code>Timer.schedule(id, interval[, repeat])</code></a></li>
+<li><a href="/base/base.md#timerclearid"><code>Timer.clear(id)</code></a></li>
+<li><a href="/base/base.md#timerdelayms"><code>Timer.delay(ms)</code></a></li>
+</ul>
+</li>
+<li><a href="/base/base.md#class-time">class Time</a>
+<ul>
+<li><a href="/base/base.md#timesetseconds"><code>Time.set(seconds)</code></a></li>
+<li><a href="/base/base.md#timezone-property"><code>timezone</code> property</a></li>
+<li><a href="/base/base.md#dst-property"><code>dst</code> property</a></li>
+<li><a href="/base/base.md#ticks-property"><code>ticks</code> property</a></li>
+</ul>
+</li>
+<li><a href="/base/base.md#class-debug">class Debug</a>
+<ul>
+<li><a href="/base/base.md#debuggcenable"><code>Debug.gc([enable])</code></a></li>
+</ul>
+</li>
+<li><a href="/base/base.md#class-uuid">class UUID</a>
+<ul>
+<li><a href="/base/base.md#uuid"><code>UUID()</code></a></li>
+</ul>
+</li>
+<li><a href="/base/base.md#class-instrumentation">class Instrumentation</a>
+<ul>
+<li><a href="/base/base.md#getwhat"><code>get(what)</code></a></li>
+</ul>
+</li>
+<li><a href="/base/base.md#class-console">class Console</a></li>
+<li><a href="/base/base.md#class-cli">class CLI</a></li>
+<li><a href="/base/base.md#class-worker">class Worker</a></li>
+</ul>
+<h3><a href="/base/setup.html">setup</a></h3>
+<ul>
+<li><a href="/base/setup.md#background">Background</a></li>
+<li><a href="/base/setup.md#setup-module">setup module</a></li>
+<li><a href="/base/setup.md#preload-and-unloading">Preload and unloading</a></li>
+<li><a href="/base/setup.md#additional-notes">Additional notes</a></li>
+</ul>
+<h3><a href="/base/worker.html">worker</a></h3>
+<ul>
+<li><a href="/base/worker.md#web-workers">Web Workers</a></li>
+<li><a href="/base/worker.md#class-worker">class Worker</a>
+<ul>
+<li><a href="/base/worker.md#launching-a-worker">Launching a worker</a></li>
+<li><a href="/base/worker.md#launching-a-worker-with-memory-configuration">Launching a worker with memory configuration</a></li>
+<li><a href="/base/worker.md#sending-a-message-to-a-worker">Sending a message to a worker</a></li>
+<li><a href="/base/worker.md#receiving-a-message-from-a-worker">Receiving a message from a worker</a></li>
+<li><a href="/base/worker.md#terminating-a-worker">Terminating a worker</a></li>
+<li><a href="/base/worker.md#worker-script-start-up">Worker script start-up</a></li>
+<li><a href="/base/worker.md#sending-a-message-from-worker-script">Sending a message from worker script</a></li>
+<li><a href="/base/worker.md#worker-script-terminating-itself">Worker script terminating itself</a></li>
+<li><a href="/base/worker.md#constructormodulepath-dictionary">constructor(modulePath[, dictionary])</a></li>
+<li><a href="/base/worker.md#terminate">terminate()</a></li>
+<li><a href="/base/worker.md#postmessagemsg">postMessage(msg)</a></li>
+<li><a href="/base/worker.md#onmessage-property">onmessage property</a></li>
+</ul>
+</li>
+<li><a href="/base/worker.md#shared-workers">Shared Workers</a></li>
+<li><a href="/base/worker.md#class-sharedworker">class SharedWorker</a></li>
+<li><a href="/base/worker.md#scheduling">Scheduling</a></li>
+<li><a href="/base/worker.md#xsbug-support">xsbug support</a></li>
+<li><a href="/base/worker.md#shared-memory-and-atomics">Shared Memory and Atomics</a></li>
+</ul>
+<h3><a href="/commodetto/Creating_fonts_for_Moddable_applications.html">creating_fonts_for_moddable_applications</a></h3>
+<ul>
+<li><a href="/commodetto/Creating_fonts_for_Moddable_applications.md#creating-fonts-for-applications-built-on-the-moddable-sdk">Creating fonts for applications built on the Moddable SDK</a>
+<ul>
+<li><a href="/commodetto/Creating_fonts_for_Moddable_applications.md#glyph-designer-instructions">Glyph Designer instructions</a></li>
+</ul>
+</li>
+</ul>
+<h3><a href="/commodetto/commodetto.html">commodetto</a></h3>
+<ul>
+<li><a href="/commodetto/commodetto.md#about-this-document">About This Document</a></li>
+<li><a href="/commodetto/commodetto.md#table-of-contents">Table of Contents</a></li>
+<li><a href="/commodetto/commodetto.md#overview-of-commodetto">Overview of Commodetto</a>
+<ul>
+<li><a href="/commodetto/commodetto.md#native-data-types">Native Data Types</a>
+<ul>
+<li><a href="/commodetto/commodetto.md#pixel-type">Pixel Type</a></li>
+<li><a href="/commodetto/commodetto.md#pixel-formats">Pixel Formats</a></li>
+<li><a href="/commodetto/commodetto.md#coordinate-type">Coordinate Type</a></li>
+<li><a href="/commodetto/commodetto.md#dimension-type">Dimension Type</a></li>
+<li><a href="/commodetto/commodetto.md#bitmap-type">Bitmap Type</a></li>
+</ul>
+</li>
+<li><a href="/commodetto/commodetto.md#host-buffers">Host Buffers</a></li>
+</ul>
+</li>
+<li><a href="/commodetto/commodetto.md#bitmap-operations">Bitmap Operations</a>
+<ul>
+<li><a href="/commodetto/commodetto.md#bitmap-class">Bitmap Class</a>
+<ul>
+<li><a href="/commodetto/commodetto.md#functions">Functions</a>
+<ul>
+<li><a href="/commodetto/commodetto.md#constructorwidth-height-format-buffer-offset"><code>constructor(width, height, format, buffer, offset)</code></a></li>
+</ul>
+</li>
+<li><a href="/commodetto/commodetto.md#properties">Properties</a></li>
+<li><a href="/commodetto/commodetto.md#static-functions">Static Functions</a></li>
+<li><a href="/commodetto/commodetto.md#depthpixelformat"><code>depth(pixelFormat)</code></a></li>
+<li><a href="/commodetto/commodetto.md#static-properties">Static Properties</a></li>
+</ul>
+</li>
+<li><a href="/commodetto/commodetto.md#pixelsout-class">PixelsOut Class</a>
+<ul>
+<li><a href="/commodetto/commodetto.md#functions-1">Functions</a>
+<ul>
+<li><a href="/commodetto/commodetto.md#constructordictionary"><code>constructor(dictionary)</code></a></li>
+<li><a href="/commodetto/commodetto.md#beginx-y-width-height"><code>begin(x, y, width, height)</code></a></li>
+<li><a href="/commodetto/commodetto.md#end"><code>end()</code></a></li>
+<li><a href="/commodetto/commodetto.md#continuex-y-width-height"><code>continue(x, y, width, height)</code></a></li>
+<li><a href="/commodetto/commodetto.md#sendpixels-offset--0-count--pixelsbytelength---offset"><code>send(pixels, offset = 0, count = pixels.byteLength - offset)</code></a></li>
+<li><a href="/commodetto/commodetto.md#adaptinvalidr"><code>adaptInvalid(r)</code></a></li>
+<li><a href="/commodetto/commodetto.md#pixelstobytescount"><code>pixelsToBytes(count)</code></a></li>
+</ul>
+</li>
+<li><a href="/commodetto/commodetto.md#properties-1">Properties</a></li>
+</ul>
+</li>
+<li><a href="/commodetto/commodetto.md#spiout-class">SPIOut Class</a></li>
+<li><a href="/commodetto/commodetto.md#bufferout-class">BufferOut Class</a>
+<ul>
+<li><a href="/commodetto/commodetto.md#properties-2">Properties</a></li>
+</ul>
+</li>
+<li><a href="/commodetto/commodetto.md#bmpout-class">BMPOut Class</a></li>
+<li><a href="/commodetto/commodetto.md#rle4out-class">RLE4Out Class</a>
+<ul>
+<li><a href="/commodetto/commodetto.md#properties-3">Properties</a></li>
+</ul>
+</li>
+<li><a href="/commodetto/commodetto.md#colorcellout-class">ColorCellOut Class</a>
+<ul>
+<li><a href="/commodetto/commodetto.md#properties-4">Properties</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="/commodetto/commodetto.md#asset-parsing">Asset Parsing</a>
+<ul>
+<li><a href="/commodetto/commodetto.md#bmp">BMP</a></li>
+<li><a href="/commodetto/commodetto.md#jpeg">JPEG</a>
+<ul>
+<li><a href="/commodetto/commodetto.md#decompressing-entire-image">Decompressing entire image</a></li>
+<li><a href="/commodetto/commodetto.md#decoding-block-by-block">Decoding block by block</a></li>
+<li><a href="/commodetto/commodetto.md#streaming-decode">Streaming decode</a></li>
+</ul>
+</li>
+<li><a href="/commodetto/commodetto.md#png">PNG</a></li>
+<li><a href="/commodetto/commodetto.md#bmfont">BMFont</a></li>
+</ul>
+</li>
+<li><a href="/commodetto/commodetto.md#rendering">Rendering</a>
+<ul>
+<li><a href="/commodetto/commodetto.md#render-class">Render class</a>
+<ul>
+<li><a href="/commodetto/commodetto.md#functions-2">Functions</a>
+<ul>
+<li><a href="/commodetto/commodetto.md#constructorpixelsout-dictionary"><code>constructor(pixelsOut, dictionary)</code></a></li>
+<li><a href="/commodetto/commodetto.md#beginx-y-width-height-1"><code>begin(x, y, width, height)</code></a></li>
+<li><a href="/commodetto/commodetto.md#end-1"><code>end()</code></a></li>
+<li><a href="/commodetto/commodetto.md#continuex-y-width-height-1"><code>continue(x, y, width, height)</code></a></li>
+<li><a href="/commodetto/commodetto.md#adaptinvalidr-1"><code>adaptInvalid(r)</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="/commodetto/commodetto.md#pixel-format-conversion">Pixel format conversion</a>
+<ul>
+<li><a href="/commodetto/commodetto.md#convert-class">Convert class</a>
+<ul>
+<li><a href="/commodetto/commodetto.md#constructorsrc-dst"><code>constructor(src, dst)</code></a></li>
+<li><a href="/commodetto/commodetto.md#convertsrc-dst"><code>convert(src, dst)</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="/commodetto/commodetto.md#odds-and-ends">Odds and Ends</a>
+<ul>
+<li><a href="/commodetto/commodetto.md#target-hardware">Target Hardware</a></li>
+<li><a href="/commodetto/commodetto.md#about-the-name-commodetto">About the Name &quot;Commodetto&quot;</a></li>
+</ul>
+</li>
+</ul>
+<h3><a href="/commodetto/poco.html">poco</a></h3>
+<ul>
+<li><a href="/commodetto/poco.md#about-this-document">About This Document</a></li>
+<li><a href="/commodetto/poco.md#table-of-contents">Table of Contents</a></li>
+<li><a href="/commodetto/poco.md#examples">Examples</a>
+<ul>
+<li><a href="/commodetto/poco.md#rectangle">Rectangle</a></li>
+<li><a href="/commodetto/poco.md#origin">Origin</a></li>
+<li><a href="/commodetto/poco.md#clip">Clip</a></li>
+<li><a href="/commodetto/poco.md#monochrome-bitmap">Monochrome Bitmap</a></li>
+<li><a href="/commodetto/poco.md#color-bitmap">Color Bitmap</a></li>
+<li><a href="/commodetto/poco.md#pattern">Pattern</a></li>
+<li><a href="/commodetto/poco.md#gray-bitmap">Gray Bitmap</a></li>
+<li><a href="/commodetto/poco.md#offscreen-bitmap">Offscreen Bitmap</a></li>
+<li><a href="/commodetto/poco.md#alpha">Alpha</a></li>
+<li><a href="/commodetto/poco.md#jpeg">JPEG</a></li>
+<li><a href="/commodetto/poco.md#text">Text</a></li>
+</ul>
+</li>
+<li><a href="/commodetto/poco.md#pixel-formats">Pixel formats</a>
+<ul>
+<li><a href="/commodetto/poco.md#destination-pixel-formats">Destination pixel formats</a></li>
+<li><a href="/commodetto/poco.md#display-pixel-format">Display pixel format</a></li>
+<li><a href="/commodetto/poco.md#source-bitmap-pixel-formats">Source bitmap pixel formats</a></li>
+<li><a href="/commodetto/poco.md#compressed-pixel-formats">Compressed pixel formats</a></li>
+</ul>
+</li>
+<li><a href="/commodetto/poco.md#immediate-mode-rendering">Immediate mode rendering</a></li>
+<li><a href="/commodetto/poco.md#rotation">Rotation</a></li>
+<li><a href="/commodetto/poco.md#javascript-api-reference">JavaScript API Reference</a>
+<ul>
+<li><a href="/commodetto/poco.md#functions">Functions</a>
+<ul>
+<li><a href="/commodetto/poco.md#constructorpixelsout-dictionary"><code>constructor(pixelsOut, dictionary)</code></a></li>
+<li><a href="/commodetto/poco.md#clipx-y-width-height"><code>clip(x, y, width, height)</code></a></li>
+<li><a href="/commodetto/poco.md#originx-y"><code>origin(x, y)</code></a></li>
+<li><a href="/commodetto/poco.md#makecolorr-g-b"><code>makeColor(r, g, b)</code></a></li>
+<li><a href="/commodetto/poco.md#fillrectanglecolor-x-y-width-height"><code>fillRectangle(color, x, y, width, height)</code></a></li>
+<li><a href="/commodetto/poco.md#blendrectanglecolor-blend-x-y-width-height"><code>blendRectangle(color, blend, x, y, width, height)</code></a></li>
+<li><a href="/commodetto/poco.md#drawpixelcolor-x-y"><code>drawPixel(color, x, y)</code></a></li>
+<li><a href="/commodetto/poco.md#drawbitmapbits-x-y-sx-sy-sw-sh"><code>drawBitmap(bits, x, y, sx, sy, sw, sh)</code></a></li>
+<li><a href="/commodetto/poco.md#drawmonochromemonochrome-fore-back-x-y-sx-sy-sw-sh"><code>drawMonochrome(monochrome, fore, back, x, y, sx, sy, sw, sh)</code></a></li>
+<li><a href="/commodetto/poco.md#drawgraybits-color-x-y-sx-sy-sw-sh-blend"><code>drawGray(bits, color, x, y, sx, sy, sw, sh[, blend])</code></a></li>
+<li><a href="/commodetto/poco.md#drawmaskedbits-x-y-sx-sy-sw-sh-mask-mask_sx-mask_sy-blend"><code>drawMasked(bits, x, y, sx, sy, sw, sh, mask, mask_sx, mask_sy[, blend])</code></a></li>
+<li><a href="/commodetto/poco.md#fillpatternbits-x-y-w-h--sx-sx-sx-sh"><code>fillPattern(bits, x, y, w, h [, sx, sx, sx, sh])</code></a></li>
+<li><a href="/commodetto/poco.md#drawtexttext-font-color-x-y-width"><code>drawText(text, font, color, x, y[, width])</code></a></li>
+<li><a href="/commodetto/poco.md#gettextwidthtext-font"><code>getTextWidth(text, font)</code></a></li>
+<li><a href="/commodetto/poco.md#drawframeframe-dictionary-x-y"><code>drawFrame(frame, dictionary, x, y)</code></a></li>
+</ul>
+</li>
+<li><a href="/commodetto/poco.md#properties">Properties</a>
+<ul>
+<li><a href="/commodetto/poco.md#height"><code>height</code></a></li>
+<li><a href="/commodetto/poco.md#width"><code>width</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="/commodetto/poco.md#c-api-reference">C API Reference</a>
+<ul>
+<li><a href="/commodetto/poco.md#data-structures">Data Structures</a>
+<ul>
+<li><a href="/commodetto/poco.md#pocorecord"><code>PocoRecord</code></a></li>
+<li><a href="/commodetto/poco.md#pococoordinate"><code>PocoCoordinate</code></a></li>
+<li><a href="/commodetto/poco.md#pocodimension"><code>PocoDimension</code></a></li>
+<li><a href="/commodetto/poco.md#pocopixel"><code>PocoPixel</code></a></li>
+<li><a href="/commodetto/poco.md#pocobitmapformat"><code>PocoBitmapFormat</code></a></li>
+<li><a href="/commodetto/poco.md#pocorectangle"><code>PocoRectangle</code></a></li>
+<li><a href="/commodetto/poco.md#pocobitmap"><code>PocoBitmap</code></a></li>
+</ul>
+</li>
+<li><a href="/commodetto/poco.md#functions-1">Functions</a>
+<ul>
+<li><a href="/commodetto/poco.md#pocomakecolor"><code>PocoMakeColor</code></a></li>
+<li><a href="/commodetto/poco.md#pocodrawingbegin"><code>PocoDrawingBegin</code></a></li>
+<li><a href="/commodetto/poco.md#pocodrawingend"><code>PocoDrawingEnd</code></a></li>
+<li><a href="/commodetto/poco.md#pocorectanglefill"><code>PocoRectangleFill</code></a></li>
+<li><a href="/commodetto/poco.md#pocopixeldraw"><code>PocoPixelDraw</code></a></li>
+<li><a href="/commodetto/poco.md#pocobitmapdraw"><code>PocoBitmapDraw</code></a></li>
+<li><a href="/commodetto/poco.md#pocomonochromebitmapdraw"><code>PocoMonochromeBitmapDraw</code></a></li>
+<li><a href="/commodetto/poco.md#pocograybitmapdraw"><code>PocoGrayBitmapDraw</code></a></li>
+<li><a href="/commodetto/poco.md#pocobitmapdrawmasked"><code>PocoBitmapDrawMasked</code></a></li>
+<li><a href="/commodetto/poco.md#pocobitmappattern"><code>PocoBitmapPattern</code></a></li>
+<li><a href="/commodetto/poco.md#pocodrawframe"><code>PocoDrawFrame</code></a></li>
+<li><a href="/commodetto/poco.md#pococlippush"><code>PocoClipPush</code></a></li>
+<li><a href="/commodetto/poco.md#pococlippop"><code>PocoClipPop</code></a></li>
+<li><a href="/commodetto/poco.md#pocooriginpush"><code>PocoOriginPush</code></a></li>
+<li><a href="/commodetto/poco.md#pocooriginpop"><code>PocoOriginPop</code></a></li>
+<li><a href="/commodetto/poco.md#pocodrawingbeginframebuffer"><code>PocoDrawingBeginFrameBuffer</code></a></li>
+<li><a href="/commodetto/poco.md#pocodrawingendframebuffer"><code>PocoDrawingEndFrameBuffer</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="/commodetto/poco.md#odds-and-ends">Odds and Ends</a>
+<ul>
+<li><a href="/commodetto/poco.md#relationship-to-commodetto">Relationship to Commodetto</a></li>
+<li><a href="/commodetto/poco.md#about-the-name-poco">About the Name &quot;Poco&quot;</a></li>
+</ul>
+</li>
+</ul>
+<h3><a href="/crypt/crypt.html">crypt</a></h3>
+<ul>
+<li><a href="/crypt/crypt.md#class-digest-crypt">class Digest (Crypt)</a>
+<ul>
+<li><a href="/crypt/crypt.md#md5-hash">MD5 Hash</a></li>
+<li><a href="/crypt/crypt.md#sha1-hash">SHA1 Hash</a></li>
+<li><a href="/crypt/crypt.md#new-digesttype">new Digest(type)</a></li>
+<li><a href="/crypt/crypt.md#writemessage">write(message)</a></li>
+<li><a href="/crypt/crypt.md#close">close()</a></li>
+</ul>
+</li>
+</ul>
+<h3><a href="/data/data.html">data</a></h3>
+<ul>
+<li><a href="/data/data.md#table-of-contents">Table of Contents</a></li>
+<li><a href="/data/data.md#class-base64">class Base64</a>
+<ul>
+<li><a href="/data/data.md#static-decodestr"><code>static decode(str)</code></a></li>
+<li><a href="/data/data.md#static-encodedata"><code>static encode(data)</code></a></li>
+</ul>
+</li>
+<li><a href="/data/data.md#class-hex">class Hex</a>
+<ul>
+<li><a href="/data/data.md#static-tobufferstring--separator"><code>static toBuffer(string [, separator])</code></a></li>
+<li><a href="/data/data.md#static-tostringbuffer--separator"><code>static toString(buffer [, separator]);</code></a></li>
+</ul>
+</li>
+</ul>
+<h3><a href="/devices/gecko/GeckoBuild.html">geckobuild</a></h3>
+<ul>
+<li><a href="/devices/gecko/GeckoBuild.md#gecko">Gecko</a>
+<ul>
+<li><a href="/devices/gecko/GeckoBuild.md#about-this-document">About This Document</a></li>
+<li><a href="/devices/gecko/GeckoBuild.md#table-of-contents">Table of Contents</a></li>
+<li><a href="/devices/gecko/GeckoBuild.md#about-gecko">About Gecko</a>
+<ul>
+<li><a href="/devices/gecko/GeckoBuild.md#development-workflow">Development workflow</a>
+<ul>
+<li><a href="/devices/gecko/GeckoBuild.md#mcconfig-and-subplatforms"><code>mcconfig</code> and Subplatforms</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="/devices/gecko/GeckoBuild.md#getting-started">Getting Started</a>
+<ul>
+<li><a href="/devices/gecko/GeckoBuild.md#install-simplicity-studio">Install Simplicity Studio</a>
+<ul>
+<li><a href="/devices/gecko/GeckoBuild.md#create-a-new-simplicity-studio-project">Create a new Simplicity Studio Project</a></li>
+</ul>
+</li>
+<li><a href="/devices/gecko/GeckoBuild.md#get-moddable-open-source">Get Moddable Open Source</a></li>
+<li><a href="/devices/gecko/GeckoBuild.md#build-xs_geckoa-archive">Build xs_gecko.a archive</a>
+<ul>
+<li><a href="/devices/gecko/GeckoBuild.md#modifications-to-the-simplicity-studio-project-for-the-moddable-sdk">Modifications to the Simplicity Studio project for the Moddable sdk.</a></li>
+<li><a href="/devices/gecko/GeckoBuild.md#integrate-moddable-runtime">Integrate Moddable runtime</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="/devices/gecko/GeckoBuild.md#pin-and-feature-configuration">Pin and Feature configuration</a>
+<ul>
+<li><a href="/devices/gecko/GeckoBuild.md#debugging">Debugging</a>
+<ul>
+<li><a href="/devices/gecko/GeckoBuild.md#connecting-xsbug">Connecting xsbug</a></li>
+<li><a href="/devices/gecko/GeckoBuild.md#example-manifestjson-defines-for-xsbug">Example manifest.json defines for xsbug</a></li>
+</ul>
+</li>
+<li><a href="/devices/gecko/GeckoBuild.md#sleep">Sleep</a>
+<ul>
+<li><a href="/devices/gecko/GeckoBuild.md#em4-sleep">EM4 Sleep</a>
+<ul>
+<li><a href="/devices/gecko/GeckoBuild.md#manifestjson-file">manifest.json file:</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="/devices/gecko/GeckoBuild.md#class-sleep">class Sleep</a>
+<ul>
+<li><a href="/devices/gecko/GeckoBuild.md#determine-cause-of-wakeup">Determine cause of wakeup</a></li>
+<li><a href="/devices/gecko/GeckoBuild.md#storing-data-for-retention-during-em4-sleep">Storing data for retention during EM4 sleep</a></li>
+<li><a href="/devices/gecko/GeckoBuild.md#entering-em4-sleep">Entering EM4 Sleep</a></li>
+</ul>
+</li>
+<li><a href="/devices/gecko/GeckoBuild.md#digital">Digital</a></li>
+<li><a href="/devices/gecko/GeckoBuild.md#analog">Analog</a>
+<ul>
+<li><a href="/devices/gecko/GeckoBuild.md#manifestjson-file-1">manifest.json file:</a></li>
+</ul>
+</li>
+<li><a href="/devices/gecko/GeckoBuild.md#class-analog">class Analog</a></li>
+<li><a href="/devices/gecko/GeckoBuild.md#spi">SPI</a>
+<ul>
+<li><a href="/devices/gecko/GeckoBuild.md#manifestjson-file-2">manifest.json file:</a></li>
+</ul>
+</li>
+<li><a href="/devices/gecko/GeckoBuild.md#i2c">I2C</a>
+<ul>
+<li><a href="/devices/gecko/GeckoBuild.md#manifestjson-file-3">manifest.json file:</a></li>
+</ul>
+</li>
+<li><a href="/devices/gecko/GeckoBuild.md#radio">Radio</a>
+<ul>
+<li><a href="/devices/gecko/GeckoBuild.md#radio-setup">Radio setup</a></li>
+<li><a href="/devices/gecko/GeckoBuild.md#radio-mainc">Radio main.c</a></li>
+</ul>
+</li>
+<li><a href="/devices/gecko/GeckoBuild.md#ble">BLE</a></li>
+<li><a href="/devices/gecko/GeckoBuild.md#notes-and-troubleshooting">Notes and Troubleshooting</a></li>
+</ul>
+</li>
+<li><a href="/devices/gecko/GeckoBuild.md#useful-pin-configurations">Useful pin configurations</a>
+<ul>
+<li><a href="/devices/gecko/GeckoBuild.md#giant-gecko-pin-configuration">Giant Gecko pin configuration</a>
+<ul>
+<li><a href="/devices/gecko/GeckoBuild.md#xsbug-connection">xsbug Connection</a></li>
+<li><a href="/devices/gecko/GeckoBuild.md#epaper-display">Epaper Display</a></li>
+<li><a href="/devices/gecko/GeckoBuild.md#i2c-sensors">I2C Sensors</a></li>
+<li><a href="/devices/gecko/GeckoBuild.md#onboard-switches--leds">Onboard Switches &amp; LEDs</a></li>
+</ul>
+</li>
+<li><a href="/devices/gecko/GeckoBuild.md#mighty-gecko-pin-configuration">Mighty Gecko pin configuration</a>
+<ul>
+<li><a href="/devices/gecko/GeckoBuild.md#wstk-onboard-pins">WSTK Onboard Pins</a></li>
+<li><a href="/devices/gecko/GeckoBuild.md#side-expansion-header">Side Expansion Header</a></li>
+<li><a href="/devices/gecko/GeckoBuild.md#xsbug-connection-1">xsbug Connection</a></li>
+<li><a href="/devices/gecko/GeckoBuild.md#epaper-display-1">Epaper Display</a></li>
+<li><a href="/devices/gecko/GeckoBuild.md#i2c-sensors-1">I2C Sensors</a></li>
+<li><a href="/devices/gecko/GeckoBuild.md#onboard-switches--leds-1">Onboard Switches &amp; LEDs</a></li>
+</ul>
+</li>
+<li><a href="/devices/gecko/GeckoBuild.md#thunderboard-sense-2-pin-configuration">Thunderboard Sense 2 pin configuration</a>
+<ul>
+<li><a href="/devices/gecko/GeckoBuild.md#xsbug-connection-2">xsbug Connection</a></li>
+<li><a href="/devices/gecko/GeckoBuild.md#epaper-display-2">Epaper Display</a></li>
+<li><a href="/devices/gecko/GeckoBuild.md#i2c-sensors-2">I2C Sensors</a></li>
+<li><a href="/devices/gecko/GeckoBuild.md#onboard-switches--leds-2">Onboard Switches &amp; LEDs</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="/devices/gecko/GeckoBuild.md#example-apps-with-gecko-support">Example apps with gecko support</a></li>
+</ul>
+</li>
+</ul>
+<h3><a href="/devices/moddable-one.html">moddable-one</a></h3>
+<ul>
+<li><a href="/devices/moddable-one.md#getting-started-with-moddable-one">Getting Started with Moddable One</a>
+<ul>
+<li><a href="/devices/moddable-one.md#table-of-contents">Table of Contents</a></li>
+<li><a href="/devices/moddable-one.md#about-moddable-one">About Moddable One</a>
+<ul>
+<li><a href="/devices/moddable-one.md#components">Components</a></li>
+<li><a href="/devices/moddable-one.md#pinout">Pinout</a></li>
+</ul>
+</li>
+<li><a href="/devices/moddable-one.md#sdk-and-host-environment-setup">SDK and Host Environment Setup</a></li>
+<li><a href="/devices/moddable-one.md#building-and-deploying-apps">Building and Deploying Apps</a></li>
+<li><a href="/devices/moddable-one.md#development-resources">Development Resources</a>
+<ul>
+<li><a href="/devices/moddable-one.md#examples">Examples</a></li>
+<li><a href="/devices/moddable-one.md#documentation">Documentation</a></li>
+<li><a href="/devices/moddable-one.md#support">Support</a></li>
+<li><a href="/devices/moddable-one.md#updates">Updates</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3><a href="/devices/moddable-three.html">moddable-three</a></h3>
+<ul>
+<li><a href="/devices/moddable-three.md#getting-started-with-moddable-three">Getting Started with Moddable Three</a>
+<ul>
+<li><a href="/devices/moddable-three.md#table-of-contents">Table of Contents</a></li>
+<li><a href="/devices/moddable-three.md#about-moddable-three">About Moddable Three</a>
+<ul>
+<li><a href="/devices/moddable-three.md#components">Components</a></li>
+</ul>
+</li>
+<li><a href="/devices/moddable-three.md#sdk-and-host-environment-setup">SDK and Host Environment Setup</a></li>
+<li><a href="/devices/moddable-three.md#building-and-deploying-apps">Building and Deploying Apps</a></li>
+<li><a href="/devices/moddable-three.md#development-resources">Development Resources</a>
+<ul>
+<li><a href="/devices/moddable-three.md#examples">Examples</a></li>
+<li><a href="/devices/moddable-three.md#documentation">Documentation</a></li>
+<li><a href="/devices/moddable-three.md#support">Support</a></li>
+<li><a href="/devices/moddable-three.md#updates">Updates</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3><a href="/devices/moddable-two.html">moddable-two</a></h3>
+<ul>
+<li><a href="/devices/moddable-two.md#getting-started-with-moddable-two">Getting Started with Moddable Two</a>
+<ul>
+<li><a href="/devices/moddable-two.md#table-of-contents">Table of Contents</a></li>
+<li><a href="/devices/moddable-two.md#about-moddable-two">About Moddable Two</a>
+<ul>
+<li><a href="/devices/moddable-two.md#components">Components</a></li>
+<li><a href="/devices/moddable-two.md#pinout">Pinout</a></li>
+</ul>
+</li>
+<li><a href="/devices/moddable-two.md#sdk-and-host-environment-setup">SDK and Host Environment Setup</a></li>
+<li><a href="/devices/moddable-two.md#building-and-deploying-apps">Building and Deploying Apps</a></li>
+<li><a href="/devices/moddable-two.md#development-resources">Development Resources</a>
+<ul>
+<li><a href="/devices/moddable-two.md#examples">Examples</a></li>
+<li><a href="/devices/moddable-two.md#documentation">Documentation</a></li>
+<li><a href="/devices/moddable-two.md#support">Support</a></li>
+<li><a href="/devices/moddable-two.md#updates">Updates</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3><a href="/devices/moddable-zero.html">moddable-zero</a></h3>
+<ul>
+<li><a href="/devices/moddable-zero.md#getting-started-with-moddable-zero">Getting Started with Moddable Zero</a>
+<ul>
+<li><a href="/devices/moddable-zero.md#table-of-contents">Table of Contents</a></li>
+<li><a href="/devices/moddable-zero.md#about-moddable-zero">About Moddable Zero</a>
+<ul>
+<li><a href="/devices/moddable-zero.md#components">Components</a></li>
+<li><a href="/devices/moddable-zero.md#pinout">Pinout</a></li>
+</ul>
+</li>
+<li><a href="/devices/moddable-zero.md#sdk-and-host-environment-setup">SDK and Host Environment Setup</a></li>
+<li><a href="/devices/moddable-zero.md#building-and-deploying-apps">Building and Deploying Apps</a></li>
+<li><a href="/devices/moddable-zero.md#development-resources">Development Resources</a>
+<ul>
+<li><a href="/devices/moddable-zero.md#examples">Examples</a></li>
+<li><a href="/devices/moddable-zero.md#documentation">Documentation</a></li>
+<li><a href="/devices/moddable-zero.md#support">Support</a></li>
+<li><a href="/devices/moddable-zero.md#updates">Updates</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3><a href="/displays/wiring-guide-adafruit-1.8-st7735.html">wiring-guide-adafruit-18-st7735</a></h3>
+<ul>
+<li><a href="/displays/wiring-guide-adafruit-1.8-st7735.md#adafruit-18-st7735-wiring-guide">Adafruit 1.8&quot; ST7735 Wiring Guide</a>
+<ul>
+<li><a href="/displays/wiring-guide-adafruit-1.8-st7735.md#specs">Specs</a></li>
+<li><a href="/displays/wiring-guide-adafruit-1.8-st7735.md#moddable-example-code">Moddable example code</a></li>
+<li><a href="/displays/wiring-guide-adafruit-1.8-st7735.md#esp8266-pinout">ESP8266 Pinout</a></li>
+</ul>
+</li>
+</ul>
+<h3><a href="/displays/wiring-guide-adafruit-OLED.html">wiring-guide-adafruit-oled</a></h3>
+<ul>
+<li><a href="/displays/wiring-guide-adafruit-OLED.md#adafruit-oled-display-wiring-guide">Adafruit OLED Display Wiring Guide</a>
+<ul>
+<li><a href="/displays/wiring-guide-adafruit-OLED.md#specs">Specs</a></li>
+<li><a href="/displays/wiring-guide-adafruit-OLED.md#moddable-example-code">Moddable example code</a></li>
+<li><a href="/displays/wiring-guide-adafruit-OLED.md#esp8266-pinout">ESP8266 pinout</a></li>
+</ul>
+</li>
+</ul>
+<h3><a href="/displays/wiring-guide-crystalfontz-eink.html">wiring-guide-crystalfontz-eink</a></h3>
+<ul>
+<li><a href="/displays/wiring-guide-crystalfontz-eink.md#crystalfontz-epaper-display-wiring-guide">Crystalfontz ePaper Display Wiring Guide</a>
+<ul>
+<li><a href="/displays/wiring-guide-crystalfontz-eink.md#specs">Specs</a></li>
+<li><a href="/displays/wiring-guide-crystalfontz-eink.md#moddable-example-code">Moddable example code</a></li>
+<li><a href="/displays/wiring-guide-crystalfontz-eink.md#esp8266-pinout">ESP8266 pinout</a></li>
+</ul>
+</li>
+</ul>
+<h3><a href="/displays/wiring-guide-dotstar.html">wiring-guide-dotstar</a></h3>
+<ul>
+<li><a href="/displays/wiring-guide-dotstar.md#dotstar-wiring-guide">DotStar Wiring Guide</a>
+<ul>
+<li><a href="/displays/wiring-guide-dotstar.md#specs">Specs</a></li>
+<li><a href="/displays/wiring-guide-dotstar.md#moddable-example-code">Moddable example code</a></li>
+<li><a href="/displays/wiring-guide-dotstar.md#esp8266-pinout">ESP8266 Pinout</a></li>
+</ul>
+</li>
+</ul>
+<h3><a href="/displays/wiring-guide-generic-1.44-spi.html">wiring-guide-generic-144-spi</a></h3>
+<ul>
+<li><a href="/displays/wiring-guide-generic-1.44-spi.md#generic-144-display-wiring-guide">Generic 1.44&quot; Display Wiring Guide</a>
+<ul>
+<li><a href="/displays/wiring-guide-generic-1.44-spi.md#specs">Specs</a></li>
+<li><a href="/displays/wiring-guide-generic-1.44-spi.md#moddable-example-code">Moddable example code</a></li>
+<li><a href="/displays/wiring-guide-generic-1.44-spi.md#esp8266-pinout">ESP8266 Pinout</a></li>
+</ul>
+</li>
+</ul>
+<h3><a href="/displays/wiring-guide-generic-2.4-spi-esp32.html">wiring-guide-generic-24-spi-esp32</a></h3>
+<ul>
+<li><a href="/displays/wiring-guide-generic-2.4-spi-esp32.md#generic-24--28-displays-resistive-touch-wiring-guide---esp32">Generic 2.4&quot; &amp; 2.8&quot; Displays (Resistive Touch) Wiring Guide - ESP32</a>
+<ul>
+<li><a href="/displays/wiring-guide-generic-2.4-spi-esp32.md#specs">Specs</a></li>
+<li><a href="/displays/wiring-guide-generic-2.4-spi-esp32.md#moddable-example-code">Moddable example code</a></li>
+<li><a href="/displays/wiring-guide-generic-2.4-spi-esp32.md#esp32-pinout">ESP32 Pinout</a></li>
+</ul>
+</li>
+</ul>
+<h3><a href="/displays/wiring-guide-generic-2.4-spi.html">wiring-guide-generic-24-spi</a></h3>
+<ul>
+<li><a href="/displays/wiring-guide-generic-2.4-spi.md#generic-24--28-displays-resistive-touch-wiring-guide---esp8266">Generic 2.4&quot; &amp; 2.8&quot; Displays (Resistive Touch) Wiring Guide - ESP8266</a>
+<ul>
+<li><a href="/displays/wiring-guide-generic-2.4-spi.md#specs">Specs</a></li>
+<li><a href="/displays/wiring-guide-generic-2.4-spi.md#moddable-example-code">Moddable example code</a></li>
+<li><a href="/displays/wiring-guide-generic-2.4-spi.md#esp8266-pinout">ESP8266 Pinout</a></li>
+</ul>
+</li>
+</ul>
+<h3><a href="/displays/wiring-guide-generic-2.8-CPT-spi.html">wiring-guide-generic-28-cpt-spi</a></h3>
+<ul>
+<li><a href="/displays/wiring-guide-generic-2.8-CPT-spi.md#buydisplay-28-ctp-display-wiring-guide---esp8266">BuyDisplay 2.8&quot; CTP Display Wiring Guide - ESP8266</a>
+<ul>
+<li><a href="/displays/wiring-guide-generic-2.8-CPT-spi.md#specs">Specs</a></li>
+<li><a href="/displays/wiring-guide-generic-2.8-CPT-spi.md#configuration">Configuration</a></li>
+<li><a href="/displays/wiring-guide-generic-2.8-CPT-spi.md#moddable-sample-code">Moddable Sample code</a></li>
+<li><a href="/displays/wiring-guide-generic-2.8-CPT-spi.md#esp8266-pinout">ESP8266 Pinout</a></li>
+</ul>
+</li>
+</ul>
+<h3><a href="/displays/wiring-guide-sharp-memory-1.3-spi.html">wiring-guide-sharp-memory-13-spi</a></h3>
+<ul>
+<li><a href="/displays/wiring-guide-sharp-memory-1.3-spi.md#sharp-memory-screen-13-wiring-guide">Sharp Memory Screen 1.3&quot; Wiring Guide</a>
+<ul>
+<li><a href="/displays/wiring-guide-sharp-memory-1.3-spi.md#specs">Specs</a></li>
+<li><a href="/displays/wiring-guide-sharp-memory-1.3-spi.md#moddable-example-code">Moddable example code</a></li>
+<li><a href="/displays/wiring-guide-sharp-memory-1.3-spi.md#esp8266-pinout">ESP8266 Pinout</a></li>
+</ul>
+</li>
+</ul>
+<h3><a href="/displays/wiring-guide-sharp-memory-2.7-spi.html">wiring-guide-sharp-memory-27-spi</a></h3>
+<ul>
+<li><a href="/displays/wiring-guide-sharp-memory-2.7-spi.md#sharp-memory-display-wiring-guide">Sharp Memory Display Wiring Guide</a>
+<ul>
+<li><a href="/displays/wiring-guide-sharp-memory-2.7-spi.md#specs">Specs</a></li>
+<li><a href="/displays/wiring-guide-sharp-memory-2.7-spi.md#moddable-example-code">Moddable example code</a></li>
+<li><a href="/displays/wiring-guide-sharp-memory-2.7-spi.md#esp8266-pinout">ESP8266 pinout</a></li>
+</ul>
+</li>
+</ul>
+<h3><a href="/displays/wiring-guide-sparkFun-teensyview-spi.html">wiring-guide-sparkfun-teensyview-spi</a></h3>
+<ul>
+<li><a href="/displays/wiring-guide-sparkFun-teensyview-spi.md#sparkfun-teensyview-wiring-guide">SparkFun TeensyView Wiring Guide</a>
+<ul>
+<li><a href="/displays/wiring-guide-sparkFun-teensyview-spi.md#specs">Specs</a></li>
+<li><a href="/displays/wiring-guide-sparkFun-teensyview-spi.md#moddable-example-code">Moddable example code</a></li>
+<li><a href="/displays/wiring-guide-sparkFun-teensyview-spi.md#esp8266-pinout">ESP8266 pinout</a></li>
+</ul>
+</li>
+</ul>
+<h3><a href="/displays/wiring-guide-switch-science-LCD.html">wiring-guide-switch-science-lcd</a></h3>
+<ul>
+<li><a href="/displays/wiring-guide-switch-science-LCD.md#switch-science-reflective-lcd-display-wiring-guide">Switch Science Reflective LCD Display Wiring Guide</a>
+<ul>
+<li><a href="/displays/wiring-guide-switch-science-LCD.md#specs">Specs</a></li>
+<li><a href="/displays/wiring-guide-switch-science-LCD.md#moddable-example-code">Moddable example code</a></li>
+<li><a href="/displays/wiring-guide-switch-science-LCD.md#esp8266-pinout">ESP8266 pinout</a></li>
+</ul>
+</li>
+</ul>
+<h3><a href="/drivers/MCP230XX/MCP230XX.html">mcp230xx</a></h3>
+<pre><code>+ [Module &quot;MCP230XX&quot;](/drivers/MCP230XX/MCP230XX.md#module-mcp230xx)
++ [MCP23008 Class](/drivers/MCP230XX/MCP230XX.md#mcp23008-class)
+  - [Constructor Description](/drivers/MCP230XX/MCP230XX.md#constructor-description)
+    * [`MCP23008([dictionary])`](/drivers/MCP230XX/MCP230XX.md#mcp23008dictionary)
+  - [Dictionary](/drivers/MCP230XX/MCP230XX.md#dictionary)
+  - [Properties](/drivers/MCP230XX/MCP230XX.md#properties)
+  - [Methods](/drivers/MCP230XX/MCP230XX.md#methods)
+    * [`write(byte)`](/drivers/MCP230XX/MCP230XX.md#writebyte)
+    * [`read()`](/drivers/MCP230XX/MCP230XX.md#read)
++ [MCP23017 Class](/drivers/MCP230XX/MCP230XX.md#mcp23017-class)
+  - [Constructor Description](/drivers/MCP230XX/MCP230XX.md#constructor-description-1)
+    * [`MCP23017([dictionary])`](/drivers/MCP230XX/MCP230XX.md#mcp23017dictionary)
+  - [Dictionary](/drivers/MCP230XX/MCP230XX.md#dictionary-1)
+  - [Properties](/drivers/MCP230XX/MCP230XX.md#properties-1)
+  - [Methods](/drivers/MCP230XX/MCP230XX.md#methods-1)
+    * [`write(word)`](/drivers/MCP230XX/MCP230XX.md#writeword)
+    * [`read()`](/drivers/MCP230XX/MCP230XX.md#read-1)
++ [Pin Class](/drivers/MCP230XX/MCP230XX.md#pin-class)
+  - [Constructor Description](/drivers/MCP230XX/MCP230XX.md#constructor-description-2)
+    * [`Pin(dictionary)`](/drivers/MCP230XX/MCP230XX.md#pindictionary)
+  - [Dictionary](/drivers/MCP230XX/MCP230XX.md#dictionary-2)
+  - [Properties](/drivers/MCP230XX/MCP230XX.md#properties-2)
+  - [Methods](/drivers/MCP230XX/MCP230XX.md#methods-2)
+    * [`mode(mode)`](/drivers/MCP230XX/MCP230XX.md#modemode)
+    * [`read()`](/drivers/MCP230XX/MCP230XX.md#read-2)
+    * [`write(value)`](/drivers/MCP230XX/MCP230XX.md#writevalue)
++ [Manifest Example](/drivers/MCP230XX/MCP230XX.md#manifest-example)
+</code></pre>
+<h3><a href="/drivers/destm32s/destm32s.html">destm32s</a></h3>
+<ul>
+<li><a href="/drivers/destm32s/destm32s.md#destm32s-display-driver">DESTM32S display driver</a>
+<ul>
+<li><a href="/drivers/destm32s/destm32s.md#adding-destm32-to-a-project">Adding DESTM32 to a project</a></li>
+<li><a href="/drivers/destm32s/destm32s.md#pixel-format">Pixel format</a></li>
+<li><a href="/drivers/destm32s/destm32s.md#defines">Defines</a></li>
+<li><a href="/drivers/destm32s/destm32s.md#configuring-spi">Configuring SPI</a></li>
+</ul>
+</li>
+</ul>
+<h3><a href="/drivers/dotstar/dotstar.html">dotstar</a></h3>
+<ul>
+<li><a href="/drivers/dotstar/dotstar.md#dotstar-display-driver">DotStar display driver</a>
+<ul>
+<li><a href="/drivers/dotstar/dotstar.md#adding-dotstar-to-a-project">Adding DotStar to a project</a></li>
+<li><a href="/drivers/dotstar/dotstar.md#pixel-format">Pixel format</a></li>
+<li><a href="/drivers/dotstar/dotstar.md#defines">Defines</a></li>
+<li><a href="/drivers/dotstar/dotstar.md#configuring-spi">Configuring SPI</a></li>
+</ul>
+</li>
+</ul>
+<h3><a href="/drivers/ili9341/ili9341.html">ili9341</a></h3>
+<ul>
+<li><a href="/drivers/ili9341/ili9341.md#ili9341-display-driver">ILI9341 display driver</a>
+<ul>
+<li><a href="/drivers/ili9341/ili9341.md#adding-ili9341-to-a-project">Adding ILI9341 to a project</a></li>
+<li><a href="/drivers/ili9341/ili9341.md#pixel-formats">Pixel formats</a></li>
+<li><a href="/drivers/ili9341/ili9341.md#defines">Defines</a></li>
+<li><a href="/drivers/ili9341/ili9341.md#configuring-spi">Configuring SPI</a></li>
+<li><a href="/drivers/ili9341/ili9341.md#async">Async</a></li>
+</ul>
+</li>
+</ul>
+<h3><a href="/drivers/lpm013m126a/lpm013m126a.html">lpm013m126a</a></h3>
+<ul>
+<li><a href="/drivers/lpm013m126a/lpm013m126a.md#lpm013m126a-display-driver">LPM013M126A display driver</a>
+<ul>
+<li><a href="/drivers/lpm013m126a/lpm013m126a.md#adding-lpm013m126a-to-a-project">Adding LPM013M126A to a project</a></li>
+<li><a href="/drivers/lpm013m126a/lpm013m126a.md#pixel-format">Pixel format</a></li>
+<li><a href="/drivers/lpm013m126a/lpm013m126a.md#defines">Defines</a></li>
+<li><a href="/drivers/lpm013m126a/lpm013m126a.md#dither">Dither</a></li>
+<li><a href="/drivers/lpm013m126a/lpm013m126a.md#configuring-spi">Configuring SPI</a></li>
+<li><a href="/drivers/lpm013m126a/lpm013m126a.md#drawing">Drawing</a></li>
+</ul>
+</li>
+</ul>
+<h3><a href="/drivers/ls013b4dn04/ls013b4dn04.html">ls013b4dn04</a></h3>
+<ul>
+<li><a href="/drivers/ls013b4dn04/ls013b4dn04.md#ls013b4dn04-display-driver">LS013B4DN04 display driver</a>
+<ul>
+<li><a href="/drivers/ls013b4dn04/ls013b4dn04.md#adding-ls013b4dn04-to-a-project">Adding LS013B4DN04 to a project</a></li>
+<li><a href="/drivers/ls013b4dn04/ls013b4dn04.md#pixel-format">Pixel format</a></li>
+<li><a href="/drivers/ls013b4dn04/ls013b4dn04.md#defines">Defines</a></li>
+<li><a href="/drivers/ls013b4dn04/ls013b4dn04.md#configuring-spi">Configuring SPI</a></li>
+<li><a href="/drivers/ls013b4dn04/ls013b4dn04.md#drawing">Drawing</a></li>
+</ul>
+</li>
+</ul>
+<h3><a href="/drivers/neostrand/neostrand.html">neostrand</a></h3>
+<ul>
+<li><a href="/drivers/neostrand/neostrand.md#neostrand-driver">NeoStrand driver</a>
+<ul>
+<li><a href="/drivers/neostrand/neostrand.md#adding-neostrand-to-a-project">Adding NeoStrand to a Project</a>
+<ul>
+<li><a href="/drivers/neostrand/neostrand.md#using-neostrand">Using NeoStrand</a></li>
+<li><a href="/drivers/neostrand/neostrand.md#schemes">Schemes</a></li>
+<li><a href="/drivers/neostrand/neostrand.md#effect-dictionary">Effect Dictionary</a></li>
+<li><a href="/drivers/neostrand/neostrand.md#control">Control</a></li>
+<li><a href="/drivers/neostrand/neostrand.md#effects">Effects</a>
+<ul>
+<li><a href="/drivers/neostrand/neostrand.md#common-effect-parameters">Common Effect Parameters</a></li>
+</ul>
+</li>
+<li><a href="/drivers/neostrand/neostrand.md#custom-effects">Custom Effects</a></li>
+</ul>
+</li>
+<li><a href="/drivers/neostrand/neostrand.md#built-in-effects">Built-in Effects</a>
+<ul>
+<li><a href="/drivers/neostrand/neostrand.md#marquee">Marquee</a></li>
+<li><a href="/drivers/neostrand/neostrand.md#hue-span">Hue Span</a></li>
+<li><a href="/drivers/neostrand/neostrand.md#sine">Sine</a></li>
+<li><a href="/drivers/neostrand/neostrand.md#pulse">Pulse</a></li>
+<li><a href="/drivers/neostrand/neostrand.md#pattern">Pattern</a></li>
+<li><a href="/drivers/neostrand/neostrand.md#dim">Dim</a></li>
+</ul>
+</li>
+<li><a href="/drivers/neostrand/neostrand.md#making-a-custom-effect">Making a custom effect</a></li>
+<li><a href="/drivers/neostrand/neostrand.md#timing">Timing</a></li>
+</ul>
+</li>
+</ul>
+<h3><a href="/drivers/ssd1306/ssd1306.html">ssd1306</a></h3>
+<ul>
+<li><a href="/drivers/ssd1306/ssd1306.md#ssd1306-display-driver">SSD1306 display driver</a>
+<ul>
+<li><a href="/drivers/ssd1306/ssd1306.md#adding-ssd1306-to-a-project">Adding SSD1306 to a project</a></li>
+<li><a href="/drivers/ssd1306/ssd1306.md#pixel-format">Pixel format</a></li>
+<li><a href="/drivers/ssd1306/ssd1306.md#defines">Defines</a></li>
+<li><a href="/drivers/ssd1306/ssd1306.md#dither">Dither</a></li>
+<li><a href="/drivers/ssd1306/ssd1306.md#using-spi">Using SPI</a></li>
+<li><a href="/drivers/ssd1306/ssd1306.md#using-i2c">Using I2C</a></li>
+<li><a href="/drivers/ssd1306/ssd1306.md#drawing">Drawing</a></li>
+</ul>
+</li>
+</ul>
+<h3><a href="/drivers/ssd1351/ssd1351.html">ssd1351</a></h3>
+<ul>
+<li><a href="/drivers/ssd1351/ssd1351.md#ssd1351-display-driver">SSD1351 display driver</a>
+<ul>
+<li><a href="/drivers/ssd1351/ssd1351.md#adding-ssd1351-to-a-project">Adding SSD1351 to a project</a></li>
+<li><a href="/drivers/ssd1351/ssd1351.md#pixel-format">Pixel format</a></li>
+<li><a href="/drivers/ssd1351/ssd1351.md#defines">Defines</a></li>
+<li><a href="/drivers/ssd1351/ssd1351.md#configuring-spi">Configuring SPI</a></li>
+</ul>
+</li>
+</ul>
+<h3><a href="/drivers/st7735/st7735.html">st7735</a></h3>
+<ul>
+<li><a href="/drivers/st7735/st7735.md#st7735-display-driver">ST7735 display driver</a>
+<ul>
+<li><a href="/drivers/st7735/st7735.md#adding-st7735-to-a-project">Adding ST7735 to a project</a></li>
+<li><a href="/drivers/st7735/st7735.md#defines">Defines</a></li>
+</ul>
+</li>
+</ul>
+<h3><a href="/files/files.html">files</a></h3>
+<ul>
+<li><a href="/files/files.md#table-of-contents">Table of Contents</a></li>
+<li><a href="/files/files.md#notes-on-spiffs-file-system">Notes on SPIFFS file system</a></li>
+<li><a href="/files/files.md#class-file">class File</a>
+<ul>
+<li><a href="/files/files.md#constructorpath--write"><code>constructor(path [, write])</code></a></li>
+<li><a href="/files/files.md#readtype--count"><code>read(type [, count])</code></a></li>
+<li><a href="/files/files.md#writevalue--values"><code>write(value [, ...values])</code></a></li>
+<li><a href="/files/files.md#length-property"><code>length</code> property</a></li>
+<li><a href="/files/files.md#position-property"><code>position</code> property</a></li>
+<li><a href="/files/files.md#static-deletepath"><code>static delete(path)</code></a></li>
+<li><a href="/files/files.md#static-existspath"><code>static exists(path)</code></a></li>
+<li><a href="/files/files.md#static-renamefrom-to"><code>static rename(from, to)</code></a></li>
+<li><a href="/files/files.md#example-get-file-size">Example: Get file size</a></li>
+<li><a href="/files/files.md#example-read-file-as-string">Example: Read file as String</a></li>
+<li><a href="/files/files.md#example-read-file-into-arraybuffers">Example: Read file into ArrayBuffers</a></li>
+<li><a href="/files/files.md#example-write-string-to-file">Example: Write string to file</a></li>
+</ul>
+</li>
+<li><a href="/files/files.md#class-file-iterator">class File Iterator</a>
+<ul>
+<li><a href="/files/files.md#constructorpath"><code>constructor(path)</code></a></li>
+<li><a href="/files/files.md#next"><code>next()</code></a></li>
+<li><a href="/files/files.md#example-list-contents-of-a-directory">Example: List contents of a directory</a></li>
+</ul>
+</li>
+<li><a href="/files/files.md#class-file-system">class File System</a>
+<ul>
+<li><a href="/files/files.md#static-config"><code>static config()</code></a></li>
+<li><a href="/files/files.md#static-info"><code>static info()</code></a></li>
+</ul>
+</li>
+<li><a href="/files/files.md#class-zip">class ZIP</a>
+<ul>
+<li><a href="/files/files.md#constructorbuffer"><code>constructor(buffer)</code></a></li>
+<li><a href="/files/files.md#filepath"><code>file(path)</code></a></li>
+<li><a href="/files/files.md#iteratepath"><code>iterate(path)</code></a></li>
+<li><a href="/files/files.md#mappath"><code>map(path)</code></a></li>
+<li><a href="/files/files.md#example-reading-a-file-from-zip-archive">Example: Reading a file from ZIP archive</a></li>
+<li><a href="/files/files.md#example-list-contents-of-a-zip-archives-directory">Example: List contents of a ZIP archive's directory</a></li>
+</ul>
+</li>
+<li><a href="/files/files.md#class-resource">class Resource</a>
+<ul>
+<li><a href="/files/files.md#constructorpath-1"><code>constructor(path)</code></a></li>
+<li><a href="/files/files.md#static-existspath-1"><code>static exists(path)</code></a></li>
+<li><a href="/files/files.md#slicebegin-end"><code>slice(begin[, end])</code></a></li>
+</ul>
+</li>
+<li><a href="/files/files.md#class-preference">class Preference</a>
+<ul>
+<li><a href="/files/files.md#static-setdomain-key-value"><code>static set(domain, key, value)</code></a></li>
+<li><a href="/files/files.md#static-getdomain-key"><code>static get(domain, key)</code></a></li>
+<li><a href="/files/files.md#static-deletedomain-key"><code>static delete(domain, key)</code></a></li>
+<li><a href="/files/files.md#static-keysdomain"><code>static keys(domain)</code></a></li>
+</ul>
+</li>
+<li><a href="/files/files.md#class-flash">class Flash</a></li>
+</ul>
+<h3><a href="/network/ble/ble.html">ble</a></h3>
+<ul>
+<li><a href="/network/ble/ble.md#about-this-document">About This Document</a></li>
+<li><a href="/network/ble/ble.md#table-of-contents">Table of Contents</a></li>
+<li><a href="/network/ble/ble.md#adding-ble-to-a-project">Adding BLE to a Project</a></li>
+<li><a href="/network/ble/ble.md#using-ble">Using BLE</a></li>
+<li><a href="/network/ble/ble.md#ble-client">BLE Client</a></li>
+<li><a href="/network/ble/ble.md#class-bleclient">Class BLEClient</a>
+<ul>
+<li><a href="/network/ble/ble.md#functions">Functions</a>
+<ul>
+<li><a href="/network/ble/ble.md#onready"><code>onReady()</code></a></li>
+<li><a href="/network/ble/ble.md#startscanningparams"><code>startScanning([params])</code></a></li>
+<li><a href="/network/ble/ble.md#ondiscovereddevice"><code>onDiscovered(device)</code></a></li>
+<li><a href="/network/ble/ble.md#stopscanning"><code>stopScanning()</code></a></li>
+<li><a href="/network/ble/ble.md#connectdevice"><code>connect(device)</code></a></li>
+<li><a href="/network/ble/ble.md#onconnecteddevice"><code>onConnected(device)</code></a></li>
+<li><a href="/network/ble/ble.md#securityparameters"><code>securityParameters</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="/network/ble/ble.md#class-device">Class Device</a>
+<ul>
+<li><a href="/network/ble/ble.md#properties">Properties</a></li>
+<li><a href="/network/ble/ble.md#functions-1">Functions</a>
+<ul>
+<li><a href="/network/ble/ble.md#readrssi"><code>readRSSI()</code></a></li>
+<li><a href="/network/ble/ble.md#onrssidevice-rssi"><code>onRSSI(device, rssi)</code></a></li>
+<li><a href="/network/ble/ble.md#discoverallprimaryservices"><code>discoverAllPrimaryServices()</code></a></li>
+<li><a href="/network/ble/ble.md#discoverprimaryserviceuuid"><code>discoverPrimaryService(uuid)</code></a></li>
+<li><a href="/network/ble/ble.md#findservicebyuuiduuid"><code>findServiceByUUID(uuid)</code></a></li>
+<li><a href="/network/ble/ble.md#onservicesservices"><code>onServices(services)</code></a></li>
+<li><a href="/network/ble/ble.md#close"><code>close()</code></a></li>
+<li><a href="/network/ble/ble.md#ondisconnected"><code>onDisconnected()</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="/network/ble/ble.md#class-service">Class Service</a>
+<ul>
+<li><a href="/network/ble/ble.md#properties-1">Properties</a></li>
+<li><a href="/network/ble/ble.md#functions-2">Functions</a>
+<ul>
+<li><a href="/network/ble/ble.md#discoverallcharacteristics"><code>discoverAllCharacteristics()</code></a></li>
+<li><a href="/network/ble/ble.md#discovercharacteristicuuid"><code>discoverCharacteristic(uuid)</code></a></li>
+<li><a href="/network/ble/ble.md#findcharacteristicbyuuiduuid"><code>findCharacteristicByUUID(uuid)</code></a></li>
+<li><a href="/network/ble/ble.md#oncharacteristicscharacteristics"><code>onCharacteristics(characteristics)</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="/network/ble/ble.md#class-characteristic">Class Characteristic</a>
+<ul>
+<li><a href="/network/ble/ble.md#properties-2">Properties</a></li>
+<li><a href="/network/ble/ble.md#functions-3">Functions</a>
+<ul>
+<li><a href="/network/ble/ble.md#discoveralldescriptors"><code>discoverAllDescriptors()</code></a></li>
+<li><a href="/network/ble/ble.md#ondescriptorsdescriptors"><code>onDescriptors(descriptors)</code></a></li>
+<li><a href="/network/ble/ble.md#enablenotifications"><code>enableNotifications()</code></a></li>
+<li><a href="/network/ble/ble.md#oncharacteristicnotificationenabledcharacteristic"><code>onCharacteristicNotificationEnabled(characteristic)</code></a></li>
+<li><a href="/network/ble/ble.md#disablenotifications"><code>disableNotifications()</code></a></li>
+<li><a href="/network/ble/ble.md#oncharacteristicnotificationdisabledcharacteristic"><code>onCharacteristicNotificationDisabled(characteristic)</code></a></li>
+<li><a href="/network/ble/ble.md#oncharacteristicnotificationcharacteristic-value"><code>onCharacteristicNotification(characteristic, value)</code></a></li>
+<li><a href="/network/ble/ble.md#readvalueauth"><code>readValue([auth])</code></a></li>
+<li><a href="/network/ble/ble.md#oncharacteristicvaluecharacteristic-value"><code>onCharacteristicValue(characteristic, value)</code></a></li>
+<li><a href="/network/ble/ble.md#writewithoutresponsevalue"><code>writeWithoutResponse(value)</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="/network/ble/ble.md#class-descriptor">Class Descriptor</a>
+<ul>
+<li><a href="/network/ble/ble.md#properties-3">Properties</a></li>
+<li><a href="/network/ble/ble.md#functions-4">Functions</a>
+<ul>
+<li><a href="/network/ble/ble.md#readvalueauth-1"><code>readValue([auth])</code></a></li>
+<li><a href="/network/ble/ble.md#ondescriptorvaluedescriptor-value"><code>onDescriptorValue(descriptor, value)</code></a></li>
+<li><a href="/network/ble/ble.md#writevaluevalue"><code>writeValue(value)</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="/network/ble/ble.md#class-advertisement">Class Advertisement</a>
+<ul>
+<li><a href="/network/ble/ble.md#properties-4">Properties</a></li>
+<li><a href="/network/ble/ble.md#examples">Examples</a></li>
+</ul>
+</li>
+<li><a href="/network/ble/ble.md#class-bytes">Class Bytes</a>
+<ul>
+<li><a href="/network/ble/ble.md#constructor-description">Constructor Description</a></li>
+<li><a href="/network/ble/ble.md#bytesbytes-littleendian"><code>Bytes(bytes [,littleEndian])</code></a></li>
+</ul>
+<ul>
+<li><a href="/network/ble/ble.md#functions-5">Functions</a>
+<ul>
+<li><a href="/network/ble/ble.md#addressstring"><code>address</code>``string``</a></li>
+<li><a href="/network/ble/ble.md#uuidstring"><code>uuid</code>``string``</a></li>
+<li><a href="/network/ble/ble.md#equalsbuffer"><code>equals(buffer)</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="/network/ble/ble.md#ble-server">BLE Server</a></li>
+<li><a href="/network/ble/ble.md#class-bleserver">Class BLEServer</a>
+<ul>
+<li><a href="/network/ble/ble.md#functions-6">Functions</a>
+<ul>
+<li><a href="/network/ble/ble.md#onready-1"><code>onReady()</code></a></li>
+<li><a href="/network/ble/ble.md#devicename"><code>deviceName</code></a></li>
+<li><a href="/network/ble/ble.md#localaddress"><code>localAddress</code></a></li>
+<li><a href="/network/ble/ble.md#securityparameters-1"><code>securityParameters</code></a></li>
+<li><a href="/network/ble/ble.md#startadvertisingparams"><code>startAdvertising(params)</code></a></li>
+<li><a href="/network/ble/ble.md#stopadvertising"><code>stopAdvertising()</code></a></li>
+<li><a href="/network/ble/ble.md#notifyvaluecharacteristic-value"><code>notifyValue(characteristic, value)</code></a></li>
+<li><a href="/network/ble/ble.md#oncharacteristicnotifyenabledcharacteristic"><code>onCharacteristicNotifyEnabled(characteristic)</code></a></li>
+<li><a href="/network/ble/ble.md#oncharacteristicwrittencharacteristic-value"><code>onCharacteristicWritten(characteristic, value)</code></a></li>
+<li><a href="/network/ble/ble.md#oncharacteristicreadcharacteristic"><code>onCharacteristicRead(characteristic)</code></a></li>
+<li><a href="/network/ble/ble.md#disconnect"><code>disconnect()</code></a></li>
+<li><a href="/network/ble/ble.md#onconnecteddevice-1"><code>onConnected(device)</code></a></li>
+<li><a href="/network/ble/ble.md#ondisconnecteddevice"><code>onDisconnected(device)</code></a></li>
+<li><a href="/network/ble/ble.md#close-1"><code>close()</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="/network/ble/ble.md#gatt-services">GATT Services</a></li>
+<li><a href="/network/ble/ble.md#ble-security">BLE Security</a></li>
+<li><a href="/network/ble/ble.md#class-sm">Class SM</a>
+<ul>
+<li><a href="/network/ble/ble.md#functions-7">Functions</a>
+<ul>
+<li><a href="/network/ble/ble.md#deleteallbondings"><code>deleteAllBondings()</code></a></li>
+<li><a href="/network/ble/ble.md#passkeyinputaddress-value"><code>passkeyInput(address, value)</code></a></li>
+<li><a href="/network/ble/ble.md#passkeyreplyaddress-result"><code>passkeyReply(address, result)</code></a></li>
+<li><a href="/network/ble/ble.md#onsecurityparametersparams"><code>onSecurityParameters(params)</code></a></li>
+<li><a href="/network/ble/ble.md#onauthenticated"><code>onAuthenticated()</code></a></li>
+<li><a href="/network/ble/ble.md#onpasskeyconfirmparams"><code>onPasskeyConfirm(params)</code></a></li>
+<li><a href="/network/ble/ble.md#onpasskeydisplayparams"><code>onPasskeyDisplay(params)</code></a></li>
+<li><a href="/network/ble/ble.md#onpasskeyinputparams"><code>onPasskeyInput(params)</code></a></li>
+<li><a href="/network/ble/ble.md#onpasskeyrequestedparams"><code>onPasskeyRequested(params)</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="/network/ble/ble.md#ble-apps-on-esp32-platform">BLE Apps on ESP32 Platform</a></li>
+<li><a href="/network/ble/ble.md#ble-apps-on-blue-gecko-platform">BLE Apps on Blue Gecko Platform</a></li>
+<li><a href="/network/ble/ble.md#ble-example-apps">BLE Example Apps</a>
+<ul>
+<li><a href="/network/ble/ble.md#client-apps">Client Apps</a></li>
+<li><a href="/network/ble/ble.md#server-apps">Server Apps</a></li>
+</ul>
+</li>
+</ul>
+<h3><a href="/network/network.html">network</a></h3>
+<ul>
+<li><a href="/network/network.md#networking">Networking</a>
+<ul>
+<li><a href="/network/network.md#table-of-contents">Table of Contents</a></li>
+<li><a href="/network/network.md#class-socket">class Socket</a>
+<ul>
+<li><a href="/network/network.md#constructordictionary"><code>constructor(dictionary)</code></a></li>
+<li><a href="/network/network.md#close"><code>close()</code></a></li>
+<li><a href="/network/network.md#readtype--until"><code>read(type [, until])</code></a></li>
+<li><a href="/network/network.md#writedata--data1-"><code>write(data [, data1, ...])</code></a></li>
+<li><a href="/network/network.md#callbackmessage--value"><code>callback(message [, value])</code></a></li>
+<li><a href="/network/network.md#example-http-get">Example: HTTP GET</a></li>
+</ul>
+</li>
+<li><a href="/network/network.md#class-listener">class Listener</a>
+<ul>
+<li><a href="/network/network.md#constructordictionary-1"><code>constructor(dictionary)</code></a></li>
+<li><a href="/network/network.md#callback"><code>callback()</code></a></li>
+<li><a href="/network/network.md#example-http-server">Example: HTTP server</a></li>
+</ul>
+</li>
+<li><a href="/network/network.md#class-http-request">class HTTP Request</a>
+<ul>
+<li><a href="/network/network.md#constructordictionary-2"><code>constructor(dictionary)</code></a></li>
+<li><a href="/network/network.md#close-1"><code>close()</code></a></li>
+<li><a href="/network/network.md#readtype--until-1"><code>read(type [, until])</code></a></li>
+<li><a href="/network/network.md#callbackmessage-val1-val2"><code>callback(message, val1, val2)</code></a></li>
+</ul>
+</li>
+<li><a href="/network/network.md#class-http-server">class HTTP Server</a>
+<ul>
+<li><a href="/network/network.md#constructordictionary-3"><code>constructor(dictionary)</code></a></li>
+<li><a href="/network/network.md#close-2"><code>close()</code></a></li>
+<li><a href="/network/network.md#callbackmessage-val1-val2-1"><code>callback(message, val1, val2)</code></a></li>
+<li><a href="/network/network.md#example-simple-http-server">Example: Simple HTTP server</a></li>
+<li><a href="/network/network.md#example-http-server-with-chunked-response">Example: HTTP Server with chunked response</a></li>
+<li><a href="/network/network.md#example-http-server-receiving-a-json-put">Example: HTTP Server receiving a JSON PUT</a></li>
+<li><a href="/network/network.md#example-http-server-streaming-put-to-file">Example: HTTP Server streaming PUT to file</a></li>
+</ul>
+</li>
+<li><a href="/network/network.md#class-websocket-client">class WebSocket Client</a>
+<ul>
+<li><a href="/network/network.md#constructordictionary-4"><code>constructor(dictionary)</code></a></li>
+<li><a href="/network/network.md#close-3"><code>close()</code></a></li>
+<li><a href="/network/network.md#writemessage"><code>write(message)</code></a></li>
+<li><a href="/network/network.md#callbackmessage-value"><code>callback(message, value)</code></a></li>
+</ul>
+</li>
+<li><a href="/network/network.md#class-websocket-server">class WebSocket Server</a>
+<ul>
+<li><a href="/network/network.md#constructordictionary-5"><code>constructor(dictionary)</code></a></li>
+<li><a href="/network/network.md#close-4"><code>close()</code></a></li>
+<li><a href="/network/network.md#writemessage-1"><code>write(message)</code></a></li>
+<li><a href="/network/network.md#callbackmessage-value-1"><code>callback(message, value)</code></a></li>
+</ul>
+</li>
+<li><a href="/network/network.md#class-net">class Net</a>
+<ul>
+<li><a href="/network/network.md#static-getproperty"><code>static get(property)</code></a></li>
+<li><a href="/network/network.md#static-resolvehost-callback"><code>static resolve(host, callback)</code></a></li>
+</ul>
+</li>
+<li><a href="/network/network.md#class-wifi">class WiFi</a>
+<ul>
+<li><a href="/network/network.md#constructordictionary-callback"><code>constructor(dictionary, callback)</code></a></li>
+<li><a href="/network/network.md#close-5"><code>close()</code></a></li>
+<li><a href="/network/network.md#static-scandictionary-callback"><code>static scan(dictionary, callback)</code></a></li>
+<li><a href="/network/network.md#mode-property"><code>mode</code> property</a></li>
+<li><a href="/network/network.md#static-connectdictionary"><code>static connect(dictionary)</code></a></li>
+<li><a href="/network/network.md#static-accesspointdictionary"><code>static accessPoint(dictionary)</code></a></li>
+</ul>
+</li>
+<li><a href="/network/network.md#class-sntp">class SNTP</a>
+<ul>
+<li><a href="/network/network.md#constructordictionary-callback-1"><code>constructor(dictionary, callback)</code></a></li>
+<li><a href="/network/network.md#example-retrieving-the-time">Example: Retrieving the time</a></li>
+</ul>
+</li>
+<li><a href="/network/network.md#class-dns-constants">class DNS constants</a></li>
+<li><a href="/network/network.md#class-dns-parser">class DNS Parser</a>
+<ul>
+<li><a href="/network/network.md#constructorbuffer"><code>constructor(buffer)</code></a></li>
+<li><a href="/network/network.md#questionsindex"><code>questions(index)</code></a></li>
+<li><a href="/network/network.md#answersindex"><code>answers(index)</code></a></li>
+<li><a href="/network/network.md#authoritiesindex"><code>authorities(index)</code></a></li>
+<li><a href="/network/network.md#additionalsindex"><code>additionals(index)</code></a></li>
+<li><a href="/network/network.md#example-parsing-a-dns-packet">Example: Parsing a DNS packet</a></li>
+<li><a href="/network/network.md#example-reading-header-fields">Example: Reading header fields</a></li>
+<li><a href="/network/network.md#example-determining-the-number-of-records">Example: Determining the number of records</a></li>
+<li><a href="/network/network.md#example-extracting-a-resource-record">Example: Extracting a resource record</a></li>
+</ul>
+</li>
+<li><a href="/network/network.md#class-dns-serializer">class DNS Serializer</a>
+<ul>
+<li><a href="/network/network.md#constructordictionary-6"><code>constructor(dictionary)</code></a></li>
+<li><a href="/network/network.md#addsection-name-type-clss-ttl-"><code>add(section, name, type, clss, ttl, ...)</code></a></li>
+<li><a href="/network/network.md#build"><code>build()</code></a></li>
+<li><a href="/network/network.md#example-building-a-dns-query">Example: Building a DNS query</a></li>
+</ul>
+</li>
+<li><a href="/network/network.md#class-dns-server">class DNS Server</a>
+<ul>
+<li><a href="/network/network.md#constructorcallback"><code>constructor(callback)</code></a></li>
+<li><a href="/network/network.md#close-6"><code>close()</code></a></li>
+<li><a href="/network/network.md#example-simple-dns-server">Example: Simple DNS server</a></li>
+<li><a href="/network/network.md#example-dns-server-for-a-single-host-name">Example: DNS server for a single host name</a></li>
+</ul>
+</li>
+<li><a href="/network/network.md#class-mdns">class MDNS</a>
+<ul>
+<li><a href="/network/network.md#constructordictionary--callback"><code>constructor(dictionary [, callback])</code></a></li>
+<li><a href="/network/network.md#monitorservicetype-callback"><code>monitor(serviceType, callback)</code></a></li>
+<li><a href="/network/network.md#addservice"><code>add(service)</code></a></li>
+<li><a href="/network/network.md#updateservice"><code>update(service)</code></a></li>
+<li><a href="/network/network.md#removeservice-or-removeservicetype"><code>remove(service)</code> or <code>remove(serviceType)</code></a></li>
+</ul>
+</li>
+<li><a href="/network/network.md#class-telnet">class Telnet</a>
+<ul>
+<li><a href="/network/network.md#constructordictionary-7"><code>constructor(dictionary)</code></a></li>
+<li><a href="/network/network.md#close-7"><code>close()</code></a></li>
+</ul>
+</li>
+<li><a href="/network/network.md#class-ping">class Ping</a>
+<ul>
+<li><a href="/network/network.md#constructordictionary-callback-2"><code>constructor(dictionary, callback)</code></a></li>
+<li><a href="/network/network.md#close-8"><code>close()</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3><a href="/network/securesocket.html">securesocket</a></h3>
+<ul>
+<li><a href="/network/securesocket.md#introduction">Introduction</a>
+<ul>
+<li><a href="/network/securesocket.md#use">Use</a></li>
+<li><a href="/network/securesocket.md#dictionary">Dictionary</a></li>
+<li><a href="/network/securesocket.md#https">HTTPS</a></li>
+<li><a href="/network/securesocket.md#wss">WSS</a></li>
+<li><a href="/network/securesocket.md#certificates">Certificates</a></li>
+<li><a href="/network/securesocket.md#memory">Memory</a></li>
+<li><a href="/network/securesocket.md#macos">macOS</a></li>
+<li><a href="/network/securesocket.md#to-do">To do</a></li>
+</ul>
+</li>
+</ul>
+<h3><a href="/network/webthings.html">webthings</a></h3>
+<ul>
+<li><a href="/network/webthings.md#web-things">Web Things</a>
+<ul>
+<li><a href="/network/webthings.md#table-of-contents">Table of Contents</a></li>
+<li><a href="/network/webthings.md#introduction">Introduction</a>
+<ul>
+<li><a href="/network/webthings.md#implementing-a-light-using-the-webthing-class">Implementing a Light using the WebThing class</a></li>
+<li><a href="/network/webthings.md#announcing-a-web-thing">Announcing a Web Thing</a></li>
+</ul>
+</li>
+<li><a href="/network/webthings.md#class-webthings">class WebThings</a>
+<ul>
+<li><a href="/network/webthings.md#constructormdns"><code>constructor(mdns)</code></a></li>
+<li><a href="/network/webthings.md#addconstructor--args"><code>add(constructor [, ...args])</code></a></li>
+</ul>
+</li>
+<li><a href="/network/webthings.md#class-webthing">class WebThing</a>
+<ul>
+<li><a href="/network/webthings.md#constructorhost--args"><code>constructor(host [, ...args])</code></a></li>
+<li><a href="/network/webthings.md#static-get-description"><code>static get description()</code></a></li>
+<li><a href="/network/webthings.md#get-property"><code>get property()</code></a></li>
+<li><a href="/network/webthings.md#set-property"><code>set property()</code></a></li>
+<li><a href="/network/webthings.md#changed"><code>changed()</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3><a href="/pins/audioout.html">audioout</a></h3>
+<ul>
+<li><a href="/pins/audioout.md#class-audioout">class AudioOut</a>
+<ul>
+<li><a href="/pins/audioout.md#play-a-sound">Play a sound</a></li>
+<li><a href="/pins/audioout.md#play-a-sound-repeatedly">Play a sound repeatedly</a></li>
+<li><a href="/pins/audioout.md#receive-a-callback">Receive a callback</a></li>
+<li><a href="/pins/audioout.md#play-part-of-a-sound">Play part of a sound</a></li>
+<li><a href="/pins/audioout.md#play-sounds-in-parallel">Play sounds in parallel</a></li>
+<li><a href="/pins/audioout.md#flush-enqueued-audio">Flush enqueued audio</a></li>
+<li><a href="/pins/audioout.md#stop-playback">Stop playback</a></li>
+<li><a href="/pins/audioout.md#simple-attack-sustain-decay">Simple Attack-Sustain-Decay</a></li>
+<li><a href="/pins/audioout.md#constructordictionary">constructor(dictionary)</a></li>
+<li><a href="/pins/audioout.md#close">close()</a></li>
+<li><a href="/pins/audioout.md#start">start()</a></li>
+<li><a href="/pins/audioout.md#stop">stop()</a></li>
+<li><a href="/pins/audioout.md#enqueuestream-command-buffer-repeat-offset-count">enqueue(stream, command, buffer, repeat, offset, count)</a>
+<ul>
+<li><a href="/pins/audioout.md#enqueuing-audio-samples">Enqueuing audio samples</a></li>
+<li><a href="/pins/audioout.md#enqueuing-callbacks">Enqueuing callbacks</a></li>
+<li><a href="/pins/audioout.md#dequeuing-audio-samples">Dequeuing audio samples</a></li>
+<li><a href="/pins/audioout.md#changing-volume">Changing volume</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="/pins/audioout.md#maud-format">MAUD format</a></li>
+<li><a href="/pins/audioout.md#manifest-defines">Manifest defines</a>
+<ul>
+<li><a href="/pins/audioout.md#defines-for-all-targets">Defines for all targets</a></li>
+<li><a href="/pins/audioout.md#defines-for-esp32">Defines for ESP32</a></li>
+<li><a href="/pins/audioout.md#defines-for-esp8266">Defines for ESP8266</a></li>
+</ul>
+</li>
+</ul>
+<h3><a href="/pins/pins.html">pins</a></h3>
+<ul>
+<li><a href="/pins/pins.md#table-of-contents">Table of Contents</a></li>
+<li><a href="/pins/pins.md#class-digital">class Digital</a>
+<ul>
+<li><a href="/pins/pins.md#constructordictionary"><code>constructor(dictionary)</code></a></li>
+<li><a href="/pins/pins.md#constructorport-pin-mode"><code>constructor([port], pin, mode)</code></a></li>
+<li><a href="/pins/pins.md#static-readpin"><code>static read(pin)</code></a></li>
+<li><a href="/pins/pins.md#static-writepin"><code>static write(pin)</code></a></li>
+<li><a href="/pins/pins.md#read"><code>read()</code></a></li>
+<li><a href="/pins/pins.md#writevalue"><code>write(value)</code></a></li>
+<li><a href="/pins/pins.md#modemode"><code>mode(mode)</code></a></li>
+</ul>
+</li>
+<li><a href="/pins/pins.md#class-monitor">class Monitor</a>
+<ul>
+<li><a href="/pins/pins.md#constructordictionary-1"><code>constructor(dictionary)</code></a></li>
+<li><a href="/pins/pins.md#onchanged-callback"><code>onChanged()</code> callback</a></li>
+<li><a href="/pins/pins.md#read-1"><code>read()</code></a></li>
+<li><a href="/pins/pins.md#close"><code>close()</code></a></li>
+<li><a href="/pins/pins.md#rises-and-falls-properties"><code>rises</code> and <code>falls</code> properties</a></li>
+<li><a href="/pins/pins.md#example-receiving-notifications">Example: Receiving notifications</a></li>
+</ul>
+</li>
+<li><a href="/pins/pins.md#class-analog">class Analog</a>
+<ul>
+<li><a href="/pins/pins.md#static-readpin-1"><code>static read(pin)</code></a></li>
+</ul>
+</li>
+<li><a href="/pins/pins.md#class-pwm">class PWM</a>
+<ul>
+<li><a href="/pins/pins.md#constructordictionary-2"><code>constructor(dictionary)</code></a></li>
+<li><a href="/pins/pins.md#writevalue-1"><code>write(value)</code></a></li>
+<li><a href="/pins/pins.md#close-1"><code>close()</code></a></li>
+</ul>
+</li>
+<li><a href="/pins/pins.md#class-i2c">class I2C</a>
+<ul>
+<li><a href="/pins/pins.md#constructordictionary-3"><code>constructor(dictionary)</code></a></li>
+<li><a href="/pins/pins.md#readcount--buffer"><code>read(count [, buffer])</code></a></li>
+<li><a href="/pins/pins.md#writevalue--stop"><code>write(...value [, stop])</code></a></li>
+<li><a href="/pins/pins.md#example-reading-an-i2c-temperature-sensor">Example: Reading an I2C temperature sensor</a></li>
+</ul>
+</li>
+<li><a href="/pins/pins.md#class-smbus">class SMBus</a>
+<ul>
+<li><a href="/pins/pins.md#constructordictionary-4"><code>constructor(dictionary)</code></a></li>
+<li><a href="/pins/pins.md#readbyteregister"><code>readByte(register)</code></a></li>
+<li><a href="/pins/pins.md#readwordregister"><code>readWord(register)</code></a></li>
+<li><a href="/pins/pins.md#readblockregister-count--buffer"><code>readBlock(register, count [, buffer])</code></a></li>
+<li><a href="/pins/pins.md#writebyteregister-value"><code>writeByte(register, value)</code></a></li>
+<li><a href="/pins/pins.md#writewordregister-value"><code>writeWord(register, value)</code></a></li>
+<li><a href="/pins/pins.md#writeblockregister-value"><code>writeBlock(register, ...value)</code></a></li>
+<li><a href="/pins/pins.md#example-initializing-a-triple-axis-magnetometer">Example: Initializing a triple axis magnetometer</a></li>
+</ul>
+</li>
+<li><a href="/pins/pins.md#class-servo">class Servo</a>
+<ul>
+<li><a href="/pins/pins.md#constructordictionary-5"><code>constructor(dictionary)</code></a></li>
+<li><a href="/pins/pins.md#writedegrees"><code>write(degrees)</code></a></li>
+<li><a href="/pins/pins.md#writemicrosecondsus"><code>writeMicroseconds(us)</code></a></li>
+</ul>
+</li>
+<li><a href="/pins/pins.md#class-spi">class SPI</a></li>
+</ul>
+<h3><a href="/piu/ae_motion_export.html">ae_motion_export</a></h3>
+<ul>
+<li><a href="/piu/ae_motion_export.md#using-adobe-after-effects-to-export-moddable-motion-data">Using Adobe After Effects to export Moddable motion data</a>
+<ul>
+<li><a href="/piu/ae_motion_export.md#introduction">Introduction</a>
+<ul>
+<li><a href="/piu/ae_motion_export.md#installing-the-export-script-in-after-effects">Installing the export script in After Effects</a></li>
+<li><a href="/piu/ae_motion_export.md#exporting-motion-data">Exporting motion data</a></li>
+<li><a href="/piu/ae_motion_export.md#notes">Notes</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3><a href="/piu/die-cut.html">die-cut</a></h3>
+<ul>
+<li><a href="/piu/die-cut.md#introduction">Introduction</a></li>
+<li><a href="/piu/die-cut.md#examples">Examples</a></li>
+<li><a href="/piu/die-cut.md#reference">Reference</a>
+<ul>
+<li><a href="/piu/die-cut.md#prototype-description">Prototype Description</a></li>
+</ul>
+</li>
+</ul>
+<h3><a href="/piu/keyboard.html">keyboard</a></h3>
+<ul>
+<li><a href="/piu/keyboard.md#module-exports">Module Exports</a></li>
+<li><a href="/piu/keyboard.md#keyboard-object">Keyboard Object</a>
+<ul>
+<li><a href="/piu/keyboard.md#constructor-description">Constructor Description</a>
+<ul>
+<li><a href="/piu/keyboard.md#keyboardbehaviordata-dictionary"><code>Keyboard(behaviorData, dictionary)</code></a></li>
+</ul>
+</li>
+<li><a href="/piu/keyboard.md#dictionary">Dictionary</a></li>
+<li><a href="/piu/keyboard.md#triggered-events">Triggered Events</a>
+<ul>
+<li><a href="/piu/keyboard.md#onkeyboardtransitionfinished"><code>onKeyboardTransitionFinished()</code></a></li>
+<li><a href="/piu/keyboard.md#onkeydownkey"><code>onKeyDown(key)</code></a></li>
+<li><a href="/piu/keyboard.md#onkeyupkey"><code>onKeyUp(key)</code></a></li>
+</ul>
+</li>
+<li><a href="/piu/keyboard.md#received-events">Received Events</a>
+<ul>
+<li><a href="/piu/keyboard.md#dokeyboardtransitionoutkeyboard"><code>doKeyboardTransitionOut(keyboard)</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3><a href="/piu/localization.html">localization</a></h3>
+<ul>
+<li><a href="/piu/localization.md#dictionaries">Dictionaries</a></li>
+<li><a href="/piu/localization.md#json-files">JSON Files</a>
+<ul>
+<li><a href="/piu/localization.md#enjson">en.json</a></li>
+<li><a href="/piu/localization.md#frjson">fr.json</a></li>
+</ul>
+</li>
+<li><a href="/piu/localization.md#javascript-modules">JavaScript Modules</a>
+<ul>
+<li><a href="/piu/localization.md#enjs">en.js</a></li>
+<li><a href="/piu/localization.md#frjs">fr.js</a></li>
+</ul>
+</li>
+<li><a href="/piu/localization.md#strings-tables">Strings Tables</a>
+<ul>
+<li><a href="/piu/localization.md#localsenmhr">locals.en.mhr</a></li>
+<li><a href="/piu/localization.md#localsfrmhr">locals.fr.mhr</a></li>
+</ul>
+</li>
+<li><a href="/piu/localization.md#strings-indexes">Strings Indexes</a></li>
+<li><a href="/piu/localization.md#minimal-perfect-hashing">Minimal Perfect Hashing</a>
+<ul>
+<li><a href="/piu/localization.md#localsmhi-release">locals.mhi (release)</a></li>
+<li><a href="/piu/localization.md#localsmhi-debug">locals.mhi (debug)</a></li>
+</ul>
+</li>
+<li><a href="/piu/localization.md#mclocal">mclocal</a>
+<ul>
+<li><a href="/piu/localization.md#arguments">Arguments</a></li>
+</ul>
+</li>
+<li><a href="/piu/localization.md#locals">Locals</a></li>
+</ul>
+<h3><a href="/piu/piu.html">piu</a></h3>
+<ul>
+<li><a href="/piu/piu.md#piu-javascript-reference">Piu JavaScript Reference</a>
+<ul>
+<li><a href="/piu/piu.md#about-this-document">About This Document</a></li>
+<li><a href="/piu/piu.md#table-of-contents">Table of Contents</a></li>
+<li><a href="/piu/piu.md#inheritance-hierarchy">Inheritance Hierarchy</a></li>
+<li><a href="/piu/piu.md#introduction-to-important-concepts">Introduction to Important Concepts</a>
+<ul>
+<li><a href="/piu/piu.md#containment-hierarchy-and-appearance">Containment Hierarchy and Appearance</a>
+<ul>
+<li><a href="/piu/piu.md#bound-and-unbound-contents">Bound and Unbound Contents</a></li>
+<li><a href="/piu/piu.md#constraints">Constraints</a></li>
+<li><a href="/piu/piu.md#measure-and-fit">Measure and Fit</a>
+<ul>
+<li><a href="/piu/piu.md#measured-size">Measured size</a></li>
+<li><a href="/piu/piu.md#fitted-size">Fitted size</a></li>
+<li><a href="/piu/piu.md#templates">Templates</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#behavior-and-flow">Behavior and Flow</a>
+<ul>
+<li><a href="/piu/piu.md#events">Events</a>
+<ul>
+<li><a href="/piu/piu.md#low-level-events">Low-level events</a></li>
+<li><a href="/piu/piu.md#higher-level-events">Higher-level events</a></li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#animations">Animations</a>
+<ul>
+<li><a href="/piu/piu.md#easing-equations">Easing equations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#global-properties">Global Properties</a>
+<ul>
+<li><a href="/piu/piu.md#built-in-properties">Built-in Properties</a>
+<ul>
+<li><a href="/piu/piu.md#tracestring"><code>trace(string)</code></a></li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#adding-additional-properties">Adding Additional Properties</a></li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#descriptions-of-properties">Descriptions of Properties</a>
+<ul>
+<li><a href="/piu/piu.md#anchor">Anchor</a></li>
+<li><a href="/piu/piu.md#color">Color</a></li>
+<li><a href="/piu/piu.md#coordinates">Coordinates</a></li>
+<li><a href="/piu/piu.md#duration-fraction-interval-loop-and-time">Duration, Fraction, Interval, Loop, and Time</a>
+<ul>
+<li><a href="/piu/piu.md#time-based-animation">Time-based animation</a></li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#font">Font</a>
+<ul>
+<li><a href="/piu/piu.md#cascading-styles">Cascading Styles</a></li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#tiles">Tiles</a></li>
+<li><a href="/piu/piu.md#variant-variants-state-and-states">Variant, Variants, State, and States</a>
+<ul>
+<li><a href="/piu/piu.md#colored-skins-and-styles">Colored skins and styles</a></li>
+<li><a href="/piu/piu.md#reusing-textures">Reusing textures</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#piu-object-reference">Piu Object Reference</a>
+<ul>
+<li><a href="/piu/piu.md#application-object">Application Object</a>
+<ul>
+<li><a href="/piu/piu.md#constructor-description">Constructor Description</a>
+<ul>
+<li><a href="/piu/piu.md#applicationbehaviordata-dictionary"><code>Application([behaviorData, dictionary])</code></a></li>
+<li><a href="/piu/piu.md#applicationtemplateanonymous"><code>Application.template(anonymous)</code></a></li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#dictionary">Dictionary</a></li>
+<li><a href="/piu/piu.md#prototype-description">Prototype Description</a></li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#behavior-object">Behavior Object</a>
+<ul>
+<li><a href="/piu/piu.md#constructor-description-1">Constructor Description</a></li>
+<li><a href="/piu/piu.md#prototype-description-1">Prototype Description</a></li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#column-object">Column Object</a>
+<ul>
+<li><a href="/piu/piu.md#constructor-description-2">Constructor Description</a>
+<ul>
+<li><a href="/piu/piu.md#columnbehaviordata-dictionary"><code>Column([behaviorData, dictionary])</code></a></li>
+<li><a href="/piu/piu.md#columntemplateanonymous"><code>Column.template(anonymous)</code></a></li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#prototype-description-2">Prototype Description</a></li>
+<li><a href="/piu/piu.md#events-1">Events</a></li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#container-object">Container Object</a>
+<ul>
+<li><a href="/piu/piu.md#constructor-description-3">Constructor Description</a>
+<ul>
+<li><a href="/piu/piu.md#containerbehaviordata-dictionary"><code>Container([behaviorData, dictionary])</code></a></li>
+<li><a href="/piu/piu.md#containertemplateanonymous"><code>Container.template(anonymous)</code></a></li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#dictionary-1">Dictionary</a></li>
+<li><a href="/piu/piu.md#prototype-description-3">Prototype Description</a>
+<ul>
+<li><a href="/piu/piu.md#properties">Properties</a></li>
+<li><a href="/piu/piu.md#functions">Functions</a></li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#events-2">Events</a></li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#content-object">Content Object</a>
+<ul>
+<li><a href="/piu/piu.md#constructor-description-4">Constructor Description</a>
+<ul>
+<li><a href="/piu/piu.md#contentbehaviordata-dictionary"><code>Content([behaviorData, dictionary])</code></a></li>
+<li><a href="/piu/piu.md#contenttemplateanonymous"><code>Content.template(anonymous)</code></a></li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#dictionary-2">Dictionary</a></li>
+<li><a href="/piu/piu.md#prototype-description-4">Prototype Description</a>
+<ul>
+<li><a href="/piu/piu.md#properties-1">Properties</a></li>
+<li><a href="/piu/piu.md#functions-1">Functions</a></li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#events-3">Events</a></li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#die-object">Die Object</a>
+<ul>
+<li><a href="/piu/piu.md#constructor-description-5">Constructor Description</a>
+<ul>
+<li><a href="/piu/piu.md#diebehaviordata-dictionary"><code>Die([behaviorData, dictionary])</code></a></li>
+<li><a href="/piu/piu.md#dietemplateanonymous"><code>Die.template(anonymous)</code></a></li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#prototype-description-5">Prototype Description</a>
+<ul>
+<li><a href="/piu/piu.md#functions-2">Functions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#image-object">Image Object</a>
+<ul>
+<li><a href="/piu/piu.md#constructor-description-6">Constructor Description</a>
+<ul>
+<li><a href="/piu/piu.md#imagebehaviordata-dictionary"><code>Image([behaviorData, dictionary])</code></a></li>
+<li><a href="/piu/piu.md#imagetemplateanonymous"><code>Image.template(anonymous)</code></a></li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#dictionary-3">Dictionary</a></li>
+<li><a href="/piu/piu.md#prototype-description-6">Prototype Description</a>
+<ul>
+<li><a href="/piu/piu.md#properties-2">Properties</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#label-object">Label Object</a>
+<ul>
+<li><a href="/piu/piu.md#constructor-description-7">Constructor Description</a>
+<ul>
+<li><a href="/piu/piu.md#labelbehaviordata-dictionary"><code>Label([behaviorData, dictionary])</code></a></li>
+<li><a href="/piu/piu.md#labeltemplateanonymous"><code>Label.template(anonymous)</code></a></li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#dictionary-4">Dictionary</a></li>
+<li><a href="/piu/piu.md#prototype-description-7">Prototype Description</a>
+<ul>
+<li><a href="/piu/piu.md#properties-3">Properties</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#layout-object">Layout Object</a>
+<ul>
+<li><a href="/piu/piu.md#constructor-description-8">Constructor Description</a>
+<ul>
+<li><a href="/piu/piu.md#layoutbehaviordata-dictionary"><code>Layout([behaviorData, dictionary])</code></a></li>
+<li><a href="/piu/piu.md#layouttemplateanonymous"><code>Layout.template(anonymous)</code></a></li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#prototype-description-8">Prototype Description</a></li>
+<li><a href="/piu/piu.md#events-4">Events</a></li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#port-object">Port Object</a>
+<ul>
+<li><a href="/piu/piu.md#constructor-description-9">Constructor Description</a>
+<ul>
+<li><a href="/piu/piu.md#portbehaviordata-dictionary"><code>Port([behaviorData, dictionary])</code></a></li>
+<li><a href="/piu/piu.md#porttemplateanonymous"><code>Port.template(anonymous)</code></a></li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#prototype-description-9">Prototype Description</a>
+<ul>
+<li><a href="/piu/piu.md#functions-3">Functions</a></li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#events-5">Events</a></li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#row-object">Row Object</a>
+<ul>
+<li><a href="/piu/piu.md#constructor-description-10">Constructor Description</a>
+<ul>
+<li><a href="/piu/piu.md#rowbehaviordata-dictionary"><code>Row([behaviorData, dictionary])</code></a></li>
+<li><a href="/piu/piu.md#rowtemplateanonymous"><code>Row.template(anonymous)</code></a></li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#prototype-description-10">Prototype Description</a></li>
+<li><a href="/piu/piu.md#events-6">Events</a></li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#scroller-object">Scroller Object</a>
+<ul>
+<li><a href="/piu/piu.md#constructor-description-11">Constructor Description</a>
+<ul>
+<li><a href="/piu/piu.md#scrollerbehaviordata-dictionary"><code>Scroller([behaviorData, dictionary])</code></a></li>
+<li><a href="/piu/piu.md#scrollertemplateanonymous"><code>Scroller.template(anonymous)</code></a></li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#dictionary-5">Dictionary</a></li>
+<li><a href="/piu/piu.md#prototype-description-11">Prototype Description</a>
+<ul>
+<li><a href="/piu/piu.md#properties-4">Properties</a></li>
+<li><a href="/piu/piu.md#functions-4">Functions</a></li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#events-7">Events</a>
+<ul>
+<li><a href="/piu/piu.md#onscrolledscroller"><code>onScrolled(scroller)</code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#skin-object">Skin Object</a>
+<ul>
+<li><a href="/piu/piu.md#constructor-description-12">Constructor Description</a>
+<ul>
+<li><a href="/piu/piu.md#skindictionary"><code>Skin([dictionary])</code></a></li>
+<li><a href="/piu/piu.md#skintemplatedictionary"><code>Skin.template([dictionary])</code></a></li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#dictionary-6">Dictionary</a></li>
+<li><a href="/piu/piu.md#prototype-description-12">Prototype Description</a>
+<ul>
+<li><a href="/piu/piu.md#properties-5">Properties</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#sound-object">Sound Object</a>
+<ul>
+<li><a href="/piu/piu.md#constructor-description-13">Constructor Description</a>
+<ul>
+<li><a href="/piu/piu.md#sounddictionary"><code>Sound(dictionary)</code></a></li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#dictionary-7">Dictionary</a></li>
+<li><a href="/piu/piu.md#prototype-description-13">Prototype Description</a>
+<ul>
+<li><a href="/piu/piu.md#properties-6">Properties</a></li>
+<li><a href="/piu/piu.md#functions-5">Functions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#style-object">Style Object</a>
+<ul>
+<li><a href="/piu/piu.md#constructor-description-14">Constructor Description</a>
+<ul>
+<li><a href="/piu/piu.md#styledictionary"><code>Style(dictionary)</code></a></li>
+<li><a href="/piu/piu.md#styletemplatedictionary"><code>Style.template(dictionary)</code></a></li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#dictionary-8">Dictionary</a>
+<ul>
+<li><a href="/piu/piu.md#text-styles-only">Text styles only</a></li>
+<li><a href="/piu/piu.md#label-styles-only">Label styles only</a></li>
+<li><a href="/piu/piu.md#text-and-label-styles">Text and Label styles</a></li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#prototype-description-14">Prototype Description</a>
+<ul>
+<li><a href="/piu/piu.md#properties-7">Properties</a></li>
+<li><a href="/piu/piu.md#functions-6">Functions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#text-object">Text Object</a>
+<ul>
+<li><a href="/piu/piu.md#constructor-description-15">Constructor Description</a>
+<ul>
+<li><a href="/piu/piu.md#textbehaviordata-dictionary"><code>Text([behaviorData, dictionary])</code></a></li>
+<li><a href="/piu/piu.md#texttemplateanonymous"><code>Text.template(anonymous)</code></a></li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#dictionary-9">Dictionary</a></li>
+<li><a href="/piu/piu.md#prototype-description-15">Prototype Description</a>
+<ul>
+<li><a href="/piu/piu.md#properties-8">Properties</a></li>
+<li><a href="/piu/piu.md#functions-7">Functions</a></li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#events-8">Events</a></li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#texture-object">Texture Object</a>
+<ul>
+<li><a href="/piu/piu.md#constructor-description-16">Constructor Description</a>
+<ul>
+<li><a href="/piu/piu.md#texturepath"><code>Texture(path)</code></a></li>
+<li><a href="/piu/piu.md#texturedictionary"><code>Texture(dictionary)</code></a></li>
+<li><a href="/piu/piu.md#texturetemplatedictionary"><code>Texture.template(dictionary)</code></a></li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#dictionary-10">Dictionary</a></li>
+<li><a href="/piu/piu.md#prototype-description-16">Prototype Description</a>
+<ul>
+<li><a href="/piu/piu.md#properties-9">Properties</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#timeline-object">Timeline Object</a>
+<ul>
+<li><a href="/piu/piu.md#constructor-description-17">Constructor Description</a>
+<ul>
+<li><a href="/piu/piu.md#timeline"><code>Timeline()</code></a></li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#prototype-description-17">Prototype Description</a>
+<ul>
+<li><a href="/piu/piu.md#properties-10">Properties</a></li>
+<li><a href="/piu/piu.md#functions-8">Functions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="/piu/piu.md#transition-object">Transition Object</a>
+<ul>
+<li><a href="/piu/piu.md#constructor-description-18">Constructor Description</a></li>
+<li><a href="/piu/piu.md#prototype-description-18">Prototype Description</a>
+<ul>
+<li><a href="/piu/piu.md#properties-11">Properties</a></li>
+<li><a href="/piu/piu.md#functions-9">Functions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3><a href="/tools/defines.html">defines</a></h3>
+<ul>
+<li><a href="/tools/defines.md#using-defines-in-manifests">Using defines in manifests</a>
+<ul>
+<li><a href="/tools/defines.md#introduction">Introduction</a>
+<ul>
+<li><a href="##defines-for-ili9341-display-driver">documentation/tools/defines.md#defines for ILI9341 display driver</a></li>
+<li><a href="/tools/defines.md#optional-defines">Optional defines</a></li>
+<li><a href="/tools/defines.md#platform-overrides">Platform overrides</a></li>
+<li><a href="/tools/defines.md#application-overrides">Application overrides</a></li>
+<li><a href="/tools/defines.md#configuration-data">Configuration data</a></li>
+<li><a href="/tools/defines.md#multiple-devices">Multiple devices</a></li>
+</ul>
+</li>
+<li><a href="/tools/defines.md#original-idea">Original idea</a></li>
+</ul>
+</li>
+</ul>
+<h3><a href="/tools/manifest.html">manifest</a></h3>
+<ul>
+<li><a href="/tools/manifest.md#overview">Overview</a>
+<ul>
+<li><a href="/tools/manifest.md#moddableexamplespiuballsmanifestjson"><code>$MODDABLE/examples/piu/balls/manifest.json</code></a></li>
+<li><a href="/tools/manifest.md#moddableexamplesmanifest_basejson"><code>$(MODDABLE)/examples/manifest_base.json</code></a>
+<ul>
+<li><a href="/tools/manifest.md#build"><code>build</code></a></li>
+<li><a href="/tools/manifest.md#creation"><code>creation</code></a></li>
+<li><a href="/tools/manifest.md#modules"><code>modules</code></a></li>
+<li><a href="/tools/manifest.md#preload"><code>preload</code></a></li>
+<li><a href="/tools/manifest.md#strip"><code>strip</code></a></li>
+<li><a href="/tools/manifest.md#platform-"><code>platform</code></a></li>
+</ul>
+</li>
+<li><a href="/tools/manifest.md#sub-platforms">Sub-platforms</a></li>
+</ul>
+</li>
+<li><a href="/tools/manifest.md#reference">Reference</a>
+<ul>
+<li><a href="/tools/manifest.md#combine">Combine</a></li>
+<li><a href="/tools/manifest.md#match">Match</a></li>
+<li><a href="/tools/manifest.md#generate">Generate</a></li>
+</ul>
+</li>
+</ul>
+<h3><a href="/tools/tools.html">tools</a></h3>
+<ul>
+<li><a href="/tools/tools.md#about-this-document">About this Document</a></li>
+<li><a href="/tools/tools.md#table-of-contents">Table of Contents</a></li>
+<li><a href="/tools/tools.md#mcconfig">mcconfig</a>
+<ul>
+<li><a href="/tools/tools.md#arguments">Arguments</a></li>
+</ul>
+</li>
+<li><a href="/tools/tools.md#mcrez">mcrez</a>
+<ul>
+<li><a href="/tools/tools.md#arguments-1">Arguments</a></li>
+</ul>
+</li>
+<li><a href="/tools/tools.md#png2bmp">png2bmp</a>
+<ul>
+<li><a href="/tools/tools.md#arguments-2">Arguments</a></li>
+</ul>
+</li>
+<li><a href="/tools/tools.md#xsc">xsc</a>
+<ul>
+<li><a href="/tools/tools.md#arguments-3">Arguments</a></li>
+</ul>
+</li>
+<li><a href="/tools/tools.md#xsl">xsl</a>
+<ul>
+<li><a href="/tools/tools.md#arguments-4">Arguments</a></li>
+</ul>
+</li>
+<li><a href="/tools/tools.md#simulator">Simulator</a></li>
+</ul>
+<h3><a href="/xs/XS_Conformance.html">xs_conformance</a></h3>
+<ul>
+<li><a href="/xs/XS_Conformance.md#xs-conformance">XS Conformance</a>
+<ul>
+<li><a href="/xs/XS_Conformance.md#caveat">Caveat</a>
+<ul>
+<li><a href="/xs/XS_Conformance.md#realm">Realm</a></li>
+<li><a href="/xs/XS_Conformance.md#string">String</a></li>
+<li><a href="/xs/XS_Conformance.md#annex-b">Annex B</a></li>
+</ul>
+</li>
+<li><a href="/xs/XS_Conformance.md#runtime-models">Runtime models</a>
+<ul>
+<li><a href="/xs/XS_Conformance.md#linux">Linux</a></li>
+<li><a href="/xs/XS_Conformance.md#macos">macOS</a></li>
+<li><a href="/xs/XS_Conformance.md#windows">Windows</a></li>
+</ul>
+</li>
+<li><a href="/xs/XS_Conformance.md#results">Results</a>
+<ul>
+<li><a href="/xs/XS_Conformance.md#language">Language</a></li>
+<li><a href="/xs/XS_Conformance.md#built-ins">Built-ins</a></li>
+<li><a href="/xs/XS_Conformance.md#annex-b-1">Annex B</a></li>
+</ul>
+</li>
+<li><a href="/xs/XS_Conformance.md#failures">Failures</a>
+<ul>
+<li><a href="/xs/XS_Conformance.md#language-1">Language</a></li>
+<li><a href="/xs/XS_Conformance.md#built-ins-1">Built-ins</a></li>
+<li><a href="/xs/XS_Conformance.md#annex-b-2">Annex B</a></li>
+<li><a href="/xs/XS_Conformance.md#skipped-cases">Skipped cases</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3><a href="/xs/XS_Differences.html">xs_differences</a></h3>
+<ul>
+<li><a href="/xs/XS_Differences.md#javascript-language-considerations-on-embedded-devices-using-the-xs-engine">JavaScript language considerations on embedded devices using the XS engine</a>
+<ul>
+<li><a href="/xs/XS_Differences.md#ultra-light-javascript">Ultra-light JavaScript</a></li>
+<li><a href="/xs/XS_Differences.md#spare-runtime-resources">Spare runtime resources</a></li>
+<li><a href="/xs/XS_Differences.md#prepare-the-environment">Prepare the environment</a></li>
+<li><a href="/xs/XS_Differences.md#freeze-most-objects">Freeze most objects</a></li>
+<li><a href="/xs/XS_Differences.md#strip-unused-features">Strip unused features</a></li>
+<li><a href="/xs/XS_Differences.md#use-native-code">Use native code</a></li>
+<li><a href="/xs/XS_Differences.md#conformance">Conformance</a></li>
+</ul>
+</li>
+</ul>
+<h3><a href="/xs/XS_Platforms.html">xs_platforms</a></h3>
+<ul>
+<li><a href="/xs/XS_Platforms.md#xs-platforms">XS Platforms</a>
+<ul>
+<li><a href="/xs/XS_Platforms.md#history">History</a></li>
+<li><a href="/xs/XS_Platforms.md#xsplatformh">xsPlatform.h</a>
+<ul>
+<li><a href="/xs/XS_Platforms.md#basic-types">Basic types</a></li>
+<li><a href="/xs/XS_Platforms.md#c-defines-and-includes">C defines and includes</a></li>
+<li><a href="/xs/XS_Platforms.md#esp-macros">ESP macros</a></li>
+<li><a href="/xs/XS_Platforms.md#mxmachineplatform"><code>mxMachinePlatform</code></a></li>
+</ul>
+</li>
+<li><a href="/xs/XS_Platforms.md#xsplatformc">xsPlatform.c</a>
+<ul>
+<li><a href="/xs/XS_Platforms.md#debug">Debug</a></li>
+<li><a href="/xs/XS_Platforms.md#eval">Eval</a></li>
+<li><a href="/xs/XS_Platforms.md#keys">Keys</a></li>
+<li><a href="/xs/XS_Platforms.md#memory">Memory</a></li>
+<li><a href="/xs/XS_Platforms.md#modules">Modules</a></li>
+<li><a href="/xs/XS_Platforms.md#promises">Promises</a></li>
+<li><a href="/xs/XS_Platforms.md#sharedarraybuffer--atomics">SharedArrayBuffer &amp; Atomics</a>
+<ul>
+<li><a href="/xs/XS_Platforms.md#shared-cluster">Shared Cluster</a></li>
+<li><a href="/xs/XS_Platforms.md#shared-chunk">Shared Chunk</a></li>
+<li><a href="/xs/XS_Platforms.md#default-implementations">Default Implementations</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3><a href="/xs/XS_in_C.html">xs_in_c</a></h3>
+<ul>
+<li><a href="/xs/XS_in_C.md#xs-in-c">XS in C</a>
+<ul>
+<li><a href="/xs/XS_in_C.md#about-this-document">About This Document</a></li>
+<li><a href="/xs/XS_in_C.md#table-of-contents">Table of Contents</a></li>
+<li><a href="/xs/XS_in_C.md#slots">Slots</a>
+<ul>
+<li><a href="/xs/XS_in_C.md#slot-types">Slot types</a>
+<ul>
+<li><a href="/xs/XS_in_C.md#in-ecmascript">In ECMAScript:</a></li>
+<li><a href="/xs/XS_in_C.md#in-c">In C:</a></li>
+<li><a href="/xs/XS_in_C.md#in-ecmascript-1">In ECMAScript:</a></li>
+<li><a href="/xs/XS_in_C.md#in-c-1">In C:</a></li>
+</ul>
+</li>
+<li><a href="/xs/XS_in_C.md#primitives">Primitives</a>
+<ul>
+<li><a href="/xs/XS_in_C.md#undefined-and-null">Undefined and null</a></li>
+<li><a href="/xs/XS_in_C.md#booleans-integers-and-numbers">Booleans, integers, and numbers</a></li>
+<li><a href="/xs/XS_in_C.md#strings">Strings</a></li>
+</ul>
+</li>
+<li><a href="/xs/XS_in_C.md#arraybuffer">ArrayBuffer</a>
+<ul>
+<li><a href="/xs/XS_in_C.md#macros">Macros</a></li>
+</ul>
+</li>
+<li><a href="/xs/XS_in_C.md#instances-and-prototypes">Instances and Prototypes</a>
+<ul>
+<li><a href="/xs/XS_in_C.md#macros-1">Macros</a>
+<ul>
+<li><a href="/xs/XS_in_C.md#in-ecmascript-2">In ECMAScript:</a></li>
+<li><a href="/xs/XS_in_C.md#in-c-2">In C:</a></li>
+<li><a href="/xs/XS_in_C.md#in-ecmascript-3">In ECMAScript:</a></li>
+<li><a href="/xs/XS_in_C.md#in-c-3">In C:</a></li>
+<li><a href="/xs/XS_in_C.md#in-ecmascript-4">In ECMAScript:</a></li>
+<li><a href="/xs/XS_in_C.md#in-c-4">In C:</a></li>
+<li><a href="/xs/XS_in_C.md#in-ecmascript-5">In ECMAScript:</a></li>
+<li><a href="/xs/XS_in_C.md#in-c-5">In C:</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="/xs/XS_in_C.md#identifiers">Identifiers</a>
+<ul>
+<li><a href="/xs/XS_in_C.md#macros-2">Macros</a>
+<ul>
+<li><a href="/xs/XS_in_C.md#in-ecmascript-6">In ECMAScript:</a></li>
+<li><a href="/xs/XS_in_C.md#in-c-6">In C:</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="/xs/XS_in_C.md#properties">Properties</a>
+<ul>
+<li><a href="/xs/XS_in_C.md#xsglobal">xsGlobal</a></li>
+<li><a href="/xs/XS_in_C.md#xsdefine">xsDefine</a>
+<ul>
+<li><a href="/xs/XS_in_C.md#in-ecmascript-7">In ECMAScript:</a></li>
+<li><a href="/xs/XS_in_C.md#in-c-7">In C:</a></li>
+</ul>
+</li>
+<li><a href="/xs/XS_in_C.md#xsdefineat">xsDefineAt</a>
+<ul>
+<li><a href="/xs/XS_in_C.md#in-ecmascript-8">In ECMAScript:</a></li>
+<li><a href="/xs/XS_in_C.md#in-c-8">In C:</a></li>
+</ul>
+</li>
+<li><a href="/xs/XS_in_C.md#xshas">xsHas</a>
+<ul>
+<li><a href="/xs/XS_in_C.md#in-ecmascript-9">In ECMAScript:</a></li>
+<li><a href="/xs/XS_in_C.md#in-c-9">In C:</a></li>
+</ul>
+</li>
+<li><a href="/xs/XS_in_C.md#xshasat">xsHasAt</a>
+<ul>
+<li><a href="/xs/XS_in_C.md#in-ecmascript-10">In ECMAScript:</a></li>
+<li><a href="/xs/XS_in_C.md#in-c-10">In C:</a></li>
+</ul>
+</li>
+<li><a href="/xs/XS_in_C.md#xsget">xsGet</a>
+<ul>
+<li><a href="/xs/XS_in_C.md#in-ecmascript-11">In ECMAScript:</a></li>
+<li><a href="/xs/XS_in_C.md#in-c-11">In C:</a></li>
+</ul>
+</li>
+<li><a href="/xs/XS_in_C.md#xsmcget">xsmcGet</a>
+<ul>
+<li><a href="/xs/XS_in_C.md#in-ecmascript-12">In ECMAScript:</a></li>
+<li><a href="/xs/XS_in_C.md#in-c-12">In C:</a></li>
+</ul>
+</li>
+<li><a href="/xs/XS_in_C.md#xsgetat">xsGetAt</a>
+<ul>
+<li><a href="/xs/XS_in_C.md#in-ecmascript-13">In ECMAScript:</a></li>
+<li><a href="/xs/XS_in_C.md#in-c-13">In C:</a></li>
+</ul>
+</li>
+<li><a href="/xs/XS_in_C.md#xsmcgetat">xsmcGetAt</a>
+<ul>
+<li><a href="/xs/XS_in_C.md#in-ecmascript-14">In ECMAScript:</a></li>
+<li><a href="/xs/XS_in_C.md#in-c-14">In C:</a></li>
+</ul>
+</li>
+<li><a href="/xs/XS_in_C.md#xsset">xsSet</a>
+<ul>
+<li><a href="/xs/XS_in_C.md#in-ecmascript-15">In ECMAScript:</a></li>
+<li><a href="/xs/XS_in_C.md#in-c-15">In C:</a></li>
+</ul>
+</li>
+<li><a href="/xs/XS_in_C.md#xssetat">xsSetAt</a>
+<ul>
+<li><a href="/xs/XS_in_C.md#in-ecmascript-16">In ECMAScript:</a></li>
+<li><a href="/xs/XS_in_C.md#in-c-16">In C:</a></li>
+</ul>
+</li>
+<li><a href="/xs/XS_in_C.md#xsdelete">xsDelete</a>
+<ul>
+<li><a href="/xs/XS_in_C.md#in-ecmascript-17">In ECMAScript:</a></li>
+<li><a href="/xs/XS_in_C.md#in-c-17">In C:</a></li>
+</ul>
+</li>
+<li><a href="/xs/XS_in_C.md#xsdeleteat-xsmcdeleteat">xsDeleteAt, xsmcDeleteAt</a>
+<ul>
+<li><a href="/xs/XS_in_C.md#in-ecmascript-18">In ECMAScript:</a></li>
+<li><a href="/xs/XS_in_C.md#in-c-18">In C:</a></li>
+</ul>
+</li>
+<li><a href="/xs/XS_in_C.md#xscall">xsCall*</a>
+<ul>
+<li><a href="/xs/XS_in_C.md#in-ecmascript-19">In ECMAScript:</a></li>
+<li><a href="/xs/XS_in_C.md#in-c-19">In C:</a></li>
+</ul>
+</li>
+<li><a href="/xs/XS_in_C.md#xsmccall">xsmcCall</a>
+<ul>
+<li><a href="/xs/XS_in_C.md#in-ecmascript-20">In ECMAScript:</a></li>
+<li><a href="/xs/XS_in_C.md#in-c-20">In C:</a></li>
+</ul>
+</li>
+<li><a href="/xs/XS_in_C.md#xsnew">xsNew*</a>
+<ul>
+<li><a href="/xs/XS_in_C.md#in-ecmascript-21">In ECMAScript:</a></li>
+<li><a href="/xs/XS_in_C.md#in-c-21">In C:</a></li>
+</ul>
+</li>
+<li><a href="/xs/XS_in_C.md#xsmcnew">xsmcNew</a>
+<ul>
+<li><a href="/xs/XS_in_C.md#in-ecmascript-22">In ECMAScript:</a></li>
+<li><a href="/xs/XS_in_C.md#in-c-22">In C:</a></li>
+</ul>
+</li>
+<li><a href="/xs/XS_in_C.md#xstest">xsTest</a>
+<ul>
+<li><a href="/xs/XS_in_C.md#in-ecmascript-23">In ECMAScript:</a></li>
+<li><a href="/xs/XS_in_C.md#in-c-23">In C:</a></li>
+</ul>
+</li>
+<li><a href="/xs/XS_in_C.md#xsenumerate">xsEnumerate</a>
+<ul>
+<li><a href="/xs/XS_in_C.md#in-ecmascript-24">In ECMAScript:</a></li>
+<li><a href="/xs/XS_in_C.md#in-c-24">In C:</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="/xs/XS_in_C.md#arguments-and-variables">Arguments and Variables</a>
+<ul>
+<li><a href="/xs/XS_in_C.md#example">Example</a>
+<ul>
+<li><a href="/xs/XS_in_C.md#in-ecmascript-25">In ECMAScript:</a></li>
+<li><a href="/xs/XS_in_C.md#in-c-25">In C:</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="/xs/XS_in_C.md#garbage-collector">Garbage Collector</a>
+<ul>
+<li><a href="/xs/XS_in_C.md#in-c-26">In C:</a></li>
+</ul>
+</li>
+<li><a href="/xs/XS_in_C.md#exceptions">Exceptions</a>
+<ul>
+<li><a href="/xs/XS_in_C.md#in-ecmascript-26">In ECMAScript:</a></li>
+<li><a href="/xs/XS_in_C.md#in-c-27">In C:</a></li>
+</ul>
+</li>
+<li><a href="/xs/XS_in_C.md#errors">Errors</a>
+<ul>
+<li><a href="/xs/XS_in_C.md#in-c-28">In C:</a></li>
+<li><a href="/xs/XS_in_C.md#in-c-29">In C:</a></li>
+</ul>
+</li>
+<li><a href="/xs/XS_in_C.md#debugger">Debugger</a>
+<ul>
+<li><a href="/xs/XS_in_C.md#in-ecmascript-27">In ECMAScript:</a></li>
+<li><a href="/xs/XS_in_C.md#in-c-30">In C:</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="/xs/XS_in_C.md#machine">Machine</a>
+<ul>
+<li><a href="/xs/XS_in_C.md#machine-allocation">Machine Allocation</a>
+<ul>
+<li><a href="/xs/XS_in_C.md#example-1">Example</a></li>
+</ul>
+</li>
+<li><a href="/xs/XS_in_C.md#context">Context</a>
+<ul>
+<li><a href="/xs/XS_in_C.md#example-2">Example</a></li>
+</ul>
+</li>
+<li><a href="/xs/XS_in_C.md#host">Host</a>
+<ul>
+<li><a href="/xs/XS_in_C.md#xsnewhostfunction-and-xsnewhostconstructor">xsNewHostFunction and xsNewHostConstructor</a></li>
+<li><a href="/xs/XS_in_C.md#xsnewhostobject">xsNewHostObject</a></li>
+<li><a href="/xs/XS_in_C.md#xsgethostdata-and-xssethostdata">xsGetHostData and xsSetHostData</a></li>
+<li><a href="/xs/XS_in_C.md#xsgethostchunk-and-xssethostchunk">xsGetHostChunk and xsSetHostChunk</a></li>
+<li><a href="/xs/XS_in_C.md#xssethostdestructor">xsSetHostDestructor</a></li>
+<li><a href="/xs/XS_in_C.md#xsbeginhost-and-xsendhost">xsBeginHost and xsEndHost</a>
+<ul>
+<li><a href="/xs/XS_in_C.md#example-3">Example</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="/xs/XS_in_C.md#javascript--language-syntax-extension">JavaScript <code>@</code> language syntax extension</a></li>
+</ul>
+</li>
+<li><a href="/xs/XS_in_C.md#glossary">Glossary</a></li>
+<li><a href="/xs/XS_in_C.md#license">License</a></li>
+</ul>
+</li>
+</ul>
+<h3><a href="/xs/handle.html">handle</a></h3>
+<ul>
+<li><a href="/xs/handle.md#objective">Objective</a></li>
+<li><a href="/xs/handle.md#definition">Definition</a></li>
+<li><a href="/xs/handle.md#implementation">Implementation</a></li>
+<li><a href="/xs/handle.md#example">Example</a></li>
+</ul>
+<h3><a href="/xs/preload.html">preload</a></h3>
+<ul>
+<li><a href="/xs/preload.md#using-xs-preload-to-optimize-applications">Using XS Preload to Optimize Applications</a>
+<ul>
+<li><a href="/xs/preload.md#specifying-modules-to-preload">Specifying Modules to Preload</a></li>
+<li><a href="/xs/preload.md#executing-a-module">Executing a Module</a></li>
+<li><a href="/xs/preload.md#freezing">Freezing</a>
+<ul>
+<li><a href="/xs/preload.md#freezing-classes">Freezing Classes</a></li>
+<li><a href="/xs/preload.md#freezing-data">Freezing Data</a></li>
+<li><a href="/xs/preload.md#deep-freezing">Deep Freezing</a></li>
+<li><a href="/xs/preload.md#automatic-freezing-of-built-ins">Automatic Freezing of Built-ins</a></li>
+</ul>
+</li>
+<li><a href="/xs/preload.md#module-global-state">Module Global State</a></li>
+<li><a href="/xs/preload.md#what-cannot-be-preloaded">What Cannot be Preloaded</a>
+<ul>
+<li><a href="/xs/preload.md#native-functions">Native Functions</a></li>
+<li><a href="/xs/preload.md#some-javascript-built-ins">Some JavaScript Built-ins</a></li>
+<li><a href="/xs/preload.md#require-and-preloading"><code>require</code> and Preloading</a></li>
+</ul>
+</li>
+<li><a href="/xs/preload.md#preloading-main">Preloading <code>main</code></a></li>
+<li><a href="/xs/preload.md#pre-calculating-during-preload">Pre-calculating During Preload</a></li>
+<li><a href="/xs/preload.md#using-xsbug-to-check-preloaded-modules">Using xsbug to Check Preloaded Modules</a></li>
+<li><a href="/xs/preload.md#conclusion">Conclusion</a>
+<ul>
+<li><a href="/xs/preload.md#thank-you">Thank You</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3><a href="/xs/xsbug.html">xsbug</a></h3>
+<ul>
+<li><a href="/xs/xsbug.md#machine-tabs">Machine Tabs</a></li>
+<li><a href="/xs/xsbug.md#breakpoints-tab">Breakpoints Tab</a></li>
+<li><a href="/xs/xsbug.md#file-pane">File Pane</a></li>
+<li><a href="/xs/xsbug.md#preferences-pane">Preferences Pane</a></li>
+</ul>
+<h3><a href="/xs/xst.html">xst</a></h3>
+<ul>
+<li><a href="/xs/xst.md#build">Build</a>
+<ul>
+<li><a href="/xs/xst.md#linux">Linux</a></li>
+<li><a href="/xs/xst.md#macos">macOS</a></li>
+<li><a href="/xs/xst.md#windows">Windows</a></li>
+</ul>
+</li>
+<li><a href="/xs/xst.md#download">Download</a></li>
+<li><a href="/xs/xst.md#usage">Usage</a>
+<ul>
+<li><a href="/xs/xst.md#eshost">eshost</a></li>
+<li><a href="/xs/xst.md#test262">test262</a></li>
+</ul>
+</li>
+</ul>
+
+</div>
+
+        </div>
+    </body>
+</html>

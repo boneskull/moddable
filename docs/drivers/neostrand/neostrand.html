@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moddable</title>
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata|Open+Sans" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/hljs.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/markdown.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
+</head>
+    <body>
+<div id="header">
+    <div class="package"></div>
+    <a href="https:&#x2F;&#x2F;github.com&#x2F;moddable-opensource&#x2F;moddable" class="badge" title="Github.com"><img src="/assets/images/github.png" alt="Github" /></a>
+    <a href="/" class="home"><strong>Moddable</strong> <span class="headline">Moddable SDK</span></a>
+</div>
+        <div id="container">
+            <div id="sidebar">
+<ul class="list">
+    <li>
+        <h4><a href="/">Home</a></h4>
+        <ul>
+            <li><a href="https://www.moddable.com">Moddable</a></li>
+            <li><a href="/">Documentation</a></li>
+        </ul>
+    </li>
+    <li>
+        <h4><a href="/">Resources</a></h4>
+        <ul>
+            <li><a href="https://github.com/moddable-opensource/moddable">GitHub</a></li>
+            <li><a href="/">Link 2</a></li>
+        </ul>
+    </li>
+</ul>
+            </div>
+
+<div id="content">
+<h1>NeoStrand driver</h1>
+<p>Copyright 2018 Moddable Tech, Inc.</p>
+<p>The NeoStrand driver is a subclass of the <a href="http://blog.moddable.com/blog/neopixels/">NeoPixel</a> driver to add an effects engine for dynamic color displays with strings or strips of NeoPixel (WS2811/WS2812-like) LEDs.</p>
+<p>Terminology:</p>
+<ul>
+<li>A <strong>strand</strong> is a strip of NeoPixels.</li>
+<li>An <strong>effect</strong> is a group of settings and an action function which makes a change to state of the NeoPixel strip or takes some other action.</li>
+<li>A <strong>scheme</strong> is a set of effects that are applied to the strip.</li>
+</ul>
+<h2>Adding NeoStrand to a Project</h2>
+<p>To add the NeoStrand functionality to a project, add the path to the module in your <strong>manifest.json</strong>.</p>
+<pre><code>&quot;modules&quot;: {
+	&quot;*&quot;: [
+		/* other modules here */
+		&quot;$(MODDABLE)/modules/drivers/neostrand/*&quot;,
+   ],
+},
+</code></pre>
+<h3>Using NeoStrand</h3>
+<p>Import the NeoStrand class:</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> NeoStrand <span class="hljs-keyword">from</span> <span class="hljs-string">"neostrand"</span>;
+</code></pre>
+<p>NeoStrand is subclass of NeoPixel, so we use the same constructor dictionary to set the length, pin connected to the Data signal on the LED strip, and order of the pixels.</p>
+<pre><code class="language-js"><span class="hljs-keyword">const</span> strand = <span class="hljs-keyword">new</span> NeoStrand({<span class="hljs-attr">length</span>: <span class="hljs-number">50</span>, <span class="hljs-attr">pin</span>: <span class="hljs-number">22</span>, <span class="hljs-attr">order</span>: <span class="hljs-string">"RGB"</span>});
+</code></pre>
+<blockquote>
+<p>Note: if you notice flicker, you may have to adjust the timing for your strip. Check your specification sheet. The durations are in 50ns increments. <strong>NeoPixel</strong> has been extended to allow custom timings.</p>
+</blockquote>
+<pre><code>const Timing_WS2811 = {
+    mark:  { level0: 1, duration0: 800,  level1: 0, duration1: 450, },
+    space: { level0: 1, duration0: 400,   level1: 0, duration1: 800, },
+    reset: { level0: 0, duration0: 30000, level1: 0, duration1: 30000, } };
+&gt;
+const strand = new NeoStrand({length: 50, pin: 22, order: &quot;RGB&quot;,
+							  timing: Timing_WS2812B});
+</code></pre>
+<p> </p>
+<blockquote>
+<p>Note: You may want to tone down your lights during development so you don't blind yourself.</p>
+<pre><code class="language-js">strand.brightness(<span class="hljs-number">10</span>);
+</code></pre>
+<p>This diminishes your color range, so use with care. The default brightness is <em>64</em> and maximum is 255.</p>
+</blockquote>
+<h3>Schemes</h3>
+<p>A scheme is a set of effects to apply to a strand. A scheme has one or more effects applied in the specified order. Setting the new scheme takes effect immediately, even if the strand is already running.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> schemes = [];
+
+<span class="hljs-keyword">let</span> marqueeDictionary = { strand };
+
+schemes.push( [ <span class="hljs-keyword">new</span> NeoStrand.Marquee( marqueeDictionary ) ]);
+
+strand.setScheme(schemes[<span class="hljs-number">0</span>]);
+strand.start(<span class="hljs-number">50</span>);
+</code></pre>
+<p>The parameter sent to <code>start</code> defines the delay between updates of the effects. It is the number of milliseconds between calls to the effect function. Reducing the number may cause some effects to render more smoothly at the expense of CPU load. If it is set too high, long strands may not fully update or update incorrectly.</p>
+<h3>Effect Dictionary</h3>
+<p>Effect parameters are specified in a dictionary.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> marqueeDictionary = { strand, <span class="hljs-attr">start</span>: <span class="hljs-number">0</span>, <span class="hljs-attr">end</span>: (strand.length / <span class="hljs-number">2</span>) };
+</code></pre>
+<p>The dictionary must contain the strand. <code>start</code> and <code>end</code> define a span of pixels to be influenced by the effect. Use <code>Object.assign</code> to copy the dictionary if you want to make effect variants.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> marqee2 = <span class="hljs-built_in">Object</span>.assign({}, marqueeDictionary,
+		{ <span class="hljs-attr">start</span>: (strand.length / <span class="hljs-number">2</span>) + <span class="hljs-number">1</span>, <span class="hljs-attr">end</span>: strand.length, <span class="hljs-attr">reverse</span>: <span class="hljs-number">1</span> });
+</code></pre>
+<p>A scheme can contain more than one effect.</p>
+<pre><code class="language-js">schemes.push( [ <span class="hljs-keyword">new</span> NeoStrand.Marquee( marqueeDictionary ),
+                <span class="hljs-keyword">new</span> NeoStrand.Marquee( marquee2 ) ]) );
+</code></pre>
+<h3>Control</h3>
+<p>You can start and stop the scheme at any time. The strand state will remain. You may want to set all LEDs to 0 after stopping the scheme.</p>
+<pre><code class="language-js">strand.stop();
+strand.fill(strand.makeRGB(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>));
+strand.update();
+</code></pre>
+<h3>Effects</h3>
+<p>Effects are what make up a scheme. They usually cause one or more of the LEDs to change state over time. However, since the effect action function is JavaScript, you can do just about anything - trigger GPIOs, play a sound, fire a cannon.</p>
+<p>Effects are subclassed from <code>NeoStrandEffect</code> and take a dictionary of configuration parameters. The configuration dictionary <em>must</em> contain the <code>strand</code> to which this effect will be applied.</p>
+<pre><code class="language-js">    <span class="hljs-keyword">let</span> baseDictionary = { strand, <span class="hljs-attr">start</span>: <span class="hljs-number">0</span>, <span class="hljs-attr">end</span>: strand.length, <span class="hljs-attr">loop</span>: <span class="hljs-number">1</span> };
+</code></pre>
+<p>There are a number of common parameters that are used in almost every effect. Effects may also specify their own parameters.</p>
+<p>A <a href="#builtin">list of built-in effects</a> can be found later in this document.</p>
+<h4>Common Effect Parameters</h4>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>default</th>
+<th>range</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>strand</td>
+<td>(none)</td>
+<td></td>
+<td>The NeoStrand to which this effect applied</td>
+</tr>
+<tr>
+<td>start</td>
+<td><code>0</code></td>
+<td>[0..strand.length]</td>
+<td>The index of the first pixel of effect</td>
+</tr>
+<tr>
+<td>end</td>
+<td><code>strand.length</code></td>
+<td>[0..strand.length]</td>
+<td>The index of the last pixel of effect</td>
+</tr>
+<tr>
+<td>size</td>
+<td><code>strand.length</code></td>
+<td>[0..strand.length]</td>
+<td>The length of one hue cycle, in pixels</td>
+</tr>
+<tr>
+<td>duration</td>
+<td><code>1000</code></td>
+<td></td>
+<td>The duration of one complete cycle of the effect, in ms</td>
+</tr>
+<tr>
+<td>reverse</td>
+<td><code>0</code></td>
+<td>[0, 1]</td>
+<td>Set to 1 to run the effect in reverse, i.e. run the timeline of the effect backwards</td>
+</tr>
+<tr>
+<td>loop</td>
+<td><code>1</code></td>
+<td>[0, 1]</td>
+<td>Set to 1 to loop the effect</td>
+</tr>
+</tbody>
+</table>
+<p><code>start</code> and <code>end</code> define the span of pixels that this effect will operate on. <code>duration</code> is the length of one cycle of the effect.</p>
+<p>When one cycle of the effect is complete, the effect will restart if the <code>loop</code> parameter is set to <code>1</code>.</p>
+<p>If loop is <code>0</code> the effect's <code>onComplete()</code> function will be called.</p>
+<p><code>reverse</code> will reverse the effect, starting at the end state, and finishing with the begin state.</p>
+<h3>Custom Effects</h3>
+<p>An effect is a subclassed from the <strong>NeoStrandEffect</strong> class. The constructor sets parameters from the supplied dictionary. The <code>activate</code> method sets up a <a href="https://github.com/Moddable-OpenSource/moddable/blob/public/documentation/piu/piu.md#timeline-object"><code>timeline</code></a>. In the example below, the <code>effectValue</code> varys from 0 to <code>effect.dur</code> and is called when the value changes.</p>
+<pre><code class="language-js"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyEffect</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">NeoStrandEffect</span> </span>{
+    <span class="hljs-keyword">constructor</span>(dictionary) {
+        <span class="hljs-keyword">super</span>(dictionary);
+        <span class="hljs-keyword">this</span>.name = <span class="hljs-string">"MyEffect"</span>
+}
+
+activate(effect) {
+    effect.timeline.on(effect, { <span class="hljs-attr">effectValue</span>: [ <span class="hljs-number">0</span>, effect.dur ] }, effect.dur, <span class="hljs-literal">null</span>, <span class="hljs-number">0</span>);
+    effect.reset(effect);
+}
+
+<span class="hljs-keyword">set</span> effectValue(value) {
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i=<span class="hljs-keyword">this</span>.start; i&lt;<span class="hljs-keyword">this</span>.end; i++) {
+    	<span class="hljs-comment">//</span>
+    	<span class="hljs-comment">// For each pixel in the segment, perform the pixel operations</span>
+    	<span class="hljs-comment">// value will be in the range [ 0, effect.dur ] or whatever</span>
+    	<span class="hljs-comment">// range the effect specifies when it creates the timeline</span>
+    	<span class="hljs-comment">// in activate().</span>
+    	<span class="hljs-comment">// ...</span>
+    }
+}
+</code></pre>
+<p>Use the custom effect by creating an instance with the desired parameters and including it in an array sent to the <code>changeScheme</code> function:</p>
+<pre><code class="language-js">strand.setScheme( [ <span class="hljs-keyword">new</span> MyEffect(strand) ] );
+</code></pre>
+<p><a id="builtin"></a></p>
+<h2>Built-in Effects</h2>
+<p>The following effects are built-in:</p>
+<ul>
+<li><a href="#marquee">Marquee</a></li>
+<li><a href="#huespan">Hue Span</a></li>
+<li><a href="#sine">Sine</a></li>
+<li><a href="#pulse">Pulse</a></li>
+<li><a href="#pattern">Pattern</a></li>
+<li><a href="#dim">Dim</a></li>
+</ul>
+<p><a id="marquee"></a></p>
+<h3>Marquee</h3>
+<p>The <code>Marquee</code> effect is the common ant-march lighting effect.</p>
+<p>A <code>sizeA</code> and <code>sizeB</code> parameters define the pattern. For example { sizeA: 1, sizeB: 3 } will produce the repeating pattern:  [ A, B, B, B, A, B, B, B, A ... ]</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>default</th>
+<th>range</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>strand</td>
+<td>(none)</td>
+<td></td>
+<td>The NeoStrand to which this effect applied</td>
+</tr>
+<tr>
+<td>start</td>
+<td><code>0</code></td>
+<td>[0..strand.length]</td>
+<td>The index of the first pixel of effect</td>
+</tr>
+<tr>
+<td>end</td>
+<td><code>strand.length</code></td>
+<td>[0..strand.length]</td>
+<td>The index of the last pixel of effect</td>
+</tr>
+<tr>
+<td>size</td>
+<td><code>strand.length</code></td>
+<td>[0..strand.length]</td>
+<td>The length of one hue cycle, in pixels</td>
+</tr>
+<tr>
+<td>duration</td>
+<td>1000</td>
+<td></td>
+<td>time of one complete cycle of the pattern, in ms</td>
+</tr>
+<tr>
+<td>reverse</td>
+<td><code>0</code></td>
+<td>[0, 1]</td>
+<td>Set to 1 to run the effect in reverse, i.e. run the timeline of the effect backwards</td>
+</tr>
+<tr>
+<td>loop</td>
+<td><code>1</code></td>
+<td>[0, 1]</td>
+<td>Set to 1 to loop the effect</td>
+</tr>
+<tr>
+<td>sizeA</td>
+<td>1</td>
+<td>[1..strand.length]</td>
+<td>number of pixels in the A part of pattern</td>
+</tr>
+<tr>
+<td>sizeB</td>
+<td>3</td>
+<td>[1..strand.length]</td>
+<td>number of pixels in the B part of pattern</td>
+</tr>
+<tr>
+<td>rgbA</td>
+<td>{ r: 0, g: 0, b: 0x13 }</td>
+<td></td>
+<td>RGB A color elements</td>
+</tr>
+<tr>
+<td>rgbB</td>
+<td>{ r:0xff, g:0xff, b:0xff }</td>
+<td></td>
+<td>RGB B color elements</td>
+</tr>
+</tbody>
+</table>
+<p><a id="huespan"></a></p>
+<h3>Hue Span</h3>
+<p>The <code>HueSpan</code> effect is a smooth fade between colors. Like a color-wheel, it cycles through the hue in HSV color space.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>default</th>
+<th>range</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>strand</td>
+<td>(none)</td>
+<td></td>
+<td>The NeoStrand to which this effect is applied</td>
+</tr>
+<tr>
+<td>start</td>
+<td><code>0</code></td>
+<td>[0..strand.length]</td>
+<td>The index of the first pixel of effect</td>
+</tr>
+<tr>
+<td>end</td>
+<td><code>strand.length</code></td>
+<td>[0..strand.length]</td>
+<td>The index of the last pixel of effect</td>
+</tr>
+<tr>
+<td>size</td>
+<td><code>strand.length</code></td>
+<td>[0..strand.length]</td>
+<td>The length of one hue cycle, in pixels</td>
+</tr>
+<tr>
+<td>duration</td>
+<td>1000</td>
+<td></td>
+<td>time of one complete cycle of the color wheel, in ms</td>
+</tr>
+<tr>
+<td>reverse</td>
+<td><code>0</code></td>
+<td>[0, 1]</td>
+<td>Set to 1 to run the effect in reverse, i.e. run the timeline of the effect backwards</td>
+</tr>
+<tr>
+<td>loop</td>
+<td><code>1</code></td>
+<td>[0, 1]</td>
+<td>Set to 1 to loop the effect</td>
+</tr>
+<tr>
+<td>speed</td>
+<td>1.0</td>
+<td></td>
+<td>speed multiplier</td>
+</tr>
+<tr>
+<td>position</td>
+<td>0</td>
+<td>[0..1]</td>
+<td>starting HSV hue position</td>
+</tr>
+<tr>
+<td>saturation</td>
+<td>1.0</td>
+<td>[0..1]</td>
+<td>HSV saturation</td>
+</tr>
+<tr>
+<td>value</td>
+<td>1.0</td>
+<td>[0..1]</td>
+<td>HSV value</td>
+</tr>
+</tbody>
+</table>
+<p><a id="sine"></a></p>
+<h3>Sine</h3>
+<p>The <code>Sine</code> effect varys a color component in a sine wave fashion.</p>
+<p><code>value</code> = y = (sin(<em>t</em>) + pos) * amplitude</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>default</th>
+<th>range</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>strand</td>
+<td>(none)</td>
+<td></td>
+<td>The NeoStrand to which this effect is applied</td>
+</tr>
+<tr>
+<td>start</td>
+<td><code>0</code></td>
+<td>[0..strand.length]</td>
+<td>The index of the first pixel of effect</td>
+</tr>
+<tr>
+<td>end</td>
+<td><code>strand.length</code></td>
+<td>[0..strand.length]</td>
+<td>The index of the last pixel of effect</td>
+</tr>
+<tr>
+<td>size</td>
+<td><code>strand.length</code></td>
+<td>[0..strand.length]</td>
+<td>The length of one hue cycle, in pixels</td>
+</tr>
+<tr>
+<td>duration</td>
+<td>1000</td>
+<td></td>
+<td>time of one complete sine cycle, in ms</td>
+</tr>
+<tr>
+<td>reverse</td>
+<td><code>0</code></td>
+<td>[0, 1]</td>
+<td>Set to 1 to run the effect in reverse, i.e. run the timeline of the effect backwards</td>
+</tr>
+<tr>
+<td>loop</td>
+<td><code>1</code></td>
+<td>[0, 1]</td>
+<td>Set to 1 to loop the effect</td>
+</tr>
+<tr>
+<td>speed</td>
+<td>1.0</td>
+<td></td>
+<td>speed multiplier</td>
+</tr>
+<tr>
+<td>loop</td>
+<td>1</td>
+<td>[0, 1]</td>
+<td>loop the effect</td>
+</tr>
+<tr>
+<td>position</td>
+<td>0</td>
+<td>[0..1]</td>
+<td>starting x position</td>
+</tr>
+<tr>
+<td>vary</td>
+<td>&quot;b&quot;</td>
+<td>[&quot;r&quot;,&quot;g&quot;,&quot;b&quot;,<br>&quot;h&quot;,&quot;s&quot;,&quot;v&quot;]</td>
+<td>color component to vary</td>
+</tr>
+<tr>
+<td>value</td>
+<td>1.0</td>
+<td>[0..1]</td>
+<td>HSV value</td>
+</tr>
+</tbody>
+</table>
+<p><a id="pulse"></a></p>
+<h3>Pulse</h3>
+<p>The <code>Pulse</code> effect sets <code>size</code> number of pixels at a location and then moves it toward either (or both) ends. The <code>mode</code> parameter specifies whether to add, subtract or set the pixels' RGB values.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>default</th>
+<th>range</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>strand</td>
+<td>(none)</td>
+<td></td>
+<td>The NeoStrand to which this effect is applied</td>
+</tr>
+<tr>
+<td>start</td>
+<td><code>0</code></td>
+<td>[0..strand.length]</td>
+<td>The index of the first pixel of effect</td>
+</tr>
+<tr>
+<td>end</td>
+<td><code>strand.length</code></td>
+<td>[0..strand.length]</td>
+<td>The index of the last pixel of effect</td>
+</tr>
+<tr>
+<td>size</td>
+<td><code>strand.length</code></td>
+<td>[0..strand.length]</td>
+<td>The length of one hue cycle, in pixels</td>
+</tr>
+<tr>
+<td>duration</td>
+<td>3000</td>
+<td></td>
+<td>time of one pulse cycle, in ms</td>
+</tr>
+<tr>
+<td>reverse</td>
+<td><code>0</code></td>
+<td>[0, 1]</td>
+<td>Set to 1 to run the effect in reverse, i.e. run the timeline of the effect backwards</td>
+</tr>
+<tr>
+<td>loop</td>
+<td><code>1</code></td>
+<td>[0, 1]</td>
+<td>Set to 1 to loop the effect</td>
+</tr>
+<tr>
+<td>position</td>
+<td>&quot;random&quot;</td>
+<td>[-strand.length..strand.length]</td>
+<td>index of the pulse starting pixel<br>negative numbers are off-strand and okay<br>&quot;random&quot; picks a random starting location</td>
+</tr>
+<tr>
+<td>mode</td>
+<td>1</td>
+<td>[-1, 0, 1]</td>
+<td><strong>1</strong> to add, <strong>-1</strong> to subtract, or <strong>0</strong> set the pixel color</td>
+</tr>
+<tr>
+<td>fade</td>
+<td>0.2</td>
+<td>[0..1]</td>
+<td>how quickly tails fade</td>
+</tr>
+<tr>
+<td>rgb</td>
+<td>{ r: 0x80, g: 0x80, b: 0x80 }</td>
+<td></td>
+<td>RGB color elements</td>
+</tr>
+</tbody>
+</table>
+<p><a id="pattern"></a></p>
+<h3>Pattern</h3>
+<p>The <code>Pattern</code> sets a fixed RGB pattern of pixels.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>default</th>
+<th>range</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>strand</td>
+<td>(none)</td>
+<td></td>
+<td>The NeoStrand to which this effect is applied</td>
+</tr>
+<tr>
+<td>start</td>
+<td>0</td>
+<td>[0..strand.length]</td>
+<td>index of first pixel of effect</td>
+</tr>
+<tr>
+<td>end</td>
+<td>strand.length</td>
+<td>[0..strand.length]</td>
+<td>index of last pixel of effect</td>
+</tr>
+<tr>
+<td>pattern</td>
+<td>[ 0x130000, 0x131313 ]</td>
+<td></td>
+<td>array of RGB colors</td>
+</tr>
+<tr>
+<td>mode</td>
+<td>1</td>
+<td>[-1, 0, 1]</td>
+<td><strong>1</strong> to add, <strong>-1</strong> to subtract, or <strong>0</strong> set the pixel color</td>
+</tr>
+</tbody>
+</table>
+<p><a id="dim"></a></p>
+<h3>Dim</h3>
+<p>The <code>Dim</code> effect reduces the color for each pixel in the span over over the <code>duration</code>. For example, if a pixel is fully on (ie. 0xFFFFFF) it will gradually decrease to fully off when <code>duration</code> ms elapses.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>default</th>
+<th>range</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>strand</td>
+<td>(none)</td>
+<td></td>
+<td>The NeoStrand to which this effect is applied</td>
+</tr>
+<tr>
+<td>start</td>
+<td>0</td>
+<td>[0..strand.length]</td>
+<td>index of first pixel of effect</td>
+</tr>
+<tr>
+<td>end</td>
+<td>strand.length</td>
+<td>[0..strand.length]</td>
+<td>index of last pixel of effect</td>
+</tr>
+<tr>
+<td>duration</td>
+<td>1000</td>
+<td></td>
+<td>time to reduce a full-brightness pixel to off, in ms</td>
+</tr>
+</tbody>
+</table>
+<h2>Making a custom effect</h2>
+<p>To make your own effect, pick an existing one that most closely matches your vision and go from there.</p>
+<p>Let's make a random color effect. It will set <code>size</code> pixels to a random color, change colors every <code>duration</code> ms.</p>
+<p><a id="Random"></a></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>default</th>
+<th>range</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>strand</td>
+<td>(none)</td>
+<td></td>
+<td>The NeoStrand to which this effect is applied</td>
+</tr>
+<tr>
+<td>start</td>
+<td>0</td>
+<td>[0..strand.length]</td>
+<td>index of first pixel of effect</td>
+</tr>
+<tr>
+<td>end</td>
+<td>strand.length</td>
+<td>[0..strand.length]</td>
+<td>index of last pixel of effect</td>
+</tr>
+<tr>
+<td>duration</td>
+<td>1000</td>
+<td></td>
+<td>length time between color changes, in ms</td>
+</tr>
+<tr>
+<td>size</td>
+<td>5</td>
+<td>[0..strand.length]</td>
+<td>size of each color</td>
+</tr>
+<tr>
+<td>max</td>
+<td>127</td>
+<td>[0..255]</td>
+<td>maximium value of random RGB component</td>
+</tr>
+</tbody>
+</table>
+<p>Using <em>Pattern</em> as a starting point, we'll change the class name and constructor, set up the timeline in <code>activate</code> and provide a setter for the changing <code>effectValue</code>. The <code>loopPrepare</code> function will be called before a looping effect starts or restarts.</p>
+<pre><code class="language-js"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">RandomColor</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">NeoStrandEffect</span> </span>{
+    <span class="hljs-keyword">constructor</span>(dictionary) {
+        <span class="hljs-keyword">super</span>(dictionary);
+        <span class="hljs-keyword">this</span>.name = <span class="hljs-string">"RandomColor"</span>
+        <span class="hljs-keyword">this</span>.size = dictionary.size ? dictionary.size : <span class="hljs-number">5</span>;
+        <span class="hljs-keyword">this</span>.max = dictionary.max ? dictionary.max : <span class="hljs-number">127</span>;
+        <span class="hljs-keyword">this</span>.loop = <span class="hljs-number">1</span>;			<span class="hljs-comment">// force loop</span>
+    }
+
+    loopPrepare(effect) { effect.colors_set = <span class="hljs-number">0</span>; }
+
+    activate(effect) {
+        effect.timeline.on(effect, { <span class="hljs-attr">effectValue</span>: [ <span class="hljs-number">0</span>, effect.dur ] }, effect.dur, <span class="hljs-literal">null</span>, <span class="hljs-number">0</span>);
+        effect.reset(effect);
+    }
+
+    <span class="hljs-keyword">set</span> effectValue(value) {
+        <span class="hljs-keyword">if</span> (<span class="hljs-number">0</span> == <span class="hljs-keyword">this</span>.colors_set) {
+            <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i=<span class="hljs-keyword">this</span>.start; i&lt;<span class="hljs-keyword">this</span>.end; i++) {
+                <span class="hljs-keyword">if</span> (<span class="hljs-number">0</span> == (i % <span class="hljs-keyword">this</span>.size))
+                    <span class="hljs-keyword">this</span>.color = <span class="hljs-keyword">this</span>.strand.makeRGB(<span class="hljs-built_in">Math</span>.random() * <span class="hljs-keyword">this</span>.max, <span class="hljs-built_in">Math</span>.random() * <span class="hljs-keyword">this</span>.max, <span class="hljs-built_in">Math</span>.random() * <span class="hljs-keyword">this</span>.max);
+                <span class="hljs-keyword">this</span>.strand.set(i, <span class="hljs-keyword">this</span>.color, <span class="hljs-keyword">this</span>.start, <span class="hljs-keyword">this</span>.end);
+            }
+            <span class="hljs-keyword">this</span>.colors_set = <span class="hljs-number">1</span>;
+        }
+    }
+}
+
+</code></pre>
+<p>Then create and add the effect your scheme list and give it a try.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> randomColorScheme = [ <span class="hljs-keyword">new</span> RandomColor({ strand }) ];
+manySchemes.push( randomColorScheme );
+</code></pre>
+<h2>Timing</h2>
+<p>Timing specifications for the various driver chips of the LEDs are included for reference below.</p>
+<pre><code class="language-js"><span class="hljs-keyword">const</span> Timing_WS2812B = {
+    <span class="hljs-attr">mark</span>:  { <span class="hljs-attr">level0</span>: <span class="hljs-number">1</span>, <span class="hljs-attr">duration0</span>: <span class="hljs-number">900</span>,   <span class="hljs-attr">level1</span>: <span class="hljs-number">0</span>, <span class="hljs-attr">duration1</span>: <span class="hljs-number">350</span>, },
+    <span class="hljs-attr">space</span>: { <span class="hljs-attr">level0</span>: <span class="hljs-number">1</span>, <span class="hljs-attr">duration0</span>: <span class="hljs-number">350</span>,   <span class="hljs-attr">level1</span>: <span class="hljs-number">0</span>, <span class="hljs-attr">duration1</span>: <span class="hljs-number">900</span>, },
+    <span class="hljs-attr">reset</span>: { <span class="hljs-attr">level0</span>: <span class="hljs-number">0</span>, <span class="hljs-attr">duration0</span>: <span class="hljs-number">30000</span>, <span class="hljs-attr">level1</span>: <span class="hljs-number">0</span>, <span class="hljs-attr">duration1</span>: <span class="hljs-number">30000</span>, } };
+
+<span class="hljs-keyword">const</span> Timing_WS2811 = {
+    <span class="hljs-attr">mark</span>:  { <span class="hljs-attr">level0</span>: <span class="hljs-number">1</span>, <span class="hljs-attr">duration0</span>: <span class="hljs-number">800</span>,   <span class="hljs-attr">level1</span>: <span class="hljs-number">0</span>, <span class="hljs-attr">duration1</span>: <span class="hljs-number">450</span>, },
+    <span class="hljs-attr">space</span>: { <span class="hljs-attr">level0</span>: <span class="hljs-number">1</span>, <span class="hljs-attr">duration0</span>: <span class="hljs-number">400</span>,   <span class="hljs-attr">level1</span>: <span class="hljs-number">0</span>, <span class="hljs-attr">duration1</span>: <span class="hljs-number">800</span>, },
+    <span class="hljs-attr">reset</span>: { <span class="hljs-attr">level0</span>: <span class="hljs-number">0</span>, <span class="hljs-attr">duration0</span>: <span class="hljs-number">30000</span>, <span class="hljs-attr">level1</span>: <span class="hljs-number">0</span>, <span class="hljs-attr">duration1</span>: <span class="hljs-number">30000</span>, } };
+</code></pre>
+
+</div>
+
+        </div>
+    </body>
+</html>

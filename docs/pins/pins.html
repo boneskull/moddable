@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moddable</title>
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata|Open+Sans" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/hljs.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/markdown.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
+</head>
+    <body>
+<div id="header">
+    <div class="package"></div>
+    <a href="https:&#x2F;&#x2F;github.com&#x2F;moddable-opensource&#x2F;moddable" class="badge" title="Github.com"><img src="/assets/images/github.png" alt="Github" /></a>
+    <a href="/" class="home"><strong>Moddable</strong> <span class="headline">Moddable SDK</span></a>
+</div>
+        <div id="container">
+            <div id="sidebar">
+<ul class="list">
+    <li>
+        <h4><a href="/">Home</a></h4>
+        <ul>
+            <li><a href="https://www.moddable.com">Moddable</a></li>
+            <li><a href="/">Documentation</a></li>
+        </ul>
+    </li>
+    <li>
+        <h4><a href="/">Resources</a></h4>
+        <ul>
+            <li><a href="https://github.com/moddable-opensource/moddable">GitHub</a></li>
+            <li><a href="/">Link 2</a></li>
+        </ul>
+    </li>
+</ul>
+            </div>
+
+<div id="content">
+<h1>Pins</h1>
+<p>Copyright 2017-18 Moddable Tech, Inc.<BR>
+Revised: October 26, 2018</p>
+<p><strong>Warning</strong>: These notes are preliminary. Omissions and errors are likely. If you encounter problems, please ask for assistance.</p>
+<h2>Table of Contents</h2>
+<ul>
+<li><a href="#digital">Digital</a></li>
+<li><a href="#monitor">Monitor</a></li>
+<li><a href="#analog">Analog</a></li>
+<li><a href="#pwm">PWM</a></li>
+<li><a href="#i2c">I2C</a></li>
+<li><a href="#smbus">SMBus</a></li>
+<li><a href="#servo">Servo</a></li>
+<li><a href="#spi">SPI</a></li>
+</ul>
+<p><a id="digital"></a></p>
+<h2>class Digital</h2>
+<ul>
+<li><strong>Source code:</strong> <a href="../../modules/pins/digital">digital</a></li>
+<li><strong>Relevant Examples:</strong> <a href="../../examples/pins/blink">blink</a>, <a href="../../examples/pins/button">button</a></li>
+</ul>
+<p>The <code>Digital</code> class provides access to the GPIO pins.</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> Digital <span class="hljs-keyword">from</span> <span class="hljs-string">"pins/digital"</span>;
+</code></pre>
+<h3><code>constructor(dictionary)</code></h3>
+<h3><code>constructor([port], pin, mode)</code></h3>
+<p>The Digital constructor establishes a connection to the GPIO pin specified. There are two ways to configure the pin: by passing a dictionary or by passing separate arguments.</p>
+<p>When using a dictionary, the <code>pin</code> and <code>mode</code> property are required. The port property is optional, with a default value of <code>NULL</code>.</p>
+<p>Pin numbers and port names are device dependent.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> pin = <span class="hljs-keyword">new</span> Digital({<span class="hljs-attr">pin</span>: <span class="hljs-number">4</span>, <span class="hljs-attr">mode</span>: Digital.Input});
+</code></pre>
+<p>When providing separate arguments, the  <code>port</code> and <code>pin</code> arguments specify the pin. If the port is not provided, the default port (<code>NULL</code>) is used. The <code>mode</code> parameters is passed to the instance's <code>mode</code> function to configure the GPIO hardware.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> pin = <span class="hljs-keyword">new</span> Digital(<span class="hljs-number">4</span>, Digital.Input);
+</code></pre>
+<p>To open a GPIO pin on a specific port, use the Digital constructor with the optional first argument.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> blink = <span class="hljs-number">1</span>;
+<span class="hljs-keyword">let</span> led = <span class="hljs-keyword">new</span> Digital(<span class="hljs-string">"gpioPortName"</span>, <span class="hljs-number">5</span>, Digital.Output);
+	
+Timer.repeat(<span class="hljs-function"><span class="hljs-params">id</span> =&gt;</span> {
+	blink = blink ^ <span class="hljs-number">1</span>;
+	led.write(blink);
+}, <span class="hljs-number">500</span>);
+</code></pre>
+<p>The following mode values are available.</p>
+<pre><code class="language-js">Digital.Input
+Digital.InputPullUp
+Digital.InputPullDown
+Digital.InputPullUpDown
+Digital.Output
+Digital.OutputOpenDrain
+</code></pre>
+<hr />
+<h3><code>static read(pin)</code></h3>
+<p>The <code>read</code> function sets the pin to <code>Digital.Input</code> mode and samples the value of the specified pin, returning 0 or 1. The default port is used.</p>
+<p>The following example configures pin 0 as an input and then tests to see if a button connected to the input is pressed. On an ESP8266 NodeMCU board pin 0 is the built-in user button.</p>
+<pre><code class="language-js"><span class="hljs-keyword">if</span> (Digital.read(<span class="hljs-number">0</span>))
+	trace(<span class="hljs-string">"button is pressed\n"</span>);
+</code></pre>
+<hr />
+<h3><code>static write(pin)</code></h3>
+<p>The <code>write</code> function sets the pin to <code>Digital.Output</code> mode and its value to either 0 or 1. The default port is used.</p>
+<p>The following example configures pin 5 as an output and then blinks it one per second. On the ESP8266 NodeMCU board, pin 5 is the built-in LED.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> blink = <span class="hljs-number">1</span>;
+	
+Timer.repeat(<span class="hljs-function"><span class="hljs-params">id</span> =&gt;</span> {
+	blink = blink ^ <span class="hljs-number">1</span>;
+	Digital.write(<span class="hljs-number">5</span>, blink);
+}, <span class="hljs-number">500</span>);
+</code></pre>
+<hr />
+<h3><code>read()</code></h3>
+<p>Samples the state of the pin and returns it as 0 or 1.</p>
+<p>The static <code>Digital.read</code> and <code>Digital.write</code> do not allow configuring all pin modes. Use the Digital constructor for full configuration, for example setting the input to use an internal pull-up resistor.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> button = <span class="hljs-keyword">new</span> Digital(<span class="hljs-number">0</span>, Digital.InputPullUp);
+trace(<span class="hljs-string">`button state is <span class="hljs-subst">${button.read()}</span>`</span>;
+</code></pre>
+<hr />
+<h3><code>write(value)</code></h3>
+<p>Sets the current value of the pin to 0 or 1.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> led = <span class="hljs-keyword">new</span> Digital(<span class="hljs-number">0</span>, Digital.Output);
+led.write(<span class="hljs-number">1</span>);
+</code></pre>
+<hr />
+<h3><code>mode(mode)</code></h3>
+<p>The mode function sets the mode of the pin. Not all pins support all modes, so refer to the hardware documentation for details.</p>
+<pre><code class="language-js">pin.mode(Digital.Input);
+</code></pre>
+<hr />
+<p><a id="monitor"></a></p>
+<h2>class Monitor</h2>
+<ul>
+<li><strong>Source code:</strong> <a href="../../modules/pins/digital/monitor">monitor</a></li>
+<li><strong>Relevant Examples:</strong> <a href="../../examples/pins/monitor">monitor</a></li>
+</ul>
+<p>The <code>Monitor</code> class tracks changes in the state of Digital input pins. An instance is configured to trigger on rising and/or falling edge events. When a trigger event occurs, a callback function is invoked. In addition, the instance maintains a counter of the total number of events triggered.</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> Monitor <span class="hljs-keyword">from</span> <span class="hljs-string">"pins/digital/monitor"</span>;
+</code></pre>
+<p><strong>Note</strong>: For efficiency reasons, implementations may only support a single monitor for each pin. Scripts should only instantiate a single monitor for a given pin.</p>
+<h3><code>constructor(dictionary)</code></h3>
+<p>The constructor takes a single dictionary argument containing properties to configure the instance. The <code>Monitor</code> dictionary is an extension of the <code>Digital</code> constructor accepting <code>pin</code>, <code>port</code>, and <code>mode</code> arguments. Only input modes are allowed for a <code>Monitor</code> instance  and the mode cannot be changed after instantiation.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> monitor = <span class="hljs-keyword">new</span> Monitor({<span class="hljs-attr">pin</span>: <span class="hljs-number">0</span>, <span class="hljs-attr">port</span>: <span class="hljs-string">"B"</span>, <span class="hljs-attr">mode</span>: Digital.Input, <span class="hljs-attr">edges</span>: Monitor.Rising});
+</code></pre>
+<hr />
+<h3><code>onChanged()</code> callback</h3>
+<p>A script must install an <code>onChanged</code> callback on the instance to be invoked with the specified edge events occur.</p>
+<pre><code class="language-js">monitor.onChanged = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+	trace(<span class="hljs-string">`Pin value is <span class="hljs-subst">${<span class="hljs-keyword">this</span>.read()}</span>\n`</span>);
+}
+</code></pre>
+<p>The <code>onChanged</code> function is called as soon as possible following the event trigger. This may occur some time after the event occurs, as it may take some time to dispatch to a point where the script can be invoked safely. Because of this delay, it is possible the value of the pin may have again changed. For this reason, scripts should not assume the value of the pin when the callback is invoked but instead call the instances <code>read</code> function to retrieve the current value.</p>
+<hr />
+<h3><code>read()</code></h3>
+<p>The <code>read</code> function returns the current value of the pin.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> value = <span class="hljs-keyword">this</span>.read();
+</code></pre>
+<hr />
+<h3><code>close()</code></h3>
+<p>The <code>close</code> function releases the resources associated with the <code>Monitor</code> instance.</p>
+<pre><code class="language-js">monitor.close();
+</code></pre>
+<p>The monitor is not eligible to be garbage collected until its <code>close</code> function is called.</p>
+<hr />
+<h3><code>rises</code> and <code>falls</code> properties</h3>
+<p>The <code>rises</code> and <code>falls</code> properties return the total number of the corresponding trigger events since the instance was created. Events may trigger more quickly than the <code>onChanged</code> callback can be invoked, which makes maintaining an accurate count of trigger events using the <code>onChanged</code> callback impossible.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> triggers = <span class="hljs-keyword">this</span>.rises + <span class="hljs-keyword">this</span>.falls;
+</code></pre>
+<hr />
+<h3>Example: Receiving notifications</h3>
+<p>The following example shows how to receive callbacks on rising and falling edge events.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> monitor = <span class="hljs-keyword">new</span> Monitor({<span class="hljs-attr">pin</span>: <span class="hljs-number">4</span>, <span class="hljs-attr">mode</span>: Digital.InputPullUp, <span class="hljs-attr">edges</span>: Monitor.Rising | Monitor.Falling});
+monitor.onChanged = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+	trace(<span class="hljs-string">`Pin value is <span class="hljs-subst">${<span class="hljs-keyword">this</span>.read()}</span>\n`</span>);
+}
+</code></pre>
+<hr />
+<p><a id="analog"></a></p>
+<h2>class Analog</h2>
+<ul>
+<li><strong>Source code:</strong> <a href="../../modules/pins/analog">analog</a></li>
+<li><strong>Relevant Examples:</strong> <a href="../../examples/pins/simpleAnalog/">simple-analog</a>, <a href="../../examples/pins/analog/">analog</a></li>
+</ul>
+<p>The <code>Analog</code> class provides access to the analog input pins.</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> Analog <span class="hljs-keyword">from</span> <span class="hljs-string">"pins/analog"</span>;
+</code></pre>
+<p>The Analog class provides only static functions. It is not instantiated.</p>
+<h3><code>static read(pin)</code></h3>
+<p>The <code>read</code> function samples the value of the specified pin, returning a value from 0 to 1023. Pin numbers are device dependent.</p>
+<p>The following example samples an analog temperature sensor, converting the result to celsius degrees. The ESP8266 NodeMCU board has a single analog input pin, analog pin number 0.</p>
+<pre><code>let temperature = (Analog.read(0) / 1023) * 330 - 50;
+trace(`Temperature is ${temperature} degrees celsius\n`);
+</code></pre>
+<p>The example works with a widely-available low-cost <a href="https://learn.adafruit.com/tmp36-temperature-sensor/overview">temperature sensor</a>.</p>
+<blockquote>
+<p>Caution: The output voltage range of the TMP36 temperature sensor is 0.1V to 2.0V and the input voltage range of the analog to digital converter on the ESP8266 is 0V to 1.0V. To avoid damaging the ESP8266 a voltage divider should be used to reduce the magnitude of the TMP36 output voltage. The ESP8266 NodeMCU board has a voltage divider for this purpose. Other boards may not have a voltage divider.</p>
+</blockquote>
+<hr />
+<p><a id="pwm"></a></p>
+<h2>class PWM</h2>
+<ul>
+<li><strong>Source code:</strong> <a href="../../modules/pins/pwm">pwm</a></li>
+<li><strong>Relevant Examples:</strong> <a href="../../examples/pins/tricolor-led/">tricolor-led</a></li>
+</ul>
+<p>The <code>PWM</code> class provides access to the PWM output pins.</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> PWM <span class="hljs-keyword">from</span> <span class="hljs-string">"pins/pwm"</span>;
+</code></pre>
+<h3><code>constructor(dictionary)</code></h3>
+<p>The PWM constructor takes a dictionary which contains the pin number to use. Pin numbers are device dependent.</p>
+<p>The dictionary may optionally contain a <code>port</code> property. If the port is not provided, the default port (<code>NULL</code>) is used.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> pwm = <span class="hljs-keyword">new</span> PWM({ <span class="hljs-attr">pin</span>: <span class="hljs-number">12</span> });
+</code></pre>
+<hr />
+<h3><code>write(value)</code></h3>
+<p>Sets the current value of the pin. Value should be between 0 and 1023.</p>
+<pre><code class="language-js">pwm.write(<span class="hljs-number">512</span>);
+</code></pre>
+<hr />
+<h3><code>close()</code></h3>
+<p>The <code>close</code> function releases the resources associated with the <code>PWM</code> instance.</p>
+<pre><code class="language-js">pwm.close();
+</code></pre>
+<hr />
+<p><a id="i2c"></a></p>
+<h2>class I2C</h2>
+<ul>
+<li><strong>Source code:</strong> <a href="../../modules/pins/i2c">i2c</a></li>
+<li><strong>Relevant Examples:</strong> <a href="../../examples/drivers/bmp180/">bmp180</a>, <a href="../../examples/drivers/lis3dh">lis3dh</a></li>
+</ul>
+<p>The <code>I2C</code> class provides access to the I2C bus connected to a pair of pins</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> I2C <span class="hljs-keyword">from</span> <span class="hljs-string">"pins/i2c"</span>;
+</code></pre>
+<h3><code>constructor(dictionary)</code></h3>
+<p>The I2C constructor takes a dictionary which contains the pin numbers to use for clock and data (<code>scl</code> and <code>sda</code>, respectively), as well as the I2C address of the target device. Pin numbers are device dependent.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> sensor = <span class="hljs-keyword">new</span> I2C({<span class="hljs-attr">sda</span>: <span class="hljs-number">5</span>, <span class="hljs-attr">scl</span>: <span class="hljs-number">4</span>, <span class="hljs-attr">address</span>: <span class="hljs-number">0x48</span>});
+</code></pre>
+<p>The constructor dictionary has an optional <code>hz</code> property to specify the speed of the I2C bus when using this instance.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> sensor = <span class="hljs-keyword">new</span> I2C({<span class="hljs-attr">sda</span>: <span class="hljs-number">5</span>, <span class="hljs-attr">scl</span>: <span class="hljs-number">4</span>, <span class="hljs-attr">address</span>: <span class="hljs-number">0x48</span>, <span class="hljs-attr">hz</span>: <span class="hljs-number">1000000</span>});
+</code></pre>
+<p>Many devices have a default I2C bus. On these devices, the <code>sda</code> and <code>scl</code> parameters may be omitted from the dictionary to use the default I2C bus.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> sensor = <span class="hljs-keyword">new</span> I2C({<span class="hljs-attr">address</span>: <span class="hljs-number">0x48</span>});
+</code></pre>
+<hr />
+<h3><code>read(count [, buffer])</code></h3>
+<p>The <code>read</code> function reads <code>count</code> bytes from the target device, returning them in a <code>Uint8Array</code>. The maximum value of <code>count</code> is 34.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> bytes = sensor.read(<span class="hljs-number">4</span>);
+</code></pre>
+<p>An optional buffer parameter is used to provide an <code>ArrayBuffer</code> to be used to store the result. Using the same buffer for multiple reads can be more efficient by eliminating memory allocations and running the garbage collector less frequently.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> bytes = <span class="hljs-keyword">new</span> UInt8Array(<span class="hljs-number">4</span>);
+sensor.read(<span class="hljs-number">4</span>, bytes.buffer);
+sensor.read(<span class="hljs-number">2</span>, bytes.buffer);
+sensor.read(<span class="hljs-number">3</span>, bytes.buffer);
+</code></pre>
+<hr />
+<h3><code>write(...value [, stop])</code></h3>
+<p>The <code>write</code> function writes up to 34 bytes to the target device. The write function accepts multiple arguments, concatenating them together to send to the device. The values may be numbers, which are transmitted as bytes, Arrays, TypedArrays, and strings (which are transmitted as UTF-8 encoded text bytes).</p>
+<p>The <code>write</code> function accepts an optional final boolean argument, <code>stop</code>, which indicates if a stop condition should be sent when the write is complete. If the final argument is not a boolean value, a stop condition is sent.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> sensor = <span class="hljs-keyword">new</span> I2C({<span class="hljs-attr">address</span>: <span class="hljs-number">0x48</span>});
+sensor.write(<span class="hljs-number">0</span>);	
+</code></pre>
+<hr />
+<h3>Example: Reading an I2C temperature sensor</h3>
+<p>The following example instantiates an I2C connection to a <a href="https://www.sparkfun.com/products/11931">temperature sensor</a> with address 0x48 connected to pins 4 and 5.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> sensor = <span class="hljs-keyword">new</span> I2C({<span class="hljs-attr">sda</span>: <span class="hljs-number">5</span>, <span class="hljs-attr">scl</span>: <span class="hljs-number">4</span>, <span class="hljs-attr">address</span>: <span class="hljs-number">0x48</span>});
+sensor.write(<span class="hljs-number">0</span>);					<span class="hljs-comment">// set register address 0</span>
+<span class="hljs-keyword">let</span> value = sensor.read(<span class="hljs-number">2</span>);	<span class="hljs-comment">// read two bytes</span>
+
+<span class="hljs-comment">// convert data to celsius</span>
+value = (value[<span class="hljs-number">0</span>] &lt;&lt; <span class="hljs-number">4</span>) | (value[<span class="hljs-number">1</span>] &gt;&gt; <span class="hljs-number">4</span>);
+<span class="hljs-keyword">if</span> (value &amp; <span class="hljs-number">0x800</span>) {
+	value -= <span class="hljs-number">1</span>;
+	value = ~value &amp; <span class="hljs-number">0xFFF</span>;
+	value = -value;
+}
+value *= <span class="hljs-number">0.0625</span>;
+
+trace(<span class="hljs-string">`Celsius temperature: <span class="hljs-subst">${value}</span>\n`</span>);
+</code></pre>
+<hr />
+<p><a id="smbus"></a></p>
+<h2>class SMBus</h2>
+<ul>
+<li><strong>Source code:</strong> <a href="../../modules/pins/smbus">smbus</a></li>
+<li><strong>Relevant Examples:</strong> <a href="../../examples/drivers/HMC5883L">HMC5883L</a></li>
+</ul>
+<p>The <code>SMBus</code> class implements support for the <a href="https://en.wikipedia.org/wiki/System_Management_Bus">System Management Bus</a> protocol, which is commonly used with I2C devices. The <code>SMBus</code> class extends the <code>I2C</code> class with additional functions.</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> SMBus <span class="hljs-keyword">from</span> <span class="hljs-string">"pins/smbus"</span>;
+</code></pre>
+<h3><code>constructor(dictionary)</code></h3>
+<p>The <code>SMBus</code> constructor is identical to the <code>I2C</code> constructor.</p>
+<hr />
+<h3><code>readByte(register)</code></h3>
+<p>Reads a single byte of data from the specified register.</p>
+<hr />
+<h3><code>readWord(register)</code></h3>
+<p>Reads a 16-bit data value starting from the specified register. The data is assumed to be transmitted in little-endian byte order.</p>
+<hr />
+<h3><code>readBlock(register, count [, buffer])</code></h3>
+<p>Reads count bytes of data starting from the specified register. Up to 34 bytes of data may be read. The data is returned in a <code>Uint8Array</code>. <code>readBlock</code> accepts an optional <code>buffer</code> argument that behaves the same as the optional <code>buffer</code> argument to the <code>I2C</code> class <code>read</code> function.</p>
+<hr />
+<h3><code>writeByte(register, value)</code></h3>
+<p>Writes a single byte of data to the specified register.</p>
+<hr />
+<h3><code>writeWord(register, value)</code></h3>
+<p>Writes a 16-bit data value starting at the specified register. The value is transmitted in little-endian byte order.</p>
+<hr />
+<h3><code>writeBlock(register, ...value)</code></h3>
+<p>Writes the provided data values starting at the specified register. The value arguments are handled in the same way as the arguments to the <code>write</code> function of the <code>I2C</code> class.</p>
+<hr />
+<h3>Example: Initializing a triple axis magnetometer</h3>
+<p>The following example establishes an SMBus connection to a <a href="https://www.sparkfun.com/products/10530">triple axis magnetometer</a>. Once connected, it checks the device ID to confirm that it is the expected device model. It them puts the device into continuous measure mode.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> sensor = <span class="hljs-keyword">new</span> SMBus({<span class="hljs-attr">address</span>: <span class="hljs-number">0x1E</span>});
+	
+<span class="hljs-keyword">let</span> id = sensor.readBlock(<span class="hljs-number">10</span>, <span class="hljs-number">3</span>);
+id = <span class="hljs-built_in">String</span>.fromCharCode(id[<span class="hljs-number">0</span>]) + <span class="hljs-built_in">String</span>.fromCharCode(id[<span class="hljs-number">1</span>]) + <span class="hljs-built_in">String</span>.fromCharCode(id[<span class="hljs-number">2</span>]);
+<span class="hljs-keyword">if</span> (<span class="hljs-string">"H43"</span> != id)
+	<span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">"unable to verify magnetometer id"</span>);
+
+sensor.writeByte(<span class="hljs-number">2</span>, <span class="hljs-number">0</span>);	<span class="hljs-comment">// continuous measurement mode</span>
+</code></pre>
+<hr />
+<p><a id="servo"></a></p>
+<h2>class Servo</h2>
+<ul>
+<li><strong>Source code:</strong> <a href="../../modules/pins/servo">servo</a></li>
+<li><strong>Relevant Examples:</strong> <a href="../../examples/pins/servo">servo</a>, <a href="../../examples/pins/servo-sweep">servo-sweep</a></li>
+</ul>
+<p>The <code>Servo</code> class uses digital pins to control servo motors. The API is designed around the Arduino Servo class.</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> Servo <span class="hljs-keyword">from</span> <span class="hljs-string">"pins/servo"</span>;
+</code></pre>
+<h3><code>constructor(dictionary)</code></h3>
+<p>The Servo constructor takes a dictionary. The <code>pin</code> property is required, and specifies the digital pin to use. The <code>min</code> and <code>max</code> properties are optional, and specify the range of the pulse duration in microseconds.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> servo = <span class="hljs-keyword">new</span> Servo({<span class="hljs-attr">pin</span>: <span class="hljs-number">5</span>, <span class="hljs-attr">min</span>: <span class="hljs-number">500</span>, <span class="hljs-attr">max</span>: <span class="hljs-number">2400</span>});
+</code></pre>
+<hr />
+<h3><code>write(degrees)</code></h3>
+<p>The <code>write</code> call changes the servo position to the number of degrees specified. Fractional degrees are supported.</p>
+<p>The following example instantiates a Servo on pin 4 and rotates it to to 45 degrees.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> servo = <span class="hljs-keyword">new</span> Servo({<span class="hljs-attr">pin</span>: <span class="hljs-number">4</span>});
+servo.write(<span class="hljs-number">45</span>);
+</code></pre>
+<hr />
+<h3><code>writeMicroseconds(us)</code></h3>
+<p>The <code>writeMicroseconds</code> call sets the duration of the pulse width in microseconds. The value provided is pinned by the <code>min</code> and <code>max</code> values.</p>
+<p>The Servo implementation pulses a digital signal for a number of microseconds that is proportional to the angle of rotation. Scripts may provide the number of microseconds for the signal pulse instead of degrees, for greater precision.</p>
+<pre><code class="language-js">servo.writeMicroseconds(<span class="hljs-number">1000</span>);
+</code></pre>
+<hr />
+<p><a id="spi"></a></p>
+<h2>class SPI</h2>
+<p>There is no JavaScript API to access SPI at this time.</p>
+
+</div>
+
+        </div>
+    </body>
+</html>

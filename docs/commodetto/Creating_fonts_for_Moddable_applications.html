@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moddable</title>
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata|Open+Sans" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/hljs.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/markdown.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
+</head>
+    <body>
+<div id="header">
+    <div class="package"></div>
+    <a href="https:&#x2F;&#x2F;github.com&#x2F;moddable-opensource&#x2F;moddable" class="badge" title="Github.com"><img src="/assets/images/github.png" alt="Github" /></a>
+    <a href="/" class="home"><strong>Moddable</strong> <span class="headline">Moddable SDK</span></a>
+</div>
+        <div id="container">
+            <div id="sidebar">
+<ul class="list">
+    <li>
+        <h4><a href="/">Home</a></h4>
+        <ul>
+            <li><a href="https://www.moddable.com">Moddable</a></li>
+            <li><a href="/">Documentation</a></li>
+        </ul>
+    </li>
+    <li>
+        <h4><a href="/">Resources</a></h4>
+        <ul>
+            <li><a href="https://github.com/moddable-opensource/moddable">GitHub</a></li>
+            <li><a href="/">Link 2</a></li>
+        </ul>
+    </li>
+</ul>
+            </div>
+
+<div id="content">
+<h1>Creating fonts for applications built on the Moddable SDK</h1>
+<p>Copyright 2017 Moddable Tech, Inc.</p>
+<p>Revised: November 16, 2017</p>
+<p>Moddable uses the <a href="http://www.angelcode.com/products/bmfont/doc/file_format.html">BMFont</a> format for fonts</p>
+<p>The Moddable SDK supports any input character (up to 4-byte UTF-8 values) making it possible to render the glyphs for any language written with glyphs having a Unicode representation.</p>
+<p>Each font asset consists of a (.png) glyph file and a corresponding font metrics file (.fnt) saved in BMFont Binary format.</p>
+<p>This allows anti-aliased or non-anti-aliased font sets to be generated as desired. The Poco renderer in the Moddable SDK does not implement a font scaler. Consequently, each required font size/weight must be generated and included as an asset in the application.</p>
+<p>BMFont allows an arbitrary number of glyphs in the font.
+Moddable supports non-contiguous glyph ranges allowing the developer or graphic designer to create an efficient font asset with just the characters needed for the application. This can significantly reduce asset storage size.</p>
+<p>Fonts are generated in black. This allows the Moddable SDK build tools to create alpha masks of the characters. To render the fonts in color, applications apply styles.</p>
+<p>The Moddable team uses <a href="https://71squared.com/glyphdesigner">Glyph Designer</a> (macOS). Other tools are available to create bitmap fonts in the BMFont format.</p>
+<h2>Glyph Designer instructions</h2>
+<p>Select font and weight. Set font color to black and no outline.</p>
+<p><img src="../assets/create-fonts/screen01.png" alt="" /></p>
+<p>Using the character selection tool select needed characters.</p>
+<p><img src="../assets/create-fonts/screen02.png" alt="" /></p>
+<p>Export .png glyph and .fnt font metrics files in the BMFont Binary format.</p>
+<p><img src="../assets/create-fonts/screen03.png" alt="" /></p>
+
+</div>
+
+        </div>
+    </body>
+</html>

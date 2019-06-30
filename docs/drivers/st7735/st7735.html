@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moddable</title>
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata|Open+Sans" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/hljs.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/markdown.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
+</head>
+    <body>
+<div id="header">
+    <div class="package"></div>
+    <a href="https:&#x2F;&#x2F;github.com&#x2F;moddable-opensource&#x2F;moddable" class="badge" title="Github.com"><img src="/assets/images/github.png" alt="Github" /></a>
+    <a href="/" class="home"><strong>Moddable</strong> <span class="headline">Moddable SDK</span></a>
+</div>
+        <div id="container">
+            <div id="sidebar">
+<ul class="list">
+    <li>
+        <h4><a href="/">Home</a></h4>
+        <ul>
+            <li><a href="https://www.moddable.com">Moddable</a></li>
+            <li><a href="/">Documentation</a></li>
+        </ul>
+    </li>
+    <li>
+        <h4><a href="/">Resources</a></h4>
+        <ul>
+            <li><a href="https://github.com/moddable-opensource/moddable">GitHub</a></li>
+            <li><a href="/">Link 2</a></li>
+        </ul>
+    </li>
+</ul>
+            </div>
+
+<div id="content">
+<h1>ST7735 display driver</h1>
+<p>Copyright 2017 Moddable Tech, Inc.</p>
+<p>Revised: January 1, 2018</p>
+<p><strong>Warning</strong>: These notes are preliminary. Omissions and errors are likely. If you encounter problems, please ask for assistance.</p>
+<p>The <a href="https://cdn-shop.adafruit.com/datasheets/ST7735R_V0.2.pdf">ST7735</a> LCD controller drives 16-bits per pixel (RGB565LE) displays. Displays are up to 240 pixels wide and 320 pixels high. This implementation has been tested with the &quot;<a href="https://www.adafruit.com/product/2088">green tab</a>&quot; display from Adafruit at 128 x 160.</p>
+<p><strong>Note</strong>: The ST7735 is a direct subclass of the ILI9341 display driver. The only difference is register initialization. See the ILI9341 driver's <a href="../ili9341/ili9341.html">documentation</a> for details.</p>
+<h3>Adding ST7735 to a project</h3>
+<p>To add the ST7735 driver to a project, include its manifest:</p>
+<pre><code>&quot;include&quot;: [
+	/* other includes here */
+	&quot;$(MODULES)/drivers/st7735/manifest.json&quot;,
+],
+</code></pre>
+<p>If using Commodetto or Piu, set the <code>screen</code> property of the <code>config</code> object in the manifest to <code>st7735</code> to make ST7735 the default display driver. If there is no touch input, set the touch driver name to an empty string to disable it.</p>
+<pre><code>&quot;config&quot;: {
+	&quot;screen&quot;: &quot;st7735&quot;,
+	&quot;touch&quot;: &quot;&quot;,
+},
+</code></pre>
+<h3>Defines</h3>
+<p>Because the ST7735 driver is a subclass of the ILI9341 drive, its defines object must use &quot;ili9341&quot; not &quot;st7735&quot;.</p>
+<pre><code>&quot;defines&quot;: {
+	&quot;ili9341&quot;: {
+		&quot;width&quot;: 160,
+		&quot;height&quot;: 128,
+	}
+}
+</code></pre>
+
+</div>
+
+        </div>
+    </body>
+</html>

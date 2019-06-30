@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moddable</title>
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata|Open+Sans" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/hljs.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/markdown.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
+</head>
+    <body>
+<div id="header">
+    <div class="package"></div>
+    <a href="https:&#x2F;&#x2F;github.com&#x2F;moddable-opensource&#x2F;moddable" class="badge" title="Github.com"><img src="/assets/images/github.png" alt="Github" /></a>
+    <a href="/" class="home"><strong>Moddable</strong> <span class="headline">Moddable SDK</span></a>
+</div>
+        <div id="container">
+            <div id="sidebar">
+<ul class="list">
+    <li>
+        <h4><a href="/">Home</a></h4>
+        <ul>
+            <li><a href="https://www.moddable.com">Moddable</a></li>
+            <li><a href="/">Documentation</a></li>
+        </ul>
+    </li>
+    <li>
+        <h4><a href="/">Resources</a></h4>
+        <ul>
+            <li><a href="https://github.com/moddable-opensource/moddable">GitHub</a></li>
+            <li><a href="/">Link 2</a></li>
+        </ul>
+    </li>
+</ul>
+            </div>
+
+<div id="content">
+<h1>Getting Started with Moddable Zero</h1>
+<p>Copyright 2019 Moddable Tech, Inc.<BR>
+Revised: June 3, 2019</p>
+<p>This document describes how to start building Moddable applications for Moddable Zero. It provides information on how to configure the host build environment and how to build and deploy apps. It also provides information about development resources, including a summary of the examples available in this repository that run on Moddable Zero.</p>
+<h2>Table of Contents</h2>
+<ul>
+<li>
+<p><a href="#about-moddable-zero">About Moddable Zero</a></p>
+<ul>
+<li><a href="#components">Components</a></li>
+<li><a href="#pinout">Pinout</a></li>
+</ul>
+</li>
+<li>
+<p><a href="#setup">SDK and Host Environment Setup</a></p>
+</li>
+<li>
+<p><a href="#building-and-deploying-apps">Building and Deploying Apps</a></p>
+</li>
+<li>
+<p><a href="#development-resources">Development Resources</a></p>
+<ul>
+<li><a href="#examples">Examples</a></li>
+<li><a href="#documentation">Documentation</a></li>
+<li><a href="#support">Support</a></li>
+<li><a href="#updates">Updates</a></li>
+</ul>
+</li>
+</ul>
+<p><a id="about-moddable-zero"></a></p>
+<h2>About Moddable Zero</h2>
+<img src="../assets/moddable/moddable-zero-sm.jpg">
+<p>Moddable Zero is a hardware module that makes it easy for developers to experiment with the Moddable SDK on inexpensive hardware. Moddable Zero is no longer for sale but continues to be supported. You can follow the <a href="../displays/wiring-guide-generic-2.4-spi.html">instructions here</a> to build your own Moddable Zero, or purchase its replacement, <a href="./moddable-one.html">Moddable One</a>.</p>
+<p><a id="components"></a></p>
+<h3>Components</h3>
+<p>The two main components of Moddable Zero are the ESP8266 module and resistive touch screen. The ESP8266 module includes a Wi-Fi antenna and 4 MB of flash storage memory. The touch screen is a 240 x 320 QVGA display with 16-bit pixels driven by an ILI9341 display controller and an XPT2046 resistive touch controller.</p>
+<p><a id="pinout"></a></p>
+<h3>Pinout</h3>
+<img src="../assets/devices/moddable-zero-pinout.png">
+<p><a id="setup"></a></p>
+<h2>SDK and Host Environment Setup</h2>
+<p>The <a href="../Moddable_SDK_-_Getting_Started.html">Moddable SDK Getting Started document</a> describes how to configure the host build environment and install the required SDKs, drivers, and development tools. Follow the instructions in the <strong>Host environment setup</strong> and <strong>ESP8266 setup</strong> sections for your computer's operating system.</p>
+<p><a id="building-and-deploying-apps"></a></p>
+<h2>Building and Deploying Apps</h2>
+<p>After you've set up your host environment, take the following steps to install an application on your Moddable Zero.</p>
+<ol>
+<li>
+<p>Attach your Moddable Zero to your computer with a micro USB cable.</p>
+<p>Make sure you're using a data sync–capable cable, not one that is power-only.</p>
+</li>
+<li>
+<p>Build and deploy the app with <code>mcconfig</code>.</p>
+<p><code>mcconfig</code> is the command line tool to build and launch Moddable apps on microcontrollers and the simulator. Full documentation of <code>mcconfig</code> is available <a href="../tools/tools.html">here</a>.</p>
+<p>Use the platform <code>-p esp/moddable_zero</code>  with <code>mcconfig</code> to build for Moddable Zero. For example, to build the <a href="../../examples/piu/balls"><code>piu/balls</code> example</a>:</p>
+<pre><code>cd $MODDABLE/examples/piu/balls
+mcconfig -d -m -p esp/moddable_zero
+</code></pre>
+<p>The <a href="../../examples">examples readme</a> contains additional information about other commonly used <code>mcconfig</code> arguments for screen rotation, Wi-Fi configuration, and more.</p>
+</li>
+</ol>
+<p><a id="development-resources"></a></p>
+<h2>Development Resources</h2>
+<p><a id="examples"></a></p>
+<h3>Examples</h3>
+<p>The Moddable SDK has over 150 <a href="../../examples">example apps</a> that demonstrate how to use its many features. The vast majority of these examples run on Moddable Zero.</p>
+<p>That said, not every example is compatible with Moddable Zero hardware. For example, the ESP8266 does not have BLE capabilities so BLE examples do not build or run. Some examples are designed to test specific display and touch drivers that are not compatible with the Moddable Zero display and give a build error.</p>
+<p><a id="documentation"></a></p>
+<h3>Documentation</h3>
+<p>All the documentation for the Moddable SDK is in the <a href="../">documentation</a> directory. The <strong>documentation</strong>, <strong>examples</strong>, and <strong>modules</strong> directories share a common structure to make it straightforward to locate information. Some of the highlights include:</p>
+<ul>
+<li>The <code>commodetto</code> subdirectory, which contains resources related to Commodetto--a bitmap graphics library that provides a 2D graphics API--and Poco, a lightweight rendering engine.</li>
+<li>The <code>piu</code> subdirectory, which contains resources related to Piu, a user interface framework that makes it easier to create complex, responsive layouts.</li>
+<li>The <code>networking</code> subdirectory, which contains networking resources related to network sockets and a variety of standard, secure networking protocols built on sockets including HTTP/HTTPS, WebSockets, DNS, SNTP, and telnet</li>
+<li>The <code>pins</code> subdirectory, which contains resources related to supported hardware protocols (digital, analog, PWM, I2C, etc.). A number of drivers for common off-the-shelf sensors and corresponding example apps are also available.</li>
+</ul>
+<p><a id="support"></a></p>
+<h3>Support</h3>
+<p>If you have questions, we recommend you <a href="https://github.com/Moddable-OpenSource/moddable/issues">open an issue</a>. We'll respond as quickly as practical, and other developers can offer help and benefit from the answers to your questions. Many questions have already been answered, so please try searching previous issues before opening a new issue.</p>
+<p><a id="updates"></a></p>
+<h3>Updates</h3>
+<p>The best way to keep up with what we're doing is to follow us on Twitter (<a href="https://twitter.com/moddabletech">@moddabletech</a>). We post announcements about new posts on <a href="http://blog.moddable.com/">our blog</a> there, along with other Moddable news.</p>
+
+</div>
+
+        </div>
+    </body>
+</html>

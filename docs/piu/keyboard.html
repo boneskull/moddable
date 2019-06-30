@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moddable</title>
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata|Open+Sans" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/hljs.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/markdown.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
+</head>
+    <body>
+<div id="header">
+    <div class="package"></div>
+    <a href="https:&#x2F;&#x2F;github.com&#x2F;moddable-opensource&#x2F;moddable" class="badge" title="Github.com"><img src="/assets/images/github.png" alt="Github" /></a>
+    <a href="/" class="home"><strong>Moddable</strong> <span class="headline">Moddable SDK</span></a>
+</div>
+        <div id="container">
+            <div id="sidebar">
+<ul class="list">
+    <li>
+        <h4><a href="/">Home</a></h4>
+        <ul>
+            <li><a href="https://www.moddable.com">Moddable</a></li>
+            <li><a href="/">Documentation</a></li>
+        </ul>
+    </li>
+    <li>
+        <h4><a href="/">Resources</a></h4>
+        <ul>
+            <li><a href="https://github.com/moddable-opensource/moddable">GitHub</a></li>
+            <li><a href="/">Link 2</a></li>
+        </ul>
+    </li>
+</ul>
+            </div>
+
+<div id="content">
+<h1>Keyboard</h1>
+<p>The Keyboard module implements a touch screen keyboard with a responsive layout for use with Piu.</p>
+<ul>
+<li><strong>Source code:</strong> <a href="../../modules/input/keyboard/keyboard.js"><code>keyboard.js</code></a></li>
+<li><strong>Relevant Example:</strong> <a href="../../examples/piu/keyboard/main.js">keyboard</a></li>
+</ul>
+<p>The keyboard is implemented using a <a href="./piu.md#port-object"><code>Port</code></a> object that automatically fills its parent container, allowing it to reflow in a manner controlled by the application. The dictionary passed to the constructor configures properties of the keyboard.</p>
+<p>Key presses trigger events that can be captured in the application's behavior. The style (font and weight) of the keyboard's text are driven by a <a href="./piu.md#style-object"><code>Style</code></a> object supplied by the caller. This allows the use of <code>Style</code> templates.</p>
+<p>The keyboard implements a <code>doKeyboardTransitionOut</code> event that can be triggered to cause the keyboard to transition off-screen. When the transition is complete, the keyboard triggers an event to notify the application.</p>
+<h2>Module Exports</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Export</th>
+<th style="text-align:center">Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><code>Keyboard</code></td>
+<td style="text-align:center"><code>constructor</code></td>
+<td style="text-align:left">Constructor used to create Keyboard instances.</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>BACKSPACE</code></td>
+<td style="text-align:center"><code>string</code></td>
+<td style="text-align:left">Constant used to indicate that the backspace key was pressed.</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>SUBMIT</code></td>
+<td style="text-align:center"><code>string</code></td>
+<td style="text-align:left">Constant used to indicate that the submit key was pressed.</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> {Keyboard, BACKSPACE, SUBMIT} <span class="hljs-keyword">from</span> <span class="hljs-string">"keyboard"</span>;
+</code></pre>
+<h2>Keyboard Object</h2>
+<h3>Constructor Description</h3>
+<h4><code>Keyboard(behaviorData, dictionary)</code></h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Argument</th>
+<th style="text-align:center">Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><code>behaviorData</code></td>
+<td style="text-align:center"><code>*</code></td>
+<td style="text-align:left">A parameter that is passed into the <code>onCreate</code>function of the keyboard's <code>behavior</code>. This may be any type of object, including <code>null</code> or a dictionary with arbitrary parameters.</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>dictionary</code></td>
+<td style="text-align:center"><code>object</code></td>
+<td style="text-align:left">An object with properties to configure the resulting keyboard. Only parameters specified in the <a href="#keyboard-dictionary">Dictionary</a> section below will have an effect; other parameters will be ignored.</td>
+</tr>
+</tbody>
+</table>
+<p>Returns a <code>keyboard</code> instance, a <code>Port</code> object that uses an instance of the <code>KeyboardBehavior</code> class as its behavior.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> OpenSans18 = <span class="hljs-keyword">new</span> Style({ <span class="hljs-attr">font</span>: <span class="hljs-string">"semibold 18px Open Sans"</span>, <span class="hljs-attr">color</span>: <span class="hljs-string">"black"</span> });
+<span class="hljs-keyword">let</span> keyboard = <span class="hljs-keyword">new</span> Keyboard(<span class="hljs-literal">null</span>, {<span class="hljs-attr">style</span>: OpenSans18, <span class="hljs-attr">doTransition</span>: <span class="hljs-literal">false</span>})
+</code></pre>
+<p><img src="../assets/piu/keyboard.png" alt="" /></p>
+<p><a id="keyboard-dictionary"></a></p>
+<h3>Dictionary</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Parameter</th>
+<th style="text-align:center">Type</th>
+<th style="text-align:center">Default Value</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><code>style</code></td>
+<td style="text-align:center"><code>style</code></td>
+<td style="text-align:center">n/a</td>
+<td style="text-align:left"><strong>Required.</strong> A Piu Style object that will be used for the text on keys.</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>bgColor</code></td>
+<td style="text-align:center"><code>string</code></td>
+<td style="text-align:center"><code>&quot;#5b5b5b&quot;</code></td>
+<td style="text-align:left">The background fill color.</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>doTransition</code></td>
+<td style="text-align:center"><code>boolean</code></td>
+<td style="text-align:center"><code>false</code></td>
+<td style="text-align:left">Whether or not to transition in the keyboard when it is first displayed.</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>keyColor</code></td>
+<td style="text-align:center"><code>string</code></td>
+<td style="text-align:center"><code>&quot;#d8d8d8&quot;</code></td>
+<td style="text-align:left">The color for the character keys when not being pressed.</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>keyDownColor</code></td>
+<td style="text-align:center"><code>string</code></td>
+<td style="text-align:center"><code>&quot;#999999&quot;</code></td>
+<td style="text-align:left">The color for the character keys while they are being pressed.</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>keyToggledColor</code></td>
+<td style="text-align:center"><code>string</code></td>
+<td style="text-align:center"><code>&quot;#7b7b7b&quot;</code></td>
+<td style="text-align:left">The color for the character keys while they are being pressed.</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>specialKeyColor</code></td>
+<td style="text-align:center"><code>string</code></td>
+<td style="text-align:center"><code>&quot;#999999&quot;</code></td>
+<td style="text-align:left">The color for the special keys (shift, symbol, backspace, and submit) when not being pressed.</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>specialTextColor</code></td>
+<td style="text-align:center"><code>string</code></td>
+<td style="text-align:center"><code>&quot;#ffffff&quot;</code></td>
+<td style="text-align:left">The color for the text on special keys (shift, symbol, backspace, and submit).</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>submit</code></td>
+<td style="text-align:center"><code>string</code></td>
+<td style="text-align:center"><code>&quot;OK&quot;</code></td>
+<td style="text-align:left">String to render on the submit key.</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>textColor</code></td>
+<td style="text-align:center"><code>string</code></td>
+<td style="text-align:center"><code>&quot;#000000&quot;</code></td>
+<td style="text-align:left">The color for the text on character keys.</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>transitionTime</code></td>
+<td style="text-align:center"><code>number</code></td>
+<td style="text-align:center"><code>250</code></td>
+<td style="text-align:left">The duration of the keyboard in/out transition in milliseconds.</td>
+</tr>
+</tbody>
+</table>
+<p><a id="key-callback"></a></p>
+<h3>Triggered Events</h3>
+<h4><code>onKeyboardTransitionFinished()</code></h4>
+<p>The keyboard will bubble this event when it is done transitioning off-screen. The <code>onKeyboardTransitionFinished</code> function will usually be implemented and triggered in the calling application's behavior.</p>
+<hr />
+<h4><code>onKeyDown(key)</code></h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Argument</th>
+<th style="text-align:center">Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><code>key</code></td>
+<td style="text-align:center"><code>string</code></td>
+<td style="text-align:left">In most cases, the string will be the value of the key that is down (e.g. <code>&quot;a&quot;</code>, <code>&quot;3&quot;</code>, <code>&quot;$&quot;</code>). It can also be one of the two constants exported by the module:  <code>BACKSPACE</code> or <code>SUBMIT</code> which indicate that those keys are down on the keyboard.</td>
+</tr>
+</tbody>
+</table>
+<p>The keyboard will bubble this event when a key is pressed down. The <code>onKeyDown</code> function will usually be implemented and triggered in the calling application's behavior.</p>
+<hr />
+<h4><code>onKeyUp(key)</code></h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Argument</th>
+<th style="text-align:center">Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><code>key</code></td>
+<td style="text-align:center"><code>string</code></td>
+<td style="text-align:left">In most cases, the string will be the value of the key that was released (e.g. <code>&quot;a&quot;</code>, <code>&quot;3&quot;</code>, <code>&quot;$&quot;</code>). It can also be one of the two constants exported by the module:  <code>BACKSPACE</code> or <code>SUBMIT</code> which indicate that those keys were released on the keyboard.</td>
+</tr>
+</tbody>
+</table>
+<p>The keyboard will bubble an event <code>onKeyUp</code> when a key is released. The <code>onKeyUp</code> function will usually be implemented and triggered in the calling application's behavior.</p>
+<hr />
+<h3>Received Events</h3>
+<h4><code>doKeyboardTransitionOut(keyboard)</code></h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Argument</th>
+<th style="text-align:center">Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><code>keyboard</code></td>
+<td style="text-align:center"><code>keyboard</code></td>
+<td style="text-align:left">The <code>keyboard</code> object that received the event.</td>
+</tr>
+</tbody>
+</table>
+<p>This function can be triggered to cause the keyboard to transition off screen. When the transition is complete, the <code>onKeyboardTransitionFinished</code> event will be bubbled by the keyboard.</p>
+<hr />
+
+</div>
+
+        </div>
+    </body>
+</html>

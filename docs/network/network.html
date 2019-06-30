@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moddable</title>
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata|Open+Sans" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/hljs.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/markdown.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
+</head>
+    <body>
+<div id="header">
+    <div class="package"></div>
+    <a href="https:&#x2F;&#x2F;github.com&#x2F;moddable-opensource&#x2F;moddable" class="badge" title="Github.com"><img src="/assets/images/github.png" alt="Github" /></a>
+    <a href="/" class="home"><strong>Moddable</strong> <span class="headline">Moddable SDK</span></a>
+</div>
+        <div id="container">
+            <div id="sidebar">
+<ul class="list">
+    <li>
+        <h4><a href="/">Home</a></h4>
+        <ul>
+            <li><a href="https://www.moddable.com">Moddable</a></li>
+            <li><a href="/">Documentation</a></li>
+        </ul>
+    </li>
+    <li>
+        <h4><a href="/">Resources</a></h4>
+        <ul>
+            <li><a href="https://github.com/moddable-opensource/moddable">GitHub</a></li>
+            <li><a href="/">Link 2</a></li>
+        </ul>
+    </li>
+</ul>
+            </div>
+
+<div id="content">
+<h1>Networking</h1>
+<p>Copyright 2017-2019 Moddable Tech, Inc.<BR>
+Revised: May 21, 2019</p>
+<p><strong>Warning</strong>: These notes are preliminary. Omissions and errors are likely. If you encounter problems, please ask for assistance.</p>
+<h2>Table of Contents</h2>
+<ul>
+<li><a href="#socket">Socket</a></li>
+<li><a href="#listener">Listener</a></li>
+<li>HTTP
+<ul>
+<li><a href="#http-request">Request</a></li>
+<li><a href="#http-server">Server</a></li>
+</ul>
+</li>
+<li>WebSocket
+<ul>
+<li><a href="#websocket-client">Client</a></li>
+<li><a href="#websocket-server">Server</a></li>
+</ul>
+</li>
+<li><a href="#net">Net</a></li>
+<li><a href="#wifi">WiFi</a></li>
+<li><a href="#sntp">SNTP</a></li>
+<li>DNS
+<ul>
+<li><a href="#dns">Constants</a></li>
+<li><a href="#dns-parser">Parser</a></li>
+<li><a href="#dns-serializer">Serializer</a></li>
+<li><a href="#dns-server">Server</a></li>
+</ul>
+</li>
+<li><a href="#mdns">MDNS</a></li>
+<li><a href="#telnet">Telnet</a></li>
+<li><a href="#ping">Ping</a></li>
+</ul>
+<p><a id="socket"></a></p>
+<h2>class Socket</h2>
+<ul>
+<li><strong>Source code:</strong> <a href="../../modules/network/socket">socket</a></li>
+<li><strong>Relevant Examples:</strong> <a href="../../examples/network/socket/socket">socket</a>, <a href="../../examples/network/socket/socketreadwrite">socketreadwrite</a></li>
+</ul>
+<p>The <code>Socket</code> object implements a non-blocking network connection using a TCP or a UDP socket.</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> {Socket, Listener} <span class="hljs-keyword">from</span> <span class="hljs-string">"socket"</span>;
+</code></pre>
+<h3><code>constructor(dictionary)</code></h3>
+<p>The <code>Socket</code> constructor takes a single argument, a dictionary of initialization parameters. The constructor immediately initiates a connection to the remote host.</p>
+<p>If the IP address is known, use the <code>address</code> property in the dictionary.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> socket = <span class="hljs-keyword">new</span> Socket({address <span class="hljs-string">"17.172.224.47"</span>, <span class="hljs-attr">port</span>: <span class="hljs-number">80</span>});
+</code></pre>
+<p>To initiate a connection to a remote server specified by a host name, include <code>host</code> and <code>port</code> properties in the dictionary. The socket resolves the host name to an IP address.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> host = <span class="hljs-string">"www.moddable.tech"</span>;
+<span class="hljs-keyword">let</span> port = <span class="hljs-number">80</span>;
+<span class="hljs-keyword">let</span> socket = <span class="hljs-keyword">new</span> Socket({host, port});
+</code></pre>
+<p>By default a new socket uses TCP. The socket kind can be set in the dictionary:</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> tcp = <span class="hljs-keyword">new</span> Socket({<span class="hljs-attr">host</span>: <span class="hljs-string">"moddable.tech"</span>, <span class="hljs-attr">port</span>: <span class="hljs-number">1234</span>, <span class="hljs-attr">kind</span>: <span class="hljs-string">"TCP"</span>});
+<span class="hljs-keyword">let</span> udp = <span class="hljs-keyword">new</span> Socket({<span class="hljs-attr">port</span>: <span class="hljs-number">123</span>, <span class="hljs-attr">kind</span>: <span class="hljs-string">"UDP"</span>});
+<span class="hljs-keyword">let</span> raw = <span class="hljs-keyword">new</span> Socket({<span class="hljs-attr">kind</span>: <span class="hljs-string">"RAW"</span>, <span class="hljs-attr">protocol</span>: <span class="hljs-number">1</span>});
+</code></pre>
+<p>To accept a new connection request from a <code>Listener</code>, specify the <code>listener</code> property in the dictionary:</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> listener = <span class="hljs-keyword">new</span> Listener({<span class="hljs-attr">port</span>: <span class="hljs-number">80</span>});
+<span class="hljs-keyword">let</span> socket = <span class="hljs-keyword">new</span> Socket({listener});
+</code></pre>
+<hr />
+<h3><code>close()</code></h3>
+<p>The <code>close</code> function immediately terminates the socket, freeing all resources associated with the socket.</p>
+<pre><code class="language-js">socket.close();
+</code></pre>
+<hr />
+<h3><code>read(type [, until])</code></h3>
+<p>The <code>read</code> function receives data from the socket. Data is only available to read inside the callback function when it receives a <code>data</code> message; attempts to read data at other times will fail.</p>
+<p>To read all available data into a <code>String</code>:</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> string = <span class="hljs-keyword">this</span>.read(<span class="hljs-built_in">String</span>);
+</code></pre>
+<p>To read all available data into an <code>ArrayBuffer</code>:</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> buffer = <span class="hljs-keyword">this</span>.read(<span class="hljs-built_in">ArrayBuffer</span>);
+</code></pre>
+<p>To read one byte into a <code>Number</code>:</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> byte = <span class="hljs-keyword">this</span>.read(<span class="hljs-built_in">Number</span>);
+</code></pre>
+<p>To read 12 bytes into a <code>String</code> or <code>ArrayBuffer</code>:</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> string = <span class="hljs-keyword">this</span>.read(<span class="hljs-built_in">String</span>, <span class="hljs-number">12</span>);
+<span class="hljs-keyword">let</span> buffer = <span class="hljs-keyword">this</span>.read(<span class="hljs-built_in">ArrayBuffer</span>, <span class="hljs-number">12</span>);
+</code></pre>
+<p>To read up to the next space character into <code>String</code> or <code>ArrayBuffer</code>. If there is no space character found, the remainder of the available data is read:</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> string = <span class="hljs-keyword">this</span>.read(<span class="hljs-built_in">String</span>, <span class="hljs-string">" "</span>);
+<span class="hljs-keyword">let</span> buffer = <span class="hljs-keyword">this</span>.read(<span class="hljs-built_in">ArrayBuffer</span>, <span class="hljs-string">" "</span>);
+</code></pre>
+<p>To skip data in the read buffer, read to <code>null</code>:</p>
+<pre><code class="language-js"><span class="hljs-keyword">this</span>.read(<span class="hljs-literal">null</span>, <span class="hljs-number">5</span>);		<span class="hljs-comment">// skip ahead 5 bytes</span>
+</code></pre>
+<p>To skip to the next carriage-return (or the end of the buffer, if none found):</p>
+<pre><code class="language-js"><span class="hljs-keyword">this</span>.read(<span class="hljs-literal">null</span>, <span class="hljs-string">"\n"</span>);
+</code></pre>
+<p>When reading to <code>null</code>, the return value is the count of bytes skipped.</p>
+<p>To determine the number of available bytes remaining in the buffer, call <code>read</code> with no arguments:</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> bytesAvailable = <span class="hljs-keyword">this</span>.read();
+</code></pre>
+<hr />
+<h3><code>write(data [, data1, ...])</code></h3>
+<p>The <code>write</code> function sends data on the socket. One or more arguments may be passed to <code>write</code> for transmission.</p>
+<p>For a TCP socket, all parameters are data to be transmitted.</p>
+<pre><code class="language-js">socket.write(<span class="hljs-string">"Hello"</span>);
+socket.write(<span class="hljs-number">32</span>);
+socket.write(<span class="hljs-string">"world."</span>, <span class="hljs-number">13</span>);
+socket.write(<span class="hljs-built_in">JSON</span>.stringify(obj));
+</code></pre>
+<p><code>String</code> and <code>ArrayBuffer</code> values are transmitted as-is. A <code>Number</code> value is transmitted as a byte.</p>
+<p>If the socket has insufficient buffer space to transmit the data, none of the data is sent. To determine the number of bytes that can be transmitted, call <code>write</code> with no arguments:</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> bytesToSend = socket.write();
+</code></pre>
+<p>For a UDP socket, the first two parameters are the IP address and port to transmit the packet to. The third parameters is the data to transmit as an <code>ArrayBuffer</code>:</p>
+<pre><code class="language-js">socket.write(<span class="hljs-string">"1.2.3.4"</span>, <span class="hljs-number">1234</span>, packet);
+</code></pre>
+<p>For a RAW socket, the first parameter is IP address to transmit the packet to. The second parameter is the data to transmit as an <code>ArrayBuffer</code>:</p>
+<pre><code class="language-js">socket.write(<span class="hljs-string">"1.2.3.4"</span>, packet);
+</code></pre>
+<p>It is more efficient to make a single <code>write</code> call with several parameters instead of multiple calls to <code>write</code>.</p>
+<hr />
+<h3><code>callback(message [, value])</code></h3>
+<p>The user of the socket receives status information through the callback function. The callback receives messages and, for some messages, a data value. Positive <code>message</code> values indicate normal operation and negative <code>message</code> values indicate an error.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"><code>message</code></th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">-2</td>
+<td style="text-align:left"><strong>error:</strong> An error occurred. The socket is no longer usable.</td>
+</tr>
+<tr>
+<td style="text-align:center">-1</td>
+<td style="text-align:left"><strong>disconnect:</strong> The socket disconnected from the remote host.</td>
+</tr>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:left"><strong>connect:</strong> The socket successfully connected to the remote host.</td>
+</tr>
+<tr>
+<td style="text-align:center">2</td>
+<td style="text-align:left"><strong>dataReceived:</strong> The socket has received data. The <code>value</code> argument contains the number of bytes available to read.</td>
+</tr>
+<tr>
+<td style="text-align:center">3</td>
+<td style="text-align:left"><strong>dataSent:</strong> The socket has successfully transmitted some or all of the data written to it. The <code>value</code> argument contains the number of bytes that can be safely written.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3>Example: HTTP GET</h3>
+<p>The following sample shows using the <code>Socket</code> object to make a simple HTTP GET request and trace the response, including headers, to the console. This example is not intended as a useful HTTP client.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> host = <span class="hljs-string">"www.example.com"</span>;
+<span class="hljs-keyword">let</span> port = <span class="hljs-number">80</span>;
+<span class="hljs-keyword">let</span> socket = <span class="hljs-keyword">new</span> Socket({host, port});
+
+socket.callback = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">message, value</span>)
+</span>{
+	<span class="hljs-keyword">if</span> (<span class="hljs-number">1</span> == message) {
+		<span class="hljs-keyword">this</span>.write(<span class="hljs-string">"GET / HTTP/1.1\r\n"</span>);
+		<span class="hljs-keyword">this</span>.write(<span class="hljs-string">"Host: "</span>, host, <span class="hljs-string">"\r\n"</span>);
+		<span class="hljs-keyword">this</span>.write(<span class="hljs-string">"Connection: close\r\n"</span>);
+		<span class="hljs-keyword">this</span>.write(<span class="hljs-string">"\r\n"</span>);
+	}
+	<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (<span class="hljs-number">2</span> == message)
+		trace(<span class="hljs-keyword">this</span>.read(<span class="hljs-built_in">String</span>));
+}
+</code></pre>
+<hr />
+<p><a id="listener"></a></p>
+<h2>class Listener</h2>
+<ul>
+<li><strong>Source code:</strong> <a href="../../modules/network/socket">socket</a></li>
+<li><strong>Relevant Examples:</strong> <a href="../../examples/network/socket/socketlistener">socketlistener</a></li>
+</ul>
+<p>The <code>Listener</code> class implements a network socket listener to accept new TCP connections. The <code>Listener</code> class is used together with the <code>Socket</code> class.</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> {Socket, Listener} <span class="hljs-keyword">from</span> <span class="hljs-string">"socket"</span>;
+</code></pre>
+<h3><code>constructor(dictionary)</code></h3>
+<p>The <code>Listener</code> constructor takes a single argument, a object dictionary of initialization parameters.</p>
+<p>To listen, use the <code>port</code> property to specify the port to listen on:</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> telnet = <span class="hljs-keyword">new</span> Listener({<span class="hljs-attr">port</span>: <span class="hljs-number">23</span>});
+</code></pre>
+<hr />
+<h3><code>callback()</code></h3>
+<p>The user of the listener is notified through the callback function. The callback function accepts the connection request and instantiates a new socket by invoking the Socket constructor with the listener instance.</p>
+<pre><code class="language-js">telnet.callback = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+	<span class="hljs-keyword">let</span> socket = <span class="hljs-keyword">new</span> Socket({<span class="hljs-attr">listener</span>: <span class="hljs-keyword">this</span>});
+	...
+}
+</code></pre>
+<hr />
+<h3>Example: HTTP server</h3>
+<p>The following example implements a trivial HTTP server using <code>Listener</code> and <code>Socket</code>. The server is truly trivial, not even parsing the client request.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> count = <span class="hljs-number">0</span>;
+<span class="hljs-keyword">let</span> listener = <span class="hljs-keyword">new</span> Listener({<span class="hljs-attr">port</span>: <span class="hljs-number">80</span>});
+listener.callback = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+	<span class="hljs-keyword">let</span> socket = <span class="hljs-keyword">new</span> Socket({listener});
+	<span class="hljs-keyword">let</span> message = <span class="hljs-string">`Hello, server <span class="hljs-subst">${++count}</span>.`</span>;
+	socket.write(<span class="hljs-string">"HTTP/1.1 200 OK\r\n"</span>);
+	socket.write(<span class="hljs-string">"Connection: close\r\n"</span>);
+	socket.write(<span class="hljs-string">`Content-Length: <span class="hljs-subst">${message.length}</span>\r\n`</span>);
+	socket.write(<span class="hljs-string">"Content-Type: text/plain\r\n"</span>);
+	socket.write(<span class="hljs-string">"\r\n"</span>);
+	socket.write(message);
+	socket.close();
+}
+</code></pre>
+<hr />
+<p><a id="http-request"></a></p>
+<h2>class HTTP Request</h2>
+<ul>
+<li><strong>Source code:</strong> <a href="../../modules/network/http">http</a></li>
+<li><strong>Relevant Examples:</strong> <a href="../../examples/network/http/httpget">httpget</a>, <a href="../../examples/network/http/httppost">httppost</a>, <a href="../../examples/network/http/httpsget">httpsget</a>, and <a href="../../examples/network/http/">many more</a></li>
+</ul>
+<p>The HTTP <code>Request</code> class implements a client for making HTTP requests. It is built on the <code>Socket</code> class. Like the <code>Socket</code> class, the HTTP <code>Request</code> uses a dictionary-based constructor and a single callback.</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> {Request} <span class="hljs-keyword">from</span> <span class="hljs-string">"http"</span>
+</code></pre>
+<!-- Maybe body property should be named request to parallel response. And HTTP Request should be renamed HTTP Client -->
+<h3><code>constructor(dictionary)</code></h3>
+<p>A new HTTP <code>Request</code> is configured using a dictionary of properties. The dictionary is a super-set of the <code>Socket</code> dictionary.</p>
+<p>The complete list of properties the HTTP <code>Request</code> adds to the <code>Socket</code> dictionary is:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Parameter</th>
+<th style="text-align:center">Default Value</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><code>port</code></td>
+<td style="text-align:center">80</td>
+<td style="text-align:left">The remote port number</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>path</code></td>
+<td style="text-align:center"><code>/</code></td>
+<td style="text-align:left">The path, query, and fragment portion of the HTTP URL</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>method</code></td>
+<td style="text-align:center"><code>GET</code></td>
+<td style="text-align:left">The method to use for this HTTP request</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>headers</code></td>
+<td style="text-align:center">Defaults to an empty array (e.g. <code>[]</code>)</td>
+<td style="text-align:left">An array containing the HTTP headers to add. Even number elements are header names and odd number elements are the corresponding header values.</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>body</code></td>
+<td style="text-align:center"><code>false</code></td>
+<td style="text-align:left">Request body contents. Provide a <code>String</code> or <code>ArrayBuffer</code> with the complete body. Set to <code>true</code> to provide the request body in fragments via the callback.</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>response</code></td>
+<td style="text-align:center"><code>undefined</code></td>
+<td style="text-align:left">The type of object to use for the response body passed to the callback when the request is complete. May be set to <code>String</code>, <code>ArrayBuffer</code>, or <code>undefined</code>. If set to <code>undefined</code>, the response body is delivered to the callback in fragments upon arrival.</td>
+</tr>
+</tbody>
+</table>
+<p>To request the root &quot;/&quot; resource on port 80 as a <code>String</code>:</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> request = <span class="hljs-keyword">new</span> Request({<span class="hljs-attr">host</span>: <span class="hljs-string">"www.example.com"</span>, <span class="hljs-attr">response</span>: <span class="hljs-built_in">String</span>});
+</code></pre>
+<p>To request the &quot;/info.dat&quot; resource from port 8080 as an <code>ArrayBuffer</code>:</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> request = <span class="hljs-keyword">new</span> Request({<span class="hljs-attr">host</span>: <span class="hljs-string">"www.example.com"</span>, <span class="hljs-attr">path</span>: <span class="hljs-string">"/info.dat"</span>, <span class="hljs-attr">port</span>: <span class="hljs-number">8080</span>, <span class="hljs-attr">response</span>: <span class="hljs-built_in">ArrayBuffer</span>});
+</code></pre>
+<p>To request the &quot;/weather.json&quot; resource from a device with IP address &quot;192.0.1.15&quot; as a <code>String</code> object:</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> request = <span class="hljs-keyword">new</span> Request({<span class="hljs-attr">address</span>: <span class="hljs-string">"192.0.1.15"</span>, <span class="hljs-attr">path</span>: <span class="hljs-string">"/weather.json"</span>, <span class="hljs-attr">response</span>: <span class="hljs-built_in">String</span>});
+</code></pre>
+<p>To issue a DELETE request, set the <code>method</code> property in the dictionary:</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> request = <span class="hljs-keyword">new</span> Request({<span class="hljs-attr">address</span>: <span class="hljs-string">"192.0.1.15"</span>, <span class="hljs-attr">path</span>: <span class="hljs-string">"/resource/to/delete"</span>, <span class="hljs-attr">method</span>: <span class="hljs-string">"DELETE"</span>});
+</code></pre>
+<hr />
+<h3><code>close()</code></h3>
+<p>The <code>close</code> function immediately terminates the HTTP request, freeing the socket and any other associated memory.</p>
+<pre><code class="language-js">request.close();
+</code></pre>
+<hr />
+<h3><code>read(type [, until])</code></h3>
+<p>The <code>read</code> function behaves exactly like the read function of the <code>Socket</code> class. The <code>read</code> function can only be called inside the callback providing a response body fragment.</p>
+<blockquote>
+<p><strong>Note</strong>: The HTTP read function implentation does not currently support passing a <code>String</code> for the <code>until</code> argument on a response that uses chunked transfer-encoding.</p>
+</blockquote>
+<hr />
+<h3><code>callback(message, val1, val2)</code></h3>
+<p>The user of the <code>Request</code> object receives status information through the callback function. The callback receives messages and, for some messages, additional data values. Non-negative <code>message</code> values indicate normal operation and negative <code>message</code> values indicate an error.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"><code>message</code></th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">0</td>
+<td style="text-align:left">Get request body fragment. This callback is only received if the <code>body</code> property in the dictionary is set to <code>true</code>. When called, <code>val1</code> is the maximum number of bytes that can be transmitted. Return either a <code>String</code> or <code>ArrayBuffer</code> containing the next fragment of the request body. Return <code>undefined</code> when there are no more fragments.</td>
+</tr>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:left">Response status received with status code. This callback is invoked when the HTTP response status line is successfully received. When called, <code>val1</code> is the HTTP status code (e.g. 200 for OK).</td>
+</tr>
+<tr>
+<td style="text-align:center">2</td>
+<td style="text-align:left">One header received. The callback is called for each header in the response. When called, <code>val1</code> is the header name in lowercase letters (e.g. <code>connection</code>) and <code>val2</code> is the header value (e.g. <code>close</code>).</td>
+</tr>
+<tr>
+<td style="text-align:center">3</td>
+<td style="text-align:left">All headers received. When all headers have been received, the callback is invoked.</td>
+</tr>
+<tr>
+<td style="text-align:center">4</td>
+<td style="text-align:left">Response body fragment. This callback is invoked when a fragment of the complete HTTP response body is received. <code>val1</code> is the number of bytes in the fragment which may be retrieved using the <code>read</code> function. This callback only invoked if the <code>response</code> property value is <code>undefined</code>.</td>
+</tr>
+<tr>
+<td style="text-align:center">5</td>
+<td style="text-align:left">All response body received. This callback is invoked when the entire response body has been received. If the <code>response</code> property value is not  <code>undefined</code>, <code>val1</code> contains the response.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><a id="http-server"></a></p>
+<h2>class HTTP Server</h2>
+<ul>
+<li><strong>Source code:</strong> <a href="../../modules/network/http">http</a></li>
+<li><strong>Relevant Examples:</strong> <a href="../../examples/network/http/httpserver">httpserver</a>, <a href="../../examples/network/http/httpserverbmp">httpserverbmp</a>, <a href="../../examples/network/http/httpserverchunked">httpserverchunked</a>, <a href="../../examples/network/http/httpserverputfile">httpserverputfile</a></li>
+</ul>
+<p>The HTTP <code>Server</code> class implements a server to respond to HTTP requests. It is built on the <code>Socket</code> class. Like the <code>Socket</code> class, the HTTP <code>Server</code> class uses a dictionary-based constructor and a single callback.</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> {Server} <span class="hljs-keyword">from</span> <span class="hljs-string">"http"</span>
+</code></pre>
+<h3><code>constructor(dictionary)</code></h3>
+<p>A new HTTP server is configured using a dictionary of properties. The dictionary is a super-set of the <code>Socket</code> dictionary.</p>
+<p>To open an HTTP server, on the default port (80):</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> server = <span class="hljs-keyword">new</span> Server({});
+</code></pre>
+<p>To open an HTTP server on port 8080:</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> server = <span class="hljs-keyword">new</span> Server({<span class="hljs-attr">port</span>: <span class="hljs-number">8080</span>});
+</code></pre>
+<hr />
+<h3><code>close()</code></h3>
+<p>The <code>close</code> function immediately terminates the HTTP server, freeing the server listener socket and any other associated memory.</p>
+<pre><code class="language-js">server.close();
+</code></pre>
+<blockquote>
+<p><strong>Note:</strong> The <code>close</code> function does not close active connections to the server.</p>
+</blockquote>
+<hr />
+<h3><code>callback(message, val1, val2)</code></h3>
+<p>The user of the server receives status information through the callback function. The callback receives messages and, for some messages, additional data values. Positive <code>message</code> values indicate normal operation and negative <code>message</code> values indicate an error.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"><code>message</code></th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">-1</td>
+<td style="text-align:left">Disconnected. The request disconnected before the complete response could be delivered. Once disconnected, the request is closed by the server.</td>
+</tr>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:left">New connection received. A new requested has been accepted by the server.</td>
+</tr>
+<tr>
+<td style="text-align:center">2</td>
+<td style="text-align:left">Status line of request received. The <code>val1</code> argument contains the request path (e.g. <code>index.html</code>) and <code>val2</code> contains the request method (e.g. <code>GET</code>).</td>
+</tr>
+<tr>
+<td style="text-align:center">3</td>
+<td style="text-align:left">One header received. A single HTTP header has been received, with the header name in lowercase letters in <code>val1</code> (e.g. <code>connection</code>) and the header value (e.g. <code>close</code>) in <code>val2</code>.</td>
+</tr>
+<tr>
+<td style="text-align:center">4</td>
+<td style="text-align:left">All headers received. All HTTP headers have been received.</td>
+</tr>
+<tr>
+<td style="text-align:center">8</td>
+<td style="text-align:left">Prepare response. The server is ready to send the response. Callback returns a dictionary with the response status (e.g. 200) in the <code>status</code> property, HTTP headers in an array on the <code>headers</code> property, and the response body on the <code>body</code> property. If the status property is missing, the default value of <code>200</code> is used. If the body is a <code>String</code> or <code>ArrayBuffer</code>, it is the complete response. The server adds the <code>Content-Length</code> HTTP header. If the body property is set to <code>true</code>, the response is delivered using the <code>Transfer-encoding</code> mode <code>chunked</code>, and the callback is invoked to retrieve each response fragment.</td>
+</tr>
+<tr>
+<td style="text-align:center">9</td>
+<td style="text-align:left">Get response fragment. The server is ready to transmit another fragment of the response. The <code>val1</code> argument contains the number of bytes that may be transmitted. The callback returns either a <code>String</code> or <code>ArrayBuffer</code>. When all data of the request has been returned, the callback returns <code>undefined</code>.</td>
+</tr>
+<tr>
+<td style="text-align:center">10</td>
+<td style="text-align:left">Request complete. The request has successfully completed.</td>
+</tr>
+</tbody>
+</table>
+<p>A new HTTP <code>Request</code> is instantiated for each incoming request. The callback is invoked with <code>this</code> set to the callback instance for the request. The callback function may attach properties related to handling a specific request to <code>this</code>, rather than using global variables, to ensure there are no state collisions when there are multiple active requests.</p>
+<hr />
+<h3>Example: Simple HTTP server</h3>
+<p>The following example implements an HTTP server that responds to all requests by echoing the requested path.</p>
+<pre><code class="language-js">(<span class="hljs-keyword">new</span> Server({})).callback = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">message, value</span>) </span>{
+	<span class="hljs-keyword">switch</span> (message) {
+		<span class="hljs-keyword">case</span> <span class="hljs-number">2</span>:		<span class="hljs-comment">// HTTP status line received</span>
+			<span class="hljs-keyword">this</span>.path = value;
+			<span class="hljs-keyword">break</span>;
+
+		<span class="hljs-keyword">case</span> <span class="hljs-number">8</span>:		<span class="hljs-comment">// prepare response body</span>
+			<span class="hljs-keyword">return</span> {<span class="hljs-attr">headers</span>: [<span class="hljs-string">"Content-type"</span>, <span class="hljs-string">"text/plain"</span>], <span class="hljs-attr">body</span>: <span class="hljs-keyword">this</span>.path};
+	}
+}
+</code></pre>
+<p>The server instance has a single callback function which responds to messages corresponding to the steps in fulfilling an HTTP request. A new request instance is created for each request, so the callback receives a unique <code>this</code> for each request. In this example, when the HTTP status line of a new request is received (message 2), the callback stores the path of the request. When the server is ready to transmit the body of the response (message 8), the callback returns the HTTP headers and response body (the path, in this case). The server adds the <code>Content-Length</code> header.</p>
+<hr />
+<h3>Example: HTTP Server with chunked response</h3>
+<p>The following example implements an HTTP server that responds to requests with a sequence of random numbers of random length.</p>
+<pre><code class="language-js">(<span class="hljs-keyword">new</span> Server({})).callback = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">message, value</span>) </span>{
+	<span class="hljs-keyword">switch</span> (message) {
+		<span class="hljs-keyword">case</span> <span class="hljs-number">8</span>:	<span class="hljs-comment">// prepare response body</span>
+			<span class="hljs-keyword">return</span> {<span class="hljs-attr">headers</span>: [<span class="hljs-string">"Content-type"</span>, <span class="hljs-string">"text/plain"</span>], <span class="hljs-attr">body</span>: <span class="hljs-literal">true</span>};
+		
+		<span class="hljs-keyword">case</span> <span class="hljs-number">9</span>:	<span class="hljs-comment">// provide response body fragment</span>
+			<span class="hljs-keyword">let</span> i = <span class="hljs-built_in">Math</span>.round(<span class="hljs-built_in">Math</span>.random() * <span class="hljs-number">20</span>);
+			<span class="hljs-keyword">if</span> (<span class="hljs-number">0</span> == i)
+				<span class="hljs-keyword">return</span>;
+			<span class="hljs-keyword">return</span> i + <span class="hljs-string">"\n"</span>;
+	}
+}
+</code></pre>
+<p>In this example, when the server is ready to transmit the response body (message 8), the callback returns the HTTP headers, and <code>true</code> for the body indicating the response body will be provided in fragments. In this case, the server adds a <code>Transfer-encoding</code> header with the value <code>chunked</code>. When the server is ready to transmit the next chunk of the response, the callback is invoked (message 9) to return the chunk. In this example, it returns a random number. When the random number is 0, the server returns <code>undefined</code> indicating the request is complete.</p>
+<hr />
+<h3>Example: HTTP Server receiving a JSON PUT</h3>
+<p>The following example implements an HTTP server that receives a JSON request, and echoes the JSON back in the response body.</p>
+<pre><code class="language-js">(<span class="hljs-keyword">new</span> Server({})).callback = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">message, value</span>) </span>{
+	<span class="hljs-keyword">switch</span> (message) {
+		<span class="hljs-keyword">case</span> <span class="hljs-number">4</span>:		<span class="hljs-comment">// request headers received, prepare for request body</span>
+			<span class="hljs-keyword">return</span> <span class="hljs-built_in">String</span>;
+
+		<span class="hljs-keyword">case</span> <span class="hljs-number">6</span>:		<span class="hljs-comment">// request body received</span>
+			<span class="hljs-keyword">this</span>.jsonRequest = <span class="hljs-built_in">JSON</span>.parse(value);
+			trace(<span class="hljs-string">`received JSON: <span class="hljs-subst">${value}</span>\n`</span>);
+			<span class="hljs-keyword">break</span>;
+
+		<span class="hljs-keyword">case</span> <span class="hljs-number">8</span>:		<span class="hljs-comment">// prepare response body</span>
+			<span class="hljs-keyword">return</span> {<span class="hljs-attr">headers</span>: [<span class="hljs-string">"Content-type"</span>, <span class="hljs-string">"application/json"</span>],
+						<span class="hljs-attr">body</span>: <span class="hljs-built_in">JSON</span>.stringify(<span class="hljs-keyword">this</span>.jsonRequest)};
+	}
+}
+</code></pre>
+<p>The callback is invoked when the request headers have been received (message 4), and returns String indicating it wants to receive the request body as a String object. When the complete request body has been received, the callback is invoked (message 6). The callback retains a reference to the JSON object in the <code>jsonRequest</code> property of the request instance. When the callback is invoked to transmit the response body (message 8), it serializes the JSON object to a string to transmit as the message body.</p>
+<hr />
+<h3>Example: HTTP Server streaming PUT to file</h3>
+<p>The following example implements an HTTP server that receives PUT requests, and streams the request body to a file using the HTTP request path as the local file path.</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> {File} <span class="hljs-keyword">from</span> <span class="hljs-string">"file"</span>;
+
+(<span class="hljs-keyword">new</span> Server({})).callback = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">message, value</span>) </span>{
+	<span class="hljs-keyword">switch</span> (message) {
+		<span class="hljs-keyword">case</span> <span class="hljs-number">2</span>:								<span class="hljs-comment">// request status received</span>
+			<span class="hljs-keyword">let</span> path = value;				<span class="hljs-comment">// file path is HTTP path</span>
+			File.delete(path);
+			<span class="hljs-keyword">this</span>.file = <span class="hljs-keyword">new</span> File(path, <span class="hljs-literal">true</span>);
+			<span class="hljs-keyword">break</span>;
+
+		<span class="hljs-keyword">case</span> <span class="hljs-number">4</span>:								<span class="hljs-comment">// prepare for request body</span>
+			<span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;					<span class="hljs-comment">// provide request body in fragments</span>
+	
+		<span class="hljs-keyword">case</span> <span class="hljs-number">5</span>:								<span class="hljs-comment">// request body fragment</span>
+			<span class="hljs-keyword">this</span>.file.write(<span class="hljs-keyword">this</span>.read(<span class="hljs-built_in">ArrayBuffer</span>));
+			<span class="hljs-keyword">break</span>;
+
+		<span class="hljs-keyword">case</span> <span class="hljs-number">6</span>:								<span class="hljs-comment">// request body received</span>
+			<span class="hljs-keyword">this</span>.file.close();
+			<span class="hljs-keyword">break</span>;
+	}
+}
+</code></pre>
+<p>To try the code, use the <code>curl</code> tool as follows, substituting the file path and IP address as necessary:</p>
+<pre><code>curl --data-binary &quot;@/users/hoddie/projects/test.txt&quot;  http://192.168.1.37/test.txt
+</code></pre>
+<hr />
+<p><a id="websocket-client"></a></p>
+<h2>class WebSocket Client</h2>
+<ul>
+<li><strong>Source code:</strong> <a href="../../modules/network/websocket">websocket</a></li>
+<li><strong>Relevant Examples:</strong> <a href="../../examples/network/websocket/websocketclient">websocketclient</a></li>
+</ul>
+<p>The WebSocket <code>Client</code> class implements a client for communicating with a WebSocket server. It is built on the <code>Socket</code> class. Like the <code>Socket</code> class, the WebSocket <code>Client</code> uses a dictionary-based constructor and a single callback.</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> {Client} <span class="hljs-keyword">from</span> <span class="hljs-string">"websocket"</span>
+</code></pre>
+<p>The WebSocket client implementation is designed for sending and receiving small messages. It has the following limitations:</p>
+<ul>
+<li>Each message must be a single frame. Fragmented messages are not supported.</li>
+<li>Messages are not masked when sent.</li>
+</ul>
+<h3><code>constructor(dictionary)</code></h3>
+<p>A new WebSocket <code>Client</code> is configured using a dictionary of properties. The dictionary is a super-set of the <code>Socket</code> dictionary.</p>
+<p>The complete list of properties the WebSocket <code>Client</code> adds to the <code>Socket</code> dictionary is:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Property</th>
+<th style="text-align:center">Default Value</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><code>port</code></td>
+<td style="text-align:center">80</td>
+<td style="text-align:left">The remote port number</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>path</code></td>
+<td style="text-align:center"><code>/</code></td>
+<td style="text-align:left">The path, query, and fragment portion of the HTTP URL</td>
+</tr>
+</tbody>
+</table>
+<p>To connect to a server on port 80 at the root path &quot;/&quot;:</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> ws = <span class="hljs-keyword">new</span> Client({<span class="hljs-attr">host</span>: <span class="hljs-string">"echo.websocket.org"</span>});
+</code></pre>
+<p>To connect to a server by IP address on port 8080:</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> ws = <span class="hljs-keyword">new</span> Client({<span class="hljs-attr">address</span>: <span class="hljs-string">"174.129.224.73"</span>, <span class="hljs-attr">port</span>: <span class="hljs-number">8080</span>});
+</code></pre>
+<hr />
+<h3><code>close()</code></h3>
+<p>The <code>close</code> function immediately terminates the WebSocket connection, freeing the socket and any other associated memory.</p>
+<pre><code class="language-js">ws.close();
+</code></pre>
+<hr />
+<h3><code>write(message)</code></h3>
+<p>The write function transmits a single WebSockets message. The message is either a <code>String</code>, which is sent as a text message, or an <code>ArrayBuffer</code>, which is sent as a binary message.</p>
+<pre><code class="language-js">ws.write(<span class="hljs-string">"hello"</span>);
+ws.write(<span class="hljs-built_in">JSON</span>.stringify({<span class="hljs-attr">text</span>: <span class="hljs-string">"hello"</span>}));
+</code></pre>
+<hr />
+<h3><code>callback(message, value)</code></h3>
+<p>The user of the WebSocket client receives status information through the callback function. The callback receives messages and, for some messages, a data value. Positive <code>message</code> values indicate normal operation and negative <code>message</code> values indicate an error.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"><code>message</code></th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:left">Socket connected. This callback is received when the client has connected to the WebSocket server.</td>
+</tr>
+<tr>
+<td style="text-align:center">2</td>
+<td style="text-align:left">WebSocket handshake complete. This callback is received after the client has successfully completed the handshake with the WebSocket server to upgrade from the HTTP connection to a WebSocket connection.</td>
+</tr>
+<tr>
+<td style="text-align:center">3</td>
+<td style="text-align:left">Message received. This callback is received when a complete new message arrives from the server. The <code>value</code> argument contains the message. Binary messages are delivered in an <code>ArrayBuffer</code> and text messages in a <code>String</code>.</td>
+</tr>
+<tr>
+<td style="text-align:center">4</td>
+<td style="text-align:left">Closed. This callback is received when the connection closes, either by request of the server or a network error. <code>value</code> contains the error code, which is 0 if the connection was closed by the server and non-zero in the case of a network error.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><a id="websocket-server"></a></p>
+<h2>class WebSocket Server</h2>
+<ul>
+<li><strong>Source code:</strong> <a href="../../modules/network/websocket">websocket</a></li>
+<li><strong>Relevant Examples:</strong> <a href="../../examples/network/websocket/websocketserver">websocketserver</a></li>
+</ul>
+<p>The WebSocket <code>Server</code> class implements a server for communicating with WebSocket clients. It is built on the <code>Socket</code> class. Like the <code>Socket</code> class, the WebSocket <code>Server</code> uses a dictionary-based constructor and a single callback.</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> {Server} <span class="hljs-keyword">from</span> <span class="hljs-string">"websocket"</span>
+</code></pre>
+<p>The WebSocket server implementation is designed for sending and receiving small messages. It has the following limitations:</p>
+<ul>
+<li>Each message must be a single frame. Fragmented messages are not supported.</li>
+</ul>
+<h3><code>constructor(dictionary)</code></h3>
+<p>A new WebSocket <code>Server</code> is configured using a dictionary of properties. The dictionary is a super-set of the <code>Listener</code> dictionary. The server is a Socket Listener. If no port is provided in the dictionary, port 80 is used.</p>
+<p>At this time, the WebSocket <code>Server</code> does not define any additional properties for the dictionary.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> ws = <span class="hljs-keyword">new</span> Server({});
+</code></pre>
+<!-- to do: WebSocket subprotocol -->
+<hr />
+<h3><code>close()</code></h3>
+<p>The <code>close</code> function immediately terminates the WebSocket server listener, freeing the socket and any other associated memory. Active connections remain open.</p>
+<pre><code class="language-js">ws.close();
+</code></pre>
+<hr />
+<h3><code>write(message)</code></h3>
+<p>The write function transmits a single WebSockets message. The message is either a <code>String</code>, which is sent as a text message, or an <code>ArrayBuffer</code>, which is sent as a binary message.</p>
+<pre><code class="language-js">ws.write(<span class="hljs-string">"hello"</span>);
+ws.write(<span class="hljs-built_in">JSON</span>.stringify({<span class="hljs-attr">text</span>: <span class="hljs-string">"hello"</span>}));
+</code></pre>
+<hr />
+<h3><code>callback(message, value)</code></h3>
+<p>The WebSocket server callback is the same as the WebSocket client callback with the exception of the &quot;Socket connected&quot; (<code>1</code>) message. The socket connected message for the server is invoked when the server accepts a new incoming connection. The value of <code>this</code> is unique for each new server connect to a client. Like the WebSocket client callback, messages cannot be sent until after the callback receives the WebSocket handshake complete message.</p>
+<blockquote>
+<p><strong>Note</strong>: Text and binary messages received with the mask bit set are unmasked by the server before delivering them to the callback.</p>
+</blockquote>
+<hr />
+<p><a id="net"></a></p>
+<h2>class Net</h2>
+<ul>
+<li><strong>Source code:</strong> <a href="../../modules/network/net">net</a></li>
+<li><strong>Relevant Examples:</strong> <a href="../../examples/network/net">net</a></li>
+</ul>
+<p>The <code>Net</code> class provides access to status information about the active network connection.</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> Net <span class="hljs-keyword">from</span> <span class="hljs-string">"net"</span>;
+</code></pre>
+<h3><code>static get(property)</code></h3>
+<p>The <code>get</code> function returns properties of the active network connection.</p>
+<p>The following properties are available:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Property</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><code>IP</code></td>
+<td style="text-align:left">The IP address of the network connection as a <code>String</code>, e.g. &quot;10.0.1.4&quot;</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>MAC</code></td>
+<td style="text-align:left">The MAC address of the device as a <code>String</code>, e.g. &quot;A4:D1:8C:DB:C0:20&quot;</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>SSID</code></td>
+<td style="text-align:left">The name of the Wi-Fi access point as a <code>String</code>, e.g. &quot;Moddable Wi-Fi&quot;</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>BSSID</code></td>
+<td style="text-align:left">The MAC address of the Wi-Fi access point as a <code>String</code>, e.g. &quot;18:64:72:47:d4:32&quot;</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>RSSI</code></td>
+<td style="text-align:left">The Wi-Fi <a href="https://en.wikipedia.org/wiki/Received_signal_strength_indication">received signal strength</a> as a <code>Number</code></td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-js">trace(<span class="hljs-string">`Connect to Wi-Fi access point: <span class="hljs-subst">${Net.get(<span class="hljs-string">"SSID"</span>)}</span>\n`</span>);
+</code></pre>
+<hr />
+<h3><code>static resolve(host, callback)</code></h3>
+<p>The <code>resolve</code> function performs performs an asynchronous <a href="https://en.wikipedia.org/wiki/Domain_Name_System">DNS</a> look-up for the specified <code>host</code> and invokes the <code>callback</code> to deliver the result.</p>
+<pre><code class="language-js">Net.resolve(<span class="hljs-string">"moddable.tech"</span>, (name, address) =&gt; trace(<span class="hljs-string">`<span class="hljs-subst">${name}</span> IP address is <span class="hljs-subst">${address}</span>\n`</span>);
+</code></pre>
+<p>The IP address is provided as a <code>String</code> in dotted IP address notation. If <code>host</code> cannot be resolved, the <code>address</code> parameter is <code>undefined</code>.</p>
+<p>The DNS implementation in lwIP supports a limited number of simultaneous DNS look-ups. The number depends on the specific platform deployment. On the ESP8266 it is 4. If the DNS resolve queue is full, resolve throws an exception.</p>
+<hr />
+<p><a id="wifi"></a></p>
+<h2>class WiFi</h2>
+<ul>
+<li><strong>Source code:</strong> <a href="../../modules/network/wifi">wifi</a></li>
+<li><strong>Relevant Examples:</strong> <a href="../../examples/network/wifi/wifiaccesspoint">wifiaccesspoint</a>, <a href="../../examples/network/wifi/wifiscan">wifiscan</a></li>
+</ul>
+<p>The <code>WiFi</code> class provides access to use and configure the Wi-Fi capabilities of the host device.</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> WiFi <span class="hljs-keyword">from</span> <span class="hljs-string">"wifi"</span>;
+</code></pre>
+<h3><code>constructor(dictionary, callback)</code></h3>
+<p>The <code>WiFi</code> constructor takes a single argument, a dictionary of initialization parameters. The constructor begins the process of establishing a connection.</p>
+<p>The dictionary always contains the required <code>ssid</code> property with the name of the base station to connect to. The optional <code>password</code> property is included when the base station requires a password. When the optional <code>bssid</code> property is included, it may accelerate connecting to Wi-Fi on device targets that support it.</p>
+<p>The connection process is asynchronous and may be monitored using the callback function.</p>
+<p>The following example begins the process of connecting to a Wi-Fi access point and waits for the connection to succeed with an IP address being assigned to the device.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> monitor = <span class="hljs-keyword">new</span> WiFi({<span class="hljs-attr">ssid</span>: <span class="hljs-string">"My Wi-Fi"</span>, <span class="hljs-attr">password</span>: <span class="hljs-string">"secret"</span>}, msg =&gt; {
+	<span class="hljs-keyword">switch</span> (msg) {
+		<span class="hljs-keyword">case</span> <span class="hljs-string">"connect"</span>:
+			<span class="hljs-keyword">break</span>; <span class="hljs-comment">// still waiting for IP address</span>
+		<span class="hljs-keyword">case</span> <span class="hljs-string">"gotIP"</span>:
+			trace(<span class="hljs-string">`IP address <span class="hljs-subst">${Net.get(<span class="hljs-string">"IP"</span>)}</span>\n`</span>);
+			<span class="hljs-keyword">break</span>;
+		<span class="hljs-keyword">case</span> <span class="hljs-string">"disconnect"</span>:
+			<span class="hljs-keyword">break</span>;  <span class="hljs-comment">// connection lost</span>
+	}
+});
+</code></pre>
+<p>The following example initiates a connection to a Wi-Fi access point with no password. Because there is no callback function to monitor connection progress, polling is necessary to determine when the connection is ready. Poll by getting the IP address of the device using the <code>Net</code> class. When there is no connection, the results is <code>undefined</code>.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> monitor = <span class="hljs-keyword">new</span> WiFi({<span class="hljs-attr">ssid</span>: <span class="hljs-string">"Open Wi-Fi"</span>});
+</code></pre>
+<h3><code>close()</code></h3>
+<p>The <code>close</code> function closes the connection between the <code>WiFi</code> instance and the underlying process managing the device's connection to the network. In other words, it prevents future calls to the callback function, but it does not disconnect from the network.</p>
+<pre><code class="language-js">monitor.close();
+</code></pre>
+<h3><code>static scan(dictionary, callback)</code></h3>
+<p>The <code>scan</code> static function initiates a scan for available Wi-Fi access points.</p>
+<p>The dictionary parameter supports two optional properties:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Property</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><code>hidden</code></td>
+<td style="text-align:left">When <code>true</code>, hidden access point are included in the scan results. Defaults to <code>false</code>.</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>channel</code></td>
+<td style="text-align:left">The Wi-Fi channel number to scan. When this property is not present, all channels are scanned.</td>
+</tr>
+</tbody>
+</table>
+<p>The callback function is invoked once for each access point found. When the scan is complete, the callback function is invoked a final time with a <code>null</code> argument.</p>
+<pre><code class="language-js">WiFi.scan({}, item =&gt; {
+	<span class="hljs-keyword">if</span> (item)
+		trace(<span class="hljs-string">`name: <span class="hljs-subst">${item.ssid}</span>, password: <span class="hljs-subst">${item.authentication != <span class="hljs-string">"none"</span>}</span>, rssi: <span class="hljs-subst">${item.rssi}</span>, bssid: <span class="hljs-subst">${(<span class="hljs-keyword">new</span> <span class="hljs-built_in">Uint8Array</span>(item.bssid)).join(<span class="hljs-string">"."</span>)}</span>\n`</span>);
+	<span class="hljs-keyword">else</span>
+		trace(<span class="hljs-string">"scan complete.\n"</span>);
+});
+</code></pre>
+<p>The Wi-Fi scan runs for a fixed period of time, approximately two seconds. During that time, not all access points may be found. It may be necessary to call scan several times to create a complete list of visible access points.</p>
+<blockquote>
+<p><strong>Note</strong>: Only one scan may be active at a time. Starting a new scan while one is still active will throw an exception.</p>
+</blockquote>
+<hr />
+<h3><code>mode</code> property</h3>
+<p>The <code>mode</code> property is set to 1 for station mode (e.g. device acts as Wi-Fi client) and 2 for access point mode (e.g. device acts as Wi-Fi base station).</p>
+<hr />
+<h3><code>static connect(dictionary)</code></h3>
+<p>The <code>connect</code> function begins the process of establishing a connection. The connection process is asynchronous and may be monitored by polling <code>Net.get(&quot;IP&quot;)</code> or by creating a new WiFi instance. The dictionary contains either <code>ssid</code> or <code>bssid</code> properties indicating the base station to connect to, and an optional <code>password</code>.</p>
+<pre><code class="language-js">WiFi.connect({<span class="hljs-attr">ssid</span>: <span class="hljs-string">"Moddable"</span>, <span class="hljs-attr">password</span>: <span class="hljs-string">"1234"</span>});
+</code></pre>
+<p>To disconnect from the current Wi-Fi base station, call <code>connect</code> with no parameters.</p>
+<pre><code class="language-js">WiFi.connect();
+</code></pre>
+<hr />
+<h3><code>static accessPoint(dictionary)</code></h3>
+<p>The <code>accessPoint</code> function configures the device as a Wi-Fi access point. Depending on the device, this may exit station mode.</p>
+<p>The dictionary must include an <code>ssid</code> property, a string that gives the name of the access point.</p>
+<p>The dictionary may optionally include the following properties:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Property</th>
+<th style="text-align:center">Default Value</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><code>password</code></td>
+<td style="text-align:center">none</td>
+<td style="text-align:left">A string indicating the password of the access point; if no password is provided, the access point will be open</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>channel</code></td>
+<td style="text-align:center">1</td>
+<td style="text-align:left">A number indicating the channel to use for the access point</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>hidden</code></td>
+<td style="text-align:center"><code>false</code></td>
+<td style="text-align:left">A boolean indicating if the channel should be hidden</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>interval</code></td>
+<td style="text-align:center">100</td>
+<td style="text-align:left">A number indicating the beacon interval in milliseconds</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>max</code></td>
+<td style="text-align:center">4</td>
+<td style="text-align:left">A number indicating the maximum number of simultaneous connections</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-js">WiFi.accessPoint({
+	<span class="hljs-attr">ssid</span>: <span class="hljs-string">"Moddable Zero"</span>,
+	<span class="hljs-attr">password</span>: <span class="hljs-string">"12345678"</span>
+});
+</code></pre>
+<hr />
+<p><a id="sntp"></a></p>
+<h2>class SNTP</h2>
+<ul>
+<li><strong>Source code:</strong> <a href="../../modules/network/sntp">sntp</a></li>
+<li><strong>Relevant Examples:</strong> <a href="../../examples/network/sntp">sntp</a>, <a href="../../examples/network/mdns/ntpclient">ntpclient</a></li>
+</ul>
+<p>The <a href="https://en.wikipedia.org/wiki/Network_Time_Protocol#SNTP">SNTP</a> class implements an SNTP client (<a href="https://tools.ietf.org/html/rfc4330">RFC 4330</a>) to retrieve a real time clock value.</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> SNTP <span class="hljs-keyword">from</span> <span class="hljs-string">"sntp"</span>;
+</code></pre>
+<p>The SNTP client implementation fail-over mechanism allows additional servers to be queried in case of failure.</p>
+<h3><code>constructor(dictionary, callback)</code></h3>
+<p>The SNTP constructor takes a dictionary of properties and a callback function to receive information about the instance status.</p>
+<p>The dictionary must include a <code>host</code> property, a string that gives the host name or IP address of the SNTP server.</p>
+<p>The callback receives messages and, for some messages, a data value. Positive <code>message</code> values indicate normal operation and negative <code>message</code> values indicate an error.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"><code>message</code></th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">-1</td>
+<td style="text-align:left">Unable to retrieve time. The value parameter contains a <code>String</code> with the reason for the failure. The callback function may return a <code>String</code> with the host name or IP address of another SNTP server to try; otherwise, the SNTP client closes itself and may not be used for additional requests. See the <a href="https://github.com/Moddable-OpenSource/moddable/blob/public/examples/network/sntp/main.js">SNTP example</a> for an implementation of fail-over handling.</td>
+</tr>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:left">Time retrieved. The <code>value</code> parameter is the time in seconds since 1970, appropriate for passing to the Date constructor</td>
+</tr>
+<tr>
+<td style="text-align:center">2</td>
+<td style="text-align:left">Retry. The time has not yet been retrieved and the SNTP client is making an additional request.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3>Example: Retrieving the time</h3>
+<p>The following example retrieves the current time value from the NTP server at <code>pool.ntp.org</code>.</p>
+<pre><code class="language-js"><span class="hljs-keyword">new</span> SNTP({<span class="hljs-attr">host</span>: <span class="hljs-string">"pool.ntp.org"</span>}, (message, value) =&gt; {
+	<span class="hljs-keyword">if</span> (<span class="hljs-number">1</span> === message)
+		trace(<span class="hljs-string">`time value is <span class="hljs-subst">${value}</span>\n`</span>);
+});
+</code></pre>
+<p>The SNTP constructor requires the host name or IP address of a time server. If a host name is provided, the SNTP client first resolves that to an IP address using <code>Net.resolve</code>.</p>
+<hr />
+<p><a id="dns"></a></p>
+<h2>class DNS constants</h2>
+<ul>
+<li><strong>Source code:</strong> <a href="../../modules/network/dns">dns</a></li>
+</ul>
+<p>The DNS module contains constants that are useful when implementing code that interacts directly with the DNS protocol. It is used by the DNS <code>Parser</code>, DNS <code>Serializer</code>, and mDNS implementation.</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> DNS <span class="hljs-keyword">from</span> <span class="hljs-string">"dns"</span>;
+</code></pre>
+<ul>
+<li><code>DNS.RR</code> contains constants for resource record types, such as <code>DNS.RR.PTR</code>.</li>
+<li><code>DNS.OPCODE</code> contains values for <code>DNS.OPCODE.QUERY</code> and <code>DNS.OPCODE.UPDATE</code>.</li>
+<li><code>DNS.CLASS</code> contains values for <code>DNS.CLASS.IN</code>, <code>DNS.CLASS.NONE</code>, and <code>DNS.CLASS.ANY</code>.</li>
+<li><code>DNS.SECTION</code> contains values that include <code>DNS.QUESTION</code> and <code>DNS.ANSWER</code>.</li>
+</ul>
+<p><a id="dns-parser"></a></p>
+<h2>class DNS Parser</h2>
+<ul>
+<li><strong>Source code:</strong> <a href="../../modules/network/dns">dnsparser</a></li>
+</ul>
+<p>The DNS <code>Parser</code> class extracts JavaScript objects from a binary DNS record.</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> Parser <span class="hljs-keyword">from</span> <span class="hljs-string">"dns/parser"</span>;
+</code></pre>
+<p>The DNS parser class parses and returns a single resource record at a time to minimize memory use. It has parsers for the resource data of A, AAAA, PTR, SRV, TXT resource record types.</p>
+<blockquote>
+<p><strong>Note</strong>: The DNS Parser is a low level class used to build higher level services, such as mDNS.</p>
+</blockquote>
+<h3><code>constructor(buffer)</code></h3>
+<p>The DNS <code>Parser</code> constructor is initialized with an <code>ArrayBuffer</code> containing a single DNS packet.</p>
+<p>No validation is performed by the constructor. Errors, if any, are reported when extracting resource records.</p>
+<hr />
+<h3><code>questions(index)</code></h3>
+<p>Returns the question resource record corresponding to the index argument. Indices are numbered from 0. Returns <code>null</code> if index is greater than number of question records in the packet.</p>
+<hr />
+<h3><code>answers(index)</code></h3>
+<p>Returns the answer resource record corresponding to the index argument. Indices are numbered from 0. Returns <code>null</code> if index is greater than number of answer records in the packet.</p>
+<hr />
+<h3><code>authorities(index)</code></h3>
+<p>Returns the authority resource record corresponding to the index argument. Indices are numbered from 0. Returns <code>null</code> if index is greater than number of authority records in the packet.</p>
+<hr />
+<h3><code>additionals(index)</code></h3>
+<p>Returns the additional resource record corresponding to the index argument. Indices are numbered from 0. Returns <code>null</code> if index is greater than number of additional records in the packet.</p>
+<hr />
+<h3>Example: Parsing a DNS packet</h3>
+<p>DNS packets are typically received as UDP packets. The <code>Socket</code> object provides each DNS packet in an <code>ArrayBuffer</code>. The follow example creates a DNS parser instance for an <code>ArrayBuffer</code>:</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> packet = <span class="hljs-keyword">new</span> Parser(dnsPacket);
+</code></pre>
+<p>The <code>Parser</code> constructor does not validate the packet. If the packet is invalid, errors will be reported when extracting records from it.</p>
+<hr />
+<h3>Example: Reading header fields</h3>
+<p>The parser instance has properties for the <code>id</code> and <code>flags</code> fields in the DNS packet:</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> id = packet.id;
+<span class="hljs-keyword">let</span> flags = packet.flags;
+</code></pre>
+<hr />
+<h3>Example: Determining the number of records</h3>
+<p>The parser instance has properties that provide the number of resource records in each section.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> total = packet.questions + packet.answers + packet.authorities + packet.additionals;
+</code></pre>
+<hr />
+<h3>Example: Extracting a resource record</h3>
+<p>A JavaScript object containing a single resource record is retrieved by calling the function corresponding to the resource record's section. The following example retrieves the second question resource record (indices start at 0):</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> rr = packet.question(<span class="hljs-number">1</span>);
+</code></pre>
+<p>There are also <code>answers</code>, <code>authorities</code>, and <code>additionals</code> functions.</p>
+<hr />
+<p><a id="dns-serializer"></a></p>
+<h2>class DNS Serializer</h2>
+<ul>
+<li><strong>Source code:</strong> <a href="../../modules/network/dns">dnsserializer</a></li>
+</ul>
+<p>The DNS <code>Serializer</code> class implements a DNS record serializer.</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> Serializer <span class="hljs-keyword">from</span> <span class="hljs-string">"dns/serializer"</span>;
+</code></pre>
+<p>The DNS <code>Serializer</code> class is able to serialize A, NSEC, PTR, SRV, and TXT resource record types. Clients may perform their own serialization of other resource record types and provide the result to the DNS <code>Serializer</code> class to include in the generated DNS packet.</p>
+<blockquote>
+<p><strong>Note</strong>: The DNS <code>Serializer</code> is a low level class used to build higher level services, such as mDNS.</p>
+</blockquote>
+<h3><code>constructor(dictionary)</code></h3>
+<p>The DNS <code>Serializer</code> constructor accepts a dictionary with properties to configure the DNS packet to be created. The dictionary may contain the following properties:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Property</th>
+<th style="text-align:center">Default Value</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><code>opcode</code></td>
+<td style="text-align:center"><code>DNS.OPCODE.QUERY</code></td>
+<td style="text-align:left">The numeric value of the <code>opcode</code> header field</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>query</code></td>
+<td style="text-align:center"><code>true</code></td>
+<td style="text-align:left">A boolean that indicates whether this packet contains a query or response</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>authoritative</code></td>
+<td style="text-align:center"><code>false</code></td>
+<td style="text-align:left">A boolean indicating the value of the <code>authoritative</code> bit in the header</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>id</code></td>
+<td style="text-align:center">0</td>
+<td style="text-align:left">A numeric value for the ID field</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3><code>add(section, name, type, clss, ttl, ...)</code></h3>
+<p>The <code>add</code> function adds a resource record to be serialized into the DNS packet. The first five arguments to <code>add</code> are the same for all resource records.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Argument</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><code>section</code></td>
+<td style="text-align:left">The section to add this resource record to, e.g. <code>DNS.SECTION.ANSWER</code>.</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>name</code></td>
+<td style="text-align:left">A <code>String</code> containing the DNS QNAME</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>type</code></td>
+<td style="text-align:left">A <code>Number</code> representing the resource record type, e.g. <code>DNS.RR.A</code></td>
+</tr>
+<tr>
+<td style="text-align:center"><code>clss</code></td>
+<td style="text-align:left">A <code>Number</code> containing the resource record class field value, typically <code>DNS.CLASS.IN</code></td>
+</tr>
+<tr>
+<td style="text-align:center"><code>ttl</code></td>
+<td style="text-align:left">A <code>Number</code> containing the time-to-live value in seconds for this resource record</td>
+</tr>
+</tbody>
+</table>
+<p>The optional <code>data</code> argument is used to build the resource data portion of the resource record. If not present, the resource data is empty. If it is an <code>ArrayBuffer</code>, its contents are used for the resource data. The <code>data</code> argument is interpreted these resource record types:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><code>A</code></td>
+<td style="text-align:left">A string containing the IP address.</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>NSEC</code></td>
+<td style="text-align:left">A dictionary with two keys. The first is <code>next</code> containing a string with the next hostname value. The second is a Uint8Array containing the bit-mask.</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>PTR</code></td>
+<td style="text-align:left">A string with the PTR value.</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>SRV</code></td>
+<td style="text-align:left">A dictionary with four keys. The <code>priority</code>, <code>weight</code>, and <code>port</code> fields are numbers with the value of the corresponding field. The <code>target</code> property is a string containing the name of the target.</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>TXT</code></td>
+<td style="text-align:left">A dictionary of key / value pairs for the TXT record. The property name is the key. Only string values are supported at this time.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3><code>build()</code></h3>
+<p>The <code>build</code> function generates a DNS packet based on the previous calls to the serializer instance. The packet is returned as an <code>ArrayBuffer</code>.</p>
+<blockquote>
+<p><strong>Note</strong>: The current implementation does not compress QNAMES, resulting in a larger DNS packet than necessary.</p>
+</blockquote>
+<hr />
+<h3>Example: Building a DNS query</h3>
+<p>The following example uses the DNS Serializer to create a DNS packet querying for an A record for the &quot;example.com&quot; domain:</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> serializer = <span class="hljs-keyword">new</span> Serializer({<span class="hljs-attr">query</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">opcode</span>: DNS.OPCODE.QUERY});
+serializer.add(DNS.SECTION.QUESTION, <span class="hljs-string">"example.com"</span>, DNS.RR.A, DNS.CLASS.IN);
+<span class="hljs-keyword">let</span> buffer = serializer.build();
+</code></pre>
+<p>The <code>build</code> function returns a DNS packet suitable for sending using the <code>write</code> function of the <code>Socket</code> class.</p>
+<hr />
+<p><a id="dns-server"></a></p>
+<h2>class DNS Server</h2>
+<ul>
+<li><strong>Source code:</strong> <a href="../../modules/network/dns">dnsserver</a></li>
+<li><strong>Relevant Examples:</strong> <a href="../../examples/network/dns/dnsserver">dnsserver</a></li>
+</ul>
+<p>The DNS <code>Server</code> class implements a simple DNS server.</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> Server <span class="hljs-keyword">from</span> <span class="hljs-string">"dns/server"</span>;
+</code></pre>
+<p>The server is indicated for use in devices in Wi-Fi access point mode that wish to act as a captive portal. The DNS server is used to direct look-ups for certain domains to an IP address, typically the device running the DNS server.</p>
+<h3><code>constructor(callback)</code></h3>
+<p>The DNS <code>Server</code> constructor takes a single argument, a function to call when a look-up request is received. The callback receives two arguments. The first, <code>message</code>, is set to 1 when a look-up is performed. The second argument, <code>value</code>, is set to the name to be resolved when a look-up request is made.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> server = <span class="hljs-keyword">new</span> Server(<span class="hljs-function">(<span class="hljs-params">message, value</span>) =&gt;</span> {
+	...
+});
+</code></pre>
+<hr />
+<h3><code>close()</code></h3>
+<p>When the DNS server is no longer needed, call <code>close</code> to terminate it and free its resources.</p>
+<pre><code class="language-js">server.close();
+</code></pre>
+<hr />
+<h3>Example: Simple DNS server</h3>
+<p>The following example redirects all DNS look-ups to the IP address of the device running the server.</p>
+<pre><code class="language-js"><span class="hljs-keyword">new</span> Server(<span class="hljs-function">(<span class="hljs-params">message, value</span>) =&gt;</span> {
+	<span class="hljs-keyword">if</span> (<span class="hljs-number">1</span> == message)
+		<span class="hljs-keyword">return</span> Net.get(<span class="hljs-string">"IP"</span>);
+})
+</code></pre>
+<h3>Example: DNS server for a single host name</h3>
+<p>The following example redirects all DNS look-ups for &quot;example.com&quot; to the IP address of the device running the server. All other look-ups are ignored.</p>
+<pre><code class="language-js"><span class="hljs-keyword">new</span> Server(<span class="hljs-function">(<span class="hljs-params">message, value</span>) =&gt;</span> {
+	<span class="hljs-keyword">if</span> ((<span class="hljs-number">1</span> == message) &amp;&amp; (<span class="hljs-string">"example.com"</span> == value))
+		<span class="hljs-keyword">return</span> Net.get(<span class="hljs-string">"IP"</span>);
+})
+</code></pre>
+<hr />
+<p><a id="mdns"></a></p>
+<h2>class MDNS</h2>
+<ul>
+<li><strong>Source code:</strong> <a href="../../modules/network/mdns">mdns</a></li>
+<li><strong>Relevant Examples:</strong> <a href="../../examples/network/mdns/discoverhttp">discoverhttp</a>, <a href="../../examples/network/mdns/httpserver">httpserver</a>, <a href="../../examples/network/mdns/ntpclient">ntpclient</a>, <a href="../../examples/network/mdns/ntpservice">ntpservice</a>,</li>
+</ul>
+<p>The <code>MDNS</code> class implements services for working with <a href="https://tools.ietf.org/html/rfc6762">Multicast DNS</a> discovery and services. It includes claiming <code>.local</code> names, advertising mDNS service availability, and scanning for available mDNS services.</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> MDNS <span class="hljs-keyword">from</span> <span class="hljs-string">"mdns"</span>;
+</code></pre>
+<h3><code>constructor(dictionary [, callback])</code></h3>
+<p>The <code>MDNS</code> constructor takes a dictionary to configure the mDNS instance and an optional <code>callback</code> to receive information about the instance status.</p>
+<p>If the dictionary contains a <code>hostName</code> property, the MDNS instance will attempt to claim the name in the <code>.local</code> domain on the active network connection. The <code>hostName</code> is not required to monitor for available mDNS services.</p>
+<p>The callback receives messages and, for some messages, a data value. The <code>message</code> and <code>value</code> provide information on the claiming process. Positive <code>message</code> values indicate normal operation and negative <code>message</code> values indicate an error.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"><code>message</code></th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:left"><strong>probing:</strong> If <code>value</code> is an empty string, claiming is underway; when probing is successful, <code>value</code> contains the claimed name.</td>
+</tr>
+<tr>
+<td style="text-align:center">2</td>
+<td style="text-align:left"><strong>conflict:</strong> The attempt to claim the requested name discovered another device already using the name. The result of the callback function determines what happens next.<BR>- If the result is undefined, a new name is created automatically and the claiming process continues.<BR>- If a string is returned, the claiming process continues with the string used as the candidate hostname. Returning true causes the claiming process to end without having claimed a name.</td>
+</tr>
+<tr>
+<td style="text-align:center">Any negative number</td>
+<td style="text-align:left"><strong>error:</strong> Claiming process terminated.</td>
+</tr>
+</tbody>
+</table>
+<p>The following example shows how to claim the name &quot;mydevice&quot; on the local network.</p>
+<pre><code class="language-js"><span class="hljs-keyword">const</span> mdns = <span class="hljs-keyword">new</span> MDNS({<span class="hljs-attr">hostName</span>: <span class="hljs-string">"mydevice"</span>});
+</code></pre>
+<p>The claiming process takes some time, usually under one second. Claiming the name may not succeed because the name may already be in use. An optional callback function provides status on the claim:</p>
+<pre><code class="language-js"><span class="hljs-keyword">const</span> mdns = <span class="hljs-keyword">new</span> MDNS({<span class="hljs-attr">hostName</span>: <span class="hljs-string">"mydevice"</span>}, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">message, value</span>) </span>{
+	<span class="hljs-keyword">switch</span> (message) {
+		<span class="hljs-keyword">case</span> <span class="hljs-number">1</span>:
+			trace(<span class="hljs-string">`MDNS - claimed hostname is "<span class="hljs-subst">${value}</span>"\n`</span>);
+			<span class="hljs-keyword">break</span>;
+		<span class="hljs-keyword">case</span> <span class="hljs-number">2</span>:
+			trace(<span class="hljs-string">`MDNS - failed to claim "<span class="hljs-subst">${value}</span>", try next\n`</span>);
+			<span class="hljs-keyword">break</span>;
+		<span class="hljs-keyword">default</span>:
+			<span class="hljs-keyword">if</span> (message &lt; <span class="hljs-number">0</span>)
+				trace(<span class="hljs-string">"MDNS - failed to claim, give up\n"</span>);
+			<span class="hljs-keyword">break</span>;
+	}
+});
+</code></pre>
+<hr />
+<h3><code>monitor(serviceType, callback)</code></h3>
+<p>The <code>monitor</code> function continuously scans the network for mDNS services of the type indicated by the <code>serviceType</code> parameter.</p>
+<p>The callback function is invoked for each unique service instance found and whenever a service announces changes to its TXT resource record. The first argument to the callback is the service type, for example &quot;_http._tcp&quot;. The second is a dictionary that contains <code>name</code>, <code>protocol</code>, <code>port</code>, and <code>txt</code> properties describing the service.</p>
+<p>The following example continuously monitors for <code>_http._tcp</code> services available on the local network:</p>
+<pre><code class="language-js">mdns.monitor(<span class="hljs-string">"_http._tcp"</span>, (service, instance) =&gt; {
+	trace(<span class="hljs-string">`Found <span class="hljs-subst">${service}</span>: <span class="hljs-subst">${instance.name}</span>\n`</span>);
+});
+</code></pre>
+<hr />
+<h3><code>add(service)</code></h3>
+<p>The <code>add</code> function registers an mDNS service description to be advertised. The service record contains the following properties:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Property</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><code>name</code></td>
+<td style="text-align:left">The service's name, e.g. &quot;http&quot;</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>protocol</code></td>
+<td style="text-align:left">The service's protocol, e.g. &quot;tcp&quot; or &quot;udp&quot;</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>port</code></td>
+<td style="text-align:left">The service's port</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>txt</code></td>
+<td style="text-align:left">An optional JavaScript object with name value pairs to populate the TXT resource record of the service</td>
+</tr>
+</tbody>
+</table>
+<p><code>add</code> may only be called after the hostname claiming process has completed successfully.</p>
+<p>The following example announces the availability of an <code>_http._tcp</code> service on port 80 of the current host.</p>
+<pre><code class="language-js">mdns.add({
+	<span class="hljs-attr">name</span>: <span class="hljs-string">"http"</span>,
+	<span class="hljs-attr">protocol</span>: <span class="hljs-string">"tcp"</span>,
+	<span class="hljs-attr">port</span>: <span class="hljs-number">80</span>,
+	<span class="hljs-attr">txt</span>: {
+		<span class="hljs-attr">url</span>: <span class="hljs-string">`/index.html`</span>,
+	}
+});
+</code></pre>
+<hr />
+<h3><code>update(service)</code></h3>
+<p>The <code>update</code> function tells the MDNS implementation that the contents of the TXT record have changed. This causes the new TXT record to be announced to the local network. The <code>service</code> object passed must be the same object provided to <code>add</code>.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> service = mdns.services[<span class="hljs-number">0</span>];
+service.txt[<span class="hljs-string">"value"</span>] = <span class="hljs-number">123</span>;
+mdns.update(service);
+</code></pre>
+<hr />
+<h3><code>remove(service)</code> or <code>remove(serviceType)</code></h3>
+<p>The <code>remove</code> function is used both to unregister the service and to cancel monitoring for a service type.</p>
+<p>To unregister a service, pass the service description. This announces to the network that it is no longer available. The <code>service</code> object must be the same object provided to <code>add</code>.</p>
+<pre><code class="language-js">mdns.remove(mdns.services[<span class="hljs-number">0</span>]);
+</code></pre>
+<p>To cancel monitoring for a service type, pass the name of the service type.</p>
+<pre><code class="language-js">mdns.remove(<span class="hljs-string">"_http._tcp"</span>);
+</code></pre>
+<hr />
+<p><a id="telnet"></a></p>
+<h2>class Telnet</h2>
+<ul>
+<li><strong>Source code:</strong> <a href="../../modules/network/telnet">telnet</a></li>
+<li><strong>Relevant Examples:</strong> <a href="../../examples/network/telnet">telnet</a></li>
+</ul>
+<p>The Telnet class implements a simple telnet server. The commands supported by the telnet server are determined by the <code>CLI</code> classes registered with the Console <code>module</code>.</p>
+<h3><code>constructor(dictionary)</code></h3>
+<p>To start a telnet server, invoke the <code>Telnet</code> constructor:</p>
+<p>The <code>Telnet</code> constructor takes a single argument, a dictionary. The dictionary has a single property, <code>port</code>, which indicates the port to listen on for new connections. If the <code>port</code> is not included in the dictionary, it defaults to 23.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> telnet = <span class="hljs-keyword">new</span> Telnet({<span class="hljs-attr">port</span>: <span class="hljs-number">2300</span>});
+</code></pre>
+<hr />
+<h3><code>close()</code></h3>
+<p>When the Telnet server is no longer needed, call <code>close</code> to terminate it and free its resources.</p>
+<pre><code class="language-js">telnet.close();
+</code></pre>
+<hr />
+<p><a id="ping"></a></p>
+<h2>class Ping</h2>
+<ul>
+<li><strong>Source code:</strong> <a href="../../modules/network/ping">ping</a></li>
+<li><strong>Relevant Examples:</strong> <a href="../../examples/network/ping">ping</a></li>
+</ul>
+<p>The Ping class implements the ping networking utility.</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> Ping <span class="hljs-keyword">from</span> <span class="hljs-string">"ping"</span>;
+</code></pre>
+<h3><code>constructor(dictionary, callback)</code></h3>
+<p>The <code>Ping</code> constructor takes two arguments, a dictionary and a callback function.</p>
+<p>The dictionary must contain the following properties:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Property</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><code>host</code></td>
+<td style="text-align:left">The host to ping</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>id</code></td>
+<td style="text-align:left">The identifier of the ping process; this should be unique for each <code>Ping</code> instance</td>
+</tr>
+</tbody>
+</table>
+<p>The dictionary may optionally contain an <code>interval</code> parameter, which sets the interval between pings, in milliseconds. If none is specified, the default is 5000, or 5 seconds.</p>
+<p>The user receives status information through the callback function. The callback receives messages and, for some messages, a data value and additional information in the <code>etc</code> parameter.  Positive <code>message</code> values indicate normal operation and negative <code>message</code> values indicate an error.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"><code>message</code></th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">-1</td>
+<td style="text-align:left"><strong>error:</strong> An error occurred and the host is no longer being pinged.</td>
+</tr>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:left"><strong>success:</strong> The host responded to the echo request with an echo reply.</td>
+</tr>
+<tr>
+<td style="text-align:center">2</td>
+<td style="text-align:left"><strong>timeout:</strong> The host did not respond.</td>
+</tr>
+</tbody>
+</table>
+<p>The following example pings the server at <code>example.com</code> every 1000ms, tracing the results to the console.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> ping = <span class="hljs-keyword">new</span> Ping({<span class="hljs-attr">host</span>: <span class="hljs-string">"example.com"</span>, <span class="hljs-attr">id</span>: <span class="hljs-number">1</span>, <span class="hljs-attr">interval</span>: <span class="hljs-number">1000</span>}, (message, value, etc) =&gt; {
+	<span class="hljs-keyword">if</span> (<span class="hljs-number">1</span> == message)
+		trace(<span class="hljs-string">`<span class="hljs-subst">${value}</span> bytes from <span class="hljs-subst">${etc.address}</span>: icmp_seq=<span class="hljs-subst">${etc.icmp_seq}</span>\n`</span>);
+}
+</code></pre>
+<hr />
+<h3><code>close()</code></h3>
+<p>To stop pinging the host, call the <code>close</code> function.</p>
+<pre><code class="language-js">ping.close();
+</code></pre>
+<hr />
+
+</div>
+
+        </div>
+    </body>
+</html>

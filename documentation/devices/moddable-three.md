@@ -34,7 +34,7 @@ The two main components of Moddable Three are the ESP8266 module and ePaper scre
 <a id="setup"></a>
 ## SDK and Host Environment Setup
 
-The [Moddable SDK Getting Started document](../Moddable%20SDK%20-%20Getting%20Started.md) describes how to configure the host build environment and install the required SDKs, drivers, and development tools. Follow the instructions in the **Host environment setup** and **ESP8266 setup** sections for your computer's operating system.
+The [Moddable SDK Getting Started document](../Moddable_SDK_-_Getting_Started.md) describes how to configure the host build environment and install the required SDKs, drivers, and development tools. Follow the instructions in the **Host environment setup** and **ESP8266 setup** sections for your computer's operating system.
 
 <a id="building-and-deploying-apps"></a>
 ## Building and Deploying Apps

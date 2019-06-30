@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moddable</title>
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata|Open+Sans" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/hljs.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/markdown.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
+</head>
+    <body>
+<div id="header">
+    <div class="package"></div>
+    <a href="https:&#x2F;&#x2F;github.com&#x2F;moddable-opensource&#x2F;moddable" class="badge" title="Github.com"><img src="/assets/images/github.png" alt="Github" /></a>
+    <a href="/" class="home"><strong>Moddable</strong> <span class="headline">Moddable SDK</span></a>
+</div>
+        <div id="container">
+            <div id="sidebar">
+<ul class="list">
+    <li>
+        <h4><a href="/">Home</a></h4>
+        <ul>
+            <li><a href="https://www.moddable.com">Moddable</a></li>
+            <li><a href="/">Documentation</a></li>
+        </ul>
+    </li>
+    <li>
+        <h4><a href="/">Resources</a></h4>
+        <ul>
+            <li><a href="https://github.com/moddable-opensource/moddable">GitHub</a></li>
+            <li><a href="/">Link 2</a></li>
+        </ul>
+    </li>
+</ul>
+            </div>
+
+<div id="content">
+<h1>Manifest</h1>
+<p>Copyright 2017-2018 Moddable Tech, Inc.</p>
+<p>Revised: September 21, 2018</p>
+<p><strong>Warning</strong>: These notes are preliminary. Omissions and errors are likely. If you encounter problems, please ask for assistance.</p>
+<h2>Overview</h2>
+<p>A manifest is a JSON file that describes the modules and resources necessary to build a Moddable app.</p>
+<h3><code>$MODDABLE/examples/piu/balls/manifest.json</code></h3>
+<p>Let us look at the manifest of the <a href="../../examples/piu/balls">balls example app</a>. It is quite short:</p>
+<pre><code>{
+	&quot;include&quot;: [
+		&quot;$(MODDABLE)/examples/manifest_base.json&quot;,
+		&quot;$(MODDABLE)/examples/manifest_piu.json&quot;,
+	],
+	&quot;modules&quot;: {
+		&quot;*&quot;: &quot;./main&quot;,
+	},
+	&quot;resources&quot;:{
+		&quot;*&quot;: [
+			&quot;./main&quot;,
+			&quot;./balls&quot;,
+		]
+	},
+}
+</code></pre>
+<p>The <code>include</code> array lists other manifests to include. Most apps have many common properties, so instead of repeating common properties in every manifest, our examples include some subset of the manifests in the <a href="../../examples/">examples folder</a>.</p>
+<ul>
+<li>
+<p><code>manifest_base.json</code> is included in all of our example applications. It includes resource, instrumentation, time, and timer modules and a <code>creation</code> object that works for many applications. The <code>creation</code> object is covered in more detail later in this document.</p>
+</li>
+<li>
+<p><code>manifest_commodetto.json</code> is for applications that use the <a href="https://github.com/Moddable-OpenSource/moddable/blob/public/documentation/commodetto/commodetto.html">Commodetto graphics library</a>.</p>
+</li>
+<li>
+<p><code>manifest_net.json</code> is for applications that use Wi-Fi. It includes Socket, Net, SNTP, and Wi-Fi modules. It does not include specific networking protocols like HTTP and MQTT.</p>
+</li>
+<li>
+<p><code>manifest_piu.json</code> is for applications that use the <a href="https://github.com/Moddable-OpenSource/moddable/blob/public/documentation/piu/piu.html">Piu application framework</a>. It includes all the modules needed to use Piu. The screen and touch drivers are provided elsewhere, typically by the manifest of the target device itself, to allow the Piu manifest to be device independent.</p>
+</li>
+</ul>
+<p>The <code>modules</code> and <code>resources</code> objects contain the module and resources that are specific to the balls app.</p>
+<h3><code>$(MODDABLE)/examples/manifest_base.json</code></h3>
+<p>Now let us look at one of the included manifests: <code>manifest_base.json</code>. It is quite long so let us split it into its properties...</p>
+<h4><code>build</code></h4>
+<p>The <code>build</code> object contains the definition of environment variables that will be used to build paths by the rest of the manifest. Notice that the manifest can access shell environment variables like <code>MODDABLE</code>.</p>
+<pre><code>&quot;build&quot;: {
+	&quot;BUILD&quot;: &quot;$(MODDABLE)/build&quot;,
+	&quot;MODULES&quot;: &quot;$(MODDABLE)/modules&quot;,
+	&quot;COMMODETTO&quot;: &quot;$(MODULES)/commodetto&quot;,
+	&quot;PIU&quot;: &quot;$(MODULES)/piu&quot;,
+},
+</code></pre>
+<h4><code>creation</code></h4>
+<p>The <code>creation</code> object defines the creation parameters of the XS machine that will run the app. See the <a href="../xs/XS%20in%20C.html">XS in C documentation</a> for details.</p>
+<pre><code>&quot;creation&quot;: {
+	&quot;static&quot;: 32768,
+	&quot;chunk&quot;: {
+		&quot;initial&quot;: 1536,
+		&quot;incremental&quot;: 512,
+	},
+	&quot;heap&quot;: {
+		&quot;initial&quot;: 512,
+		&quot;incremental&quot;: 64,
+	},
+	&quot;stack&quot;: 256,
+	&quot;keys&quot;: {
+		&quot;available&quot;: 32,
+		&quot;name&quot;: 53,
+		&quot;symbol&quot;: 3,
+	},
+	&quot;main&quot;: &quot;main&quot;,
+},
+</code></pre>
+<h4><code>modules</code></h4>
+<p>The <code>modules</code> object describes the necessary modules on all platforms.</p>
+<pre><code>&quot;modules&quot;: {
+	&quot;*&quot;: [
+		&quot;$(MODULES)/files/resource/*&quot;,
+		&quot;$(MODULES)/base/instrumentation/*&quot;,
+	],
+},
+</code></pre>
+<h4><code>preload</code></h4>
+<p>The <code>preload</code> array lists the modules preloaded in the read-only XS virtual machine that will be cloned to run the app.</p>
+<pre><code>&quot;preload&quot;: [
+	&quot;Resource&quot;,
+	&quot;instrumentation&quot;,
+],
+</code></pre>
+<h4><code>strip</code></h4>
+<p>The <code>strip</code> object specifies which built-in objects and functions of the JavaScript language may/may not be removed by the XS linker.</p>
+<pre><code>&quot;strip&quot;: &quot;*&quot;,
+</code></pre>
+<p><code>&quot;*&quot;</code> means anything unused by the application can be stripped.</p>
+<p>If you only want to allow certain objects or functions to be stripped, pass in an array. Items in the array can be stripped. Anything not included in the array will not be stripped. For example, the following allows <code>RegExp</code> to be stripped:</p>
+<pre><code>	&quot;strip&quot;: [
+		&quot;fx_RegExp_prototype_compile&quot;,
+		&quot;fx_RegExp_prototype_exec&quot;,
+		&quot;fx_RegExp_prototype_match&quot;,
+		&quot;fx_RegExp_prototype_replace&quot;,
+		&quot;fx_RegExp_prototype_search&quot;,
+		&quot;fx_RegExp_prototype_split&quot;,
+		&quot;fx_RegExp_prototype_test&quot;,
+		&quot;fx_RegExp_prototype_toString&quot;,
+		&quot;fx_RegExp_prototype_get_flags&quot;,
+		&quot;fx_RegExp_prototype_get_global&quot;,
+		&quot;fx_RegExp_prototype_get_ignoreCase&quot;,
+		&quot;fx_RegExp_prototype_get_multiline&quot;,
+		&quot;fx_RegExp_prototype_get_source&quot;,
+		&quot;fx_RegExp_prototype_get_sticky&quot;,
+		&quot;fx_RegExp_prototype_get_unicode&quot;,
+		&quot;fx_RegExp&quot;,
+	]
+</code></pre>
+<h4><code>platform</code></h4>
+<p>The <code>platform</code> object has one property by platform or sub-platform. Objects in a matching platform/sub-platform are merged with platform objects. Each platform can have an <code>include</code> array, a <code>modules</code> object, a <code>preload</code> array, a <code>resources</code> object, a <code>defines</code> object and a <code>recipes</code> object that will be used only when such platform is the goal of the build. The <code>esp</code>, <code>esp32</code>, and <code>gecko</code> platforms below include an external manifest, whereas the <code>mac</code> platform is directly inline.</p>
+<pre><code>&quot;platforms&quot;: {
+	&quot;esp&quot;: {
+		&quot;include&quot;: &quot;$(BUILD)/devices/esp/manifest.json&quot;
+	},
+	&quot;esp32&quot;: {
+		&quot;include&quot;: &quot;$(BUILD)/devices/esp32/manifest.json&quot;
+	},
+	&quot;gecko&quot;: {
+		&quot;include&quot;: &quot;$(BUILD)/devices/gecko/manifest.json&quot;
+	},
+	&quot;mac&quot;: {
+		&quot;modules&quot;: {
+			&quot;*&quot;: [
+				&quot;$(BUILD)/simulator/screen&quot;,
+				&quot;$(MODULES)/base/time/*&quot;,
+				&quot;$(MODULES)/base/time/mac/*&quot;,
+				&quot;$(MODULES)/base/timer/*&quot;,
+				&quot;$(MODULES)/base/timer/mac/*&quot;,
+			],
+		},
+	},
+</code></pre>
+<p>The &quot;<code>...</code>&quot; platform identifier is a fallback, if no matching platform is found. This is useful for errors and warnings.</p>
+<pre><code>&quot;platforms&quot;:{
+	&quot;esp&quot;: {
+		/* modules and resources for ESP8266 go here */
+	},
+	&quot;esp32&quot;: {
+		&quot;warning&quot;: &quot;module XYZ not fully tested on esp32&quot;,
+		/* modules and resources for ESP32 go here */
+	},
+	&quot;...&quot; {
+		&quot;error&quot;: &quot;module XYZ supported&quot;,
+	}
+}
+</code></pre>
+<h3>Sub-platforms</h3>
+<p>The Gecko family of devices are similar and share much of the same configuration. A sub-platform is used to configure an application for the variations in a product family.</p>
+<p>In the segment below, the <code>timer</code> module is specified for all <code>gecko</code> platforms. The <code>wakeup</code> pin is defined differently for the <code>gecko/giant</code> and <code>gecko/mighty</code> platforms.</p>
+<pre><code>    &quot;gecko&quot;: {
+        &quot;modules&quot;: {
+            &quot;*&quot;: [
+                &quot;$(MODULES)/base/timer/*&quot;,
+                &quot;$(MODULES)/base/timer/mc/*&quot;,
+            ]
+        },
+        &quot;preload&quot;: [
+            &quot;timer&quot;,
+        ],
+    },
+    &quot;gecko/giant&quot;: {
+        &quot;defines&quot;: {
+            &quot;sleep&quot;: {
+                &quot;wakeup&quot;: { &quot;pin&quot;: 2, &quot;port&quot;: &quot;gpioPortF&quot;, &quot;level&quot;: 0, &quot;register&quot;: &quot;GPIO_EM4WUEN_EM4WUEN_F2&quot; },
+            },
+	     },
+	 },
+    &quot;gecko/mighty&quot;: {
+        &quot;defines&quot;: {
+            &quot;sleep&quot;: {
+                &quot;wakeup&quot;: { &quot;pin&quot;: 7, &quot;port&quot;: &quot;gpioPortF&quot;, &quot;level&quot;: 0, &quot;register&quot;: &quot;GPIO_EXTILEVEL_EM4WU1&quot; },
+            },
+         },
+      },
+</code></pre>
+<p>The <code>SUBPLATFORM</code> variable is automatically defined by <code>mcconfig</code>. A wildcard is a available to match on sub-platforms. The <code>SUBPLATFORM</code> variable and wildcard match used together simplify inclusion of sub-platform manifests:</p>
+<pre><code>&quot;platforms&quot;: {
+	&quot;esp32/*&quot;: {
+		&quot;include&quot;: &quot;./targets/$(SUBPLATFORM)/manifest.json&quot;
+	},
+}
+</code></pre>
+<h2>Reference</h2>
+<p><strong>mcconfig</strong> processes a manifest in three passes.</p>
+<h3>Combine</h3>
+<p>The first pass combines the properties of the included manifests (in depth first order) with the properties of the processed manifest. For each manifest, the common properties are combined with the properties of the platform that is the goal of the build. Sub-platform properties are combined with platform properties.</p>
+<p>When combining properties with the same name, the combined value is the concatenation of the two values.</p>
+<p>In the <code>modules</code> and <code>resources</code> objects, paths can be relative to the manifest that defines them.</p>
+<h3>Match</h3>
+<p>The second pass matches files with the properties of the combined <code>modules</code> and <code>resources</code> objects:</p>
+<ul>
+<li>The <code>~</code> property contains files to exclude from the build.</li>
+<li>The name of each property is the target file, the value of the property is the source file or an array of source files.</li>
+<li>Targets and sources can use the <code>*</code> wildcard to represent all files that match.</li>
+</ul>
+<p>There are no extensions:</p>
+<ul>
+<li>In the <code>modules</code> object, <strong>mcconfig</strong> matches <code>.c</code>, <code>.cc</code>, <code>.cpp</code>, <code>.h</code>, <code>.js</code> and <code>.m</code> files.</li>
+<li>In the <code>resources</code> object, <strong>mcconfig</strong> matches <code>.act</code>, <code>.bmp</code>, <code>.cct</code>, <code>.dat</code>, <code>.der</code>, <code>.fnt</code>, <code>.jpg</code>, <code>.json</code>, <code>.nfnt</code>, <code>.pk8</code>, <code>.png</code>, <code>.rle</code>, <code>.ski</code> and <code>.ttf</code>  files.</li>
+</ul>
+<h3>Generate</h3>
+<p>The third pass generates make variables and rules for matched files:</p>
+<ul>
+<li>The .js files are compiled with <strong>xsc</strong> and linked with <strong>xsl</strong>.</li>
+<li>The modules listed in the <code>preload</code> properties are preloaded by <strong>xsl</strong> in the read-only XS virtual machine that will be cloned to run the app.</li>
+<li>The .png files are converted by <strong>png2bmp</strong>. Use the <code>*-color</code> and <code>*-alpha</code> pseudo target to get only color or only alpha bitmaps.</li>
+<li>The .h files define header dependencies and include directories.</li>
+<li>The .c files are compiled and linked with $(CC) unless they match the value of a property of the combined <code>recipes</code> object, then they use the make recipe corresponding to the name of the property.</li>
+</ul>
+<p>The generated make file contains the generated variables, then the make fragment corresponding to the goal of the build, then the generated rules.</p>
+<p>You will find the default make fragments and the make recipes in <code>$(MODDABLE)/tools/mcconfig</code>. It is the make fragments that define the compiler options, the linker options, the libraries, etc.</p>
+<p>The make fragment can be specified in a platform's <code>&quot;build&quot;</code> section.</p>
+<pre><code>&quot;platforms&quot;: {
+	&quot;gecko/*&quot;: {
+		&quot;build&quot;: {
+			&quot;MAKE_FRAGMENT&quot;: &quot;$(BUILD)/devices/gecko/targets/$(SUBPLATFORM)/make.$(SUBPLATFORM).mk&quot;,
+		}
+		&quot;include&quot;: &quot;./targets/$(SUBPLATFORM)/manifest.json&quot;
+	},
+}
+</code></pre>
+
+</div>
+
+        </div>
+    </body>
+</html>

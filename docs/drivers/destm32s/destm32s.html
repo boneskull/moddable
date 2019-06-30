@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moddable</title>
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata|Open+Sans" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/hljs.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/markdown.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
+</head>
+    <body>
+<div id="header">
+    <div class="package"></div>
+    <a href="https:&#x2F;&#x2F;github.com&#x2F;moddable-opensource&#x2F;moddable" class="badge" title="Github.com"><img src="/assets/images/github.png" alt="Github" /></a>
+    <a href="/" class="home"><strong>Moddable</strong> <span class="headline">Moddable SDK</span></a>
+</div>
+        <div id="container">
+            <div id="sidebar">
+<ul class="list">
+    <li>
+        <h4><a href="/">Home</a></h4>
+        <ul>
+            <li><a href="https://www.moddable.com">Moddable</a></li>
+            <li><a href="/">Documentation</a></li>
+        </ul>
+    </li>
+    <li>
+        <h4><a href="/">Resources</a></h4>
+        <ul>
+            <li><a href="https://github.com/moddable-opensource/moddable">GitHub</a></li>
+            <li><a href="/">Link 2</a></li>
+        </ul>
+    </li>
+</ul>
+            </div>
+
+<div id="content">
+<h1>DESTM32S display driver</h1>
+<p>Copyright 2017 Moddable Tech, Inc.</p>
+<p>Revised: December 30, 2017</p>
+<p><strong>Warning</strong>: These notes are preliminary. Omissions and errors are likely. If you encounter problems, please ask for assistance.</p>
+<p>The DESTM32S display controller drives three different ePaper displays. The displays are available from various sources, including Crystalfontz where we purchased our test units. They use a small adapter board (from <a href="http://www.good-display.com/products_detail/productId=327.html">good-display.com</a>), though the display controller is part of the ePaper display itself (so called chip-on-glass).</p>
+<ul>
+<li>122 x 250 black and white (available <a href="https://www.crystalfontz.com/product/cfap122250a00213-epaper-display-122x250-eink">here</a>)</li>
+<li>128 x 296 black, white, and red (available <a href="https://www.crystalfontz.com/product/cfap128296d00290-128x296-epaper-display">here</a>)</li>
+<li>104 x 212 black, white, gray, and red (available <a href="https://www.crystalfontz.com/product/cfap104212b00213-epaper-104x212-eink">here</a>)</li>
+</ul>
+<p>The black and white display uses a different controller from the two displays that support red pixels. The black and white display updates at approximately 4 frames per second, while the displays with red pixels take approximately 20 seconds per frame (e.g. 3 frames per minute).</p>
+<p>The ePaper display drivers in the Moddable SDK use the same API as LCD displays. However, because of their relatively slow refresh rate and other update requirements, they are typically used with dedicated applications which are designed to work well with the unique characteristics of the displays.</p>
+<p>The <a href="../../../examples/piu/love-e-ink">love-e-ink</a> example is designed to work with the black and white ePaper display. It demonstrates how to update parts of the display continuously without the need for long full screen refreshes. The <a href="../../../examples/drivers/redandblack">redandblack</a> example is designed to work with ePaper displays that have red pixels. It cycles through a slide show of images that contain black, white, and red pixels.</p>
+<h3>Adding DESTM32 to a project</h3>
+<p>To add the SSD1351 driver to a project, include its manifest:</p>
+<pre><code>&quot;include&quot;: [
+	/* other includes here */
+	&quot;$(MODULES)/drivers/destm32s/manifest.json&quot;,
+],
+</code></pre>
+<p>If using Commodetto or Piu, set the <code>screen</code> property of the <code>config</code> object in the manifest to <code>destm32s</code> to make SSD1351 the default display driver. Since there is no touch input, set the touch driver name to an empty string to disable it.</p>
+<pre><code>&quot;config&quot;: {
+	&quot;screen&quot;: &quot;destm32s&quot;,
+	&quot;touch&quot;: &quot;&quot;,
+},
+</code></pre>
+<h3>Pixel format</h3>
+<p>The DESTM32S driver requires 8-bit gray or, when the display supports color (e.g. red), 8-bit color pixels as input. When building with <code>mcconfig</code>, set the pixel format to <code>gray256</code> or <code>rgb332</code> on the command line:</p>
+<pre><code>mcconfig -m -p esp -r 90 -f gray256
+mcconfig -m -p esp -r 90 -f rgb332
+</code></pre>
+<h3>Defines</h3>
+<p>In the <code>defines</code> object, declare the pixel <code>width</code> and <code>height</code>. The dimensions of the display specified in the manifest select the display controller that is used, so it is essential to set this correctly.</p>
+<p>For 122 x 250 black and white:</p>
+<pre><code>&quot;defines&quot;: {
+	&quot;destm32s&quot;: {
+		&quot;width&quot;: 122,
+		&quot;height&quot;: 250,
+	}
+}
+</code></pre>
+<p>For 128 x 296 black, white, and red:</p>
+<pre><code>&quot;defines&quot;: {
+	&quot;destm32s&quot;: {
+		&quot;width&quot;: 128,
+		&quot;height&quot;: 296,
+	}
+}
+</code></pre>
+<p>For 104 x 212 black, white, gray, and red:</p>
+<pre><code>&quot;defines&quot;: {
+	&quot;destm32s&quot;: {
+		&quot;width&quot;: 104,
+		&quot;height&quot;: 212,
+	}
+}
+</code></pre>
+<h3>Configuring SPI</h3>
+<p>The <code>defines</code> object must contain the <code>spi_port</code>, along with the <code>DC</code>, <code>CS</code>, and <code>BUSY</code>. pin numbers. If a <code>RST</code> pin is provided, the device will be reset when the constructor is invoked. If the <code>cs_port</code>, <code>dc_port</code>, <code>rst_port</code>, or <code>busy_port</code> properties are not provided, they default to NULL.</p>
+<pre><code>&quot;defines&quot;: {
+	&quot;ssd1351&quot;: {
+		/* other properties here */	
+		&quot;cs_pin&quot;: 4,
+		&quot;dc_pin&quot;: 2,
+		&quot;rst_pin&quot;: 0,
+		&quot;busy_pin&quot;: 5,
+		&quot;spi_port&quot;: &quot;#HSPI&quot;
+	}
+}
+</code></pre>
+<p>The <code>hz</code> property, when present, specifies the SPI bus speed. The default value is 500,000 Hz which is near the maximum SPI speed supported by the controllers.</p>
+
+</div>
+
+        </div>
+    </body>
+</html>

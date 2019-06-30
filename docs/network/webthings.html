@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moddable</title>
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata|Open+Sans" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/hljs.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/markdown.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
+</head>
+    <body>
+<div id="header">
+    <div class="package"></div>
+    <a href="https:&#x2F;&#x2F;github.com&#x2F;moddable-opensource&#x2F;moddable" class="badge" title="Github.com"><img src="/assets/images/github.png" alt="Github" /></a>
+    <a href="/" class="home"><strong>Moddable</strong> <span class="headline">Moddable SDK</span></a>
+</div>
+        <div id="container">
+            <div id="sidebar">
+<ul class="list">
+    <li>
+        <h4><a href="/">Home</a></h4>
+        <ul>
+            <li><a href="https://www.moddable.com">Moddable</a></li>
+            <li><a href="/">Documentation</a></li>
+        </ul>
+    </li>
+    <li>
+        <h4><a href="/">Resources</a></h4>
+        <ul>
+            <li><a href="https://github.com/moddable-opensource/moddable">GitHub</a></li>
+            <li><a href="/">Link 2</a></li>
+        </ul>
+    </li>
+</ul>
+            </div>
+
+<div id="content">
+<h1>Web Things</h1>
+<p>Copyright 2018-2019 Moddable Tech, Inc.<BR>
+Revised: February 6, 2019</p>
+<p>Warning: These notes are preliminary. Omissions and errors are likely. If you encounter problems, please ask for assistance.</p>
+<h2>Table of Contents</h2>
+<ul>
+<li><a href="#introduction">Introduction</a>
+<ul>
+<li><a href="#implementing-a-light">Implementing a Light using the WebThing class</a></li>
+<li><a href="#announcing-a-webthing">Announcing a Web Thing</a></li>
+</ul>
+</li>
+<li><a href="#webthings">class WebThings</a></li>
+<li><a href="#webthing">class WebThing</a></li>
+</ul>
+<p><a id="introduction"></a></p>
+<h2>Introduction</h2>
+<p>The Web Thing API is part of the <a href="https://iot.mozilla.org">Project Things</a> initiative by Mozilla to define open communication protocols between IoT products. The Web Thing API is a protocol built using JSON, HTTP, and mDNS. It is related to the larger <a href="https://www.w3.org/WoT/">Web of Things</a> effort of W3C. The IoT team at Mozilla created a home gateway that works with IoT products that  implement the Web Thing API protocol. Mozilla also provides embedded device APIs to make it easier to create products that support the Web Thing API. All this work is in development, so it is not ready incorporate into products.</p>
+<p>In the goals of Mozilla's Web Thing API effort we hear echoes of Moddable's own goals of creating an open environment of IoT products that put the user in control. Consequently, at Moddable we have begun experimenting with the Web Thing API. One result of that work is a set of simple JavaScript classes for building devices compatible with the Web Thing API. The classes have been successfully used on ESP8266 and ESP32 hardware with the Mozilla gateway.</p>
+<p>The <a href="https://iot.mozilla.org/wot/">draft Web Thing API specification</a> is available from Mozilla. The Moddable classes implements a subset of the protocol. Some details:</p>
+<ul>
+<li>mDNS is always used to announce devices to the gateway</li>
+<li>Actions and events are not supported</li>
+<li>The HTTP server always uses port 80</li>
+<li>WebSockets are not supported</li>
+</ul>
+<p>The Moddable classes implement optional publishing of selected properties of a  WebThing in the mDNS TXT record to speed notification of changes to interested devices. The classes also implement optional binding of a WebThings properties to a property published by another WebThing. The binding is performed using the <code>controller</code> property.</p>
+<p>The Web of Things <a href="https://iot.mozilla.org/gateway/">gateway software</a> is available from Mozilla. We run the gateway on a Raspberry Pi at the Moddable office.</p>
+<p>The Moddable SDK repository on GitHub contains the <a href="https://github.com/Moddable-OpenSource/moddable/tree/public/modules/network/webthings">WebThings implementation</a> and several <a href="https://github.com/Moddable-OpenSource/moddable/tree/public/examples/network/webthings">example device implementations</a>.</p>
+<p>This documentation describes how to implement a <code>WebThing</code> subclass to be used with the <code>WebThings</code> host. The <code>WebThing</code> class is a base class to be subclassed by specific implementations. It contains no device specific capabilities.</p>
+<p><a id="implementing-a-light"></a></p>
+<h3>Implementing a Light using the WebThing class</h3>
+<p>A Web Thing is a subclass of the <code>WebThing</code> class contained in the <code>WebThings</code> module.</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> {WebThings, WebThing} <span class="hljs-keyword">from</span> <span class="hljs-string">"webthings"</span>;
+</code></pre>
+<p>The following code subclasses <code>WebThing</code> to define a simple <code>OnOffLight</code> device which can be turned on and off remotely by the gateway using the Web Thing API.</p>
+<pre><code class="language-js"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">OnOffLight</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">WebThing</span> </span>{
+	<span class="hljs-keyword">constructor</span>(host) {
+		<span class="hljs-keyword">super</span>(host);
+		<span class="hljs-keyword">this</span>.state = <span class="hljs-literal">true</span>;
+	}
+	<span class="hljs-keyword">get</span> on() {
+		<span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.state;
+	}
+	<span class="hljs-keyword">set</span> on(state) {
+		<span class="hljs-keyword">if</span> (state == <span class="hljs-keyword">this</span>.state) <span class="hljs-keyword">return</span>;
+		<span class="hljs-keyword">this</span>.state = state;
+		<span class="hljs-keyword">this</span>.changed();
+		<span class="hljs-comment">// light specific implementation details here</span>
+	}
+	<span class="hljs-keyword">static</span> <span class="hljs-keyword">get</span> description() {
+		<span class="hljs-keyword">return</span> {
+			<span class="hljs-string">"@context"</span>: <span class="hljs-string">"https://iot.mozilla.org/schemas"</span>,
+			<span class="hljs-string">"@type"</span>: [<span class="hljs-string">"Light"</span>, <span class="hljs-string">"OnOffSwitch"</span>],
+			<span class="hljs-attr">name</span>: <span class="hljs-string">"light"</span>,
+			<span class="hljs-attr">description</span>: <span class="hljs-string">"On/off light"</span>,
+			<span class="hljs-attr">properties</span>: {
+				<span class="hljs-attr">on</span>: {
+					<span class="hljs-attr">type</span>: <span class="hljs-string">"boolean"</span>,
+					<span class="hljs-attr">description</span>: <span class="hljs-string">"light state"</span>,
+					<span class="hljs-attr">txt</span>: <span class="hljs-string">"on"</span>
+				}
+			}
+		}
+	}
+}
+</code></pre>
+<p>Each <code>WebThing</code> subclass provides a device description as a class static property. It is convenient to provide this as a static getter function on the class. The device description is used by the gateway to know how to interact with the device. The device description provides the name, type, and description of the device. In addition, it contains a dictionary of properties that lists their property name, data type, and a human-readable description for display by the gateway. The simple Light has only a single property named <code>on</code>, a boolean which is true when the light is on and false when it is off. The <code>@context</code> and <code>@type</code> parameters tell the gateway this Web Thing is a simple light causing it to be represented with a lightbulb icon in the gateway user interface.</p>
+<pre><code class="language-js"><span class="hljs-keyword">static</span> <span class="hljs-keyword">get</span> description() {
+	<span class="hljs-keyword">return</span> {
+		<span class="hljs-attr">name</span>: <span class="hljs-string">"modLight"</span>,
+		<span class="hljs-string">"@context"</span>: <span class="hljs-string">"https://iot.mozilla.org/schemas"</span>,
+		<span class="hljs-string">"@type"</span>: [<span class="hljs-string">"Light"</span>],
+		<span class="hljs-attr">description</span>: <span class="hljs-string">"On/off light"</span>,
+		<span class="hljs-attr">properties</span>: {
+			<span class="hljs-attr">on</span>: {
+				<span class="hljs-attr">type</span>: <span class="hljs-string">"boolean"</span>,
+				<span class="hljs-attr">description</span>: <span class="hljs-string">"light state"</span>,
+				<span class="hljs-attr">txt</span>: <span class="hljs-string">"o"</span>,
+			}
+		}
+	}
+}
+</code></pre>
+<p>The optional <code>txt</code> property on the <code>on</code> property tells the <code>WebThing</code> class that the value of the <code>on</code> property should be included in the mDNS TXT resource record for this <code>WebThing</code> subclass. The name of the property in the TXT resource record is <code>o</code> in this example. Often TXT resource records use abbreviated names to save space. Including properties in the TXT resource record allows devices to be notified of changes in the property using mDNS multicast broadcasts.</p>
+<p>The constructor of the <code>Light</code> class must invoke the superclass of its super-class. After that, it performs any initialization necessary. In this example, the <code>Light</code> initializes its state to false, indicating that the light is initially off when the device starts up.</p>
+<pre><code class="language-js"><span class="hljs-keyword">constructor</span>(host) {
+	<span class="hljs-keyword">super</span>(host);
+	<span class="hljs-keyword">this</span>.state = <span class="hljs-literal">false</span>;
+}
+</code></pre>
+<p>The constructor and device description are the only two predefined functions that the Web Thing must implement. Beyond that, for each property declared in the device description, the Web Thing implements a getter and setter. The <code>Light</code> has a single property named &quot;on&quot; so it implements a getter for &quot;on&quot; and a setter for &quot;on&quot;. If it was a read-only property, only the getter would be implemented. In the following example, the on setter changes the state of the built-in LED on an ESP8266 or ESP32 to reflect the state of the light property.</p>
+<pre><code class="language-js"><span class="hljs-keyword">get</span> on() {
+	<span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.state;
+}
+<span class="hljs-keyword">set</span> on(state) {
+	<span class="hljs-keyword">this</span>.state = state;
+	Digital.write(<span class="hljs-number">2</span>, state ? <span class="hljs-number">0</span> : <span class="hljs-number">1</span>);
+	<span class="hljs-keyword">this</span>.changed();
+}
+</code></pre>
+<p>The call to <code>this.changed()</code> tells the WebThing base class that the property value has been modified. The call triggers an mDNS update to the TXT resource record, such as the <code>on</code> property in the example device description above.</p>
+<p><a id="announcing-a-webthing"></a></p>
+<h3>Announcing a Web Thing</h3>
+<p>Once a subclass of <code>WebThing</code>, such as the <code>Light</code> above, has been defined it needs to be instantiated. The <code>WebThings</code> class instantiates and hosts one or more <code>WebThing</code> instances.</p>
+<p>The <code>WebThings</code> class uses mDNS to announce the Web Thing on the local network. The gateway will discover the Web Thing from this announcement. mDNS is a service which may be used by several modules on a device. Therefore, The mDNS instance is passed to the <code>WebThings</code> constructor rather than being instantiated by the <code>WebThings</code> class.</p>
+<pre><code class="language-js"><span class="hljs-keyword">const</span> mdns = <span class="hljs-keyword">new</span> MDNS({<span class="hljs-attr">hostName</span>: <span class="hljs-string">"my light"</span>}, (message, value) =&gt; {
+	<span class="hljs-keyword">if</span> (<span class="hljs-number">1</span> == message) &amp;&amp; value) {
+		<span class="hljs-keyword">const</span> things = <span class="hljs-keyword">new</span> WebThings(mdns);
+		things.add(Light);
+	}
+}
+</code></pre>
+<p>The mDNS name claiming process must be completed before the <code>WebThings</code> host can be instantiated. The code above waits for the claiming process to complete successfully, then instantiates the <code>WebThings</code> host, and finally registers the <code>Light</code> by passing its constructor.</p>
+<hr />
+<p><a id="webthings"></a></p>
+<h2>class WebThings</h2>
+<p>The <code>WebThings</code> class is a host for one or more <code>WebThing</code> devices. It provides the mDNS and HTTP services used for the device and gateway to communicate.</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> {WebThings} <span class="hljs-keyword">from</span> <span class="hljs-string">"webthings"</span>;
+</code></pre>
+<h3><code>constructor(mdns)</code></h3>
+<p>The <code>WebThings</code> constructor takes an mDNS instance as an argument. This is a required parameter. The mDNS instance must have completed the claiming process before being passed to the constructor.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> mdns = <span class="hljs-keyword">new</span> MDNS( <span class="hljs-comment">/* mDNS parameters here */</span> );
+<span class="hljs-keyword">let</span> things = <span class="hljs-keyword">new</span> WebThings(mdns);
+</code></pre>
+<hr />
+<h3><code>add(constructor [, ...args])</code></h3>
+<p>The <code>add</code> function registers a subclass of <code>WebThing</code>. The constructor argument is a constructor of the <code>WebThing</code> subclass to be added. It will be instantiated with <code>new</code> by the <code>WebThings</code> host. Any additional arguments passed to <code>add</code> are passed to the <code>WebThing</code> constructor following the <code>host</code> argument. This can be useful when initializing a <code>WebThing</code> subclass.</p>
+<p>In this example, <code>OnOffLight</code> is the class defined in the &quot;Implementing a Light using the WebThing class&quot; section above.</p>
+<pre><code class="language-js">things.add(OnOffLight);	
+</code></pre>
+<hr />
+<p><a id="webthing"></a></p>
+<h2>class WebThing</h2>
+<p>The <code>WebThing</code> class is subclassed to create implementations of specific Web Things.</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> {WebThing} <span class="hljs-keyword">from</span> <span class="hljs-string">"webthings"</span>;
+</code></pre>
+<p>The example code in the sections below refer to the <code>OnOffLight</code> class defined in the &quot;Implementing a Light using the WebThing class&quot; section above.</p>
+<h3><code>constructor(host [, ...args])</code></h3>
+<p>The constructor of a <code>WebThing</code> is invoked by the <code>WebThings</code> host when the <code>WebThing</code> subclass is added to the host. It must call the constructor of its super class with the <code>host</code> parameter. Any additional arguments passed to the <code>add</code> function of the <code>WebThings</code> class are passed to this constructor as <code>...args</code>.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> light = <span class="hljs-keyword">new</span> OnOffLight(<span class="hljs-keyword">this</span>, ...args);
+</code></pre>
+<hr />
+<h3><code>static get description()</code></h3>
+<p>The static getter for the description property returns the device description. The device description is defined in the draft Web Thing API specification from Mozilla. Its use here omits the <code>href</code> properties as they are automatically assigned by the <code>WebThings</code> host.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> description = OnOffLight.description;
+</code></pre>
+<hr />
+<h3><code>get property()</code></h3>
+<p>When a request is received to retrieve the value of a <code>WebThing</code> property, the corresponding getter is invoked on the <code>WebThing</code> instance. For example, if a thermostat device has a &quot;temperature&quot; property, the &quot;get temperature()&quot; getter is called.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> on = light.on;
+</code></pre>
+<hr />
+<h3><code>set property()</code></h3>
+<p>When a request is received to set the value of a <code>WebThing</code> property, the corresponding setter is invoked on the <code>WebThing</code> instance. For example, if a thermostat device has a &quot;temperature&quot; property, the &quot;set temperature()&quot; setter is called.</p>
+<pre><code class="language-js">light.on = <span class="hljs-literal">true</span>;
+</code></pre>
+<hr />
+<h3><code>changed()</code></h3>
+<p>A WebThing subclass calls <code>changed</code> to indicate that one or more property values been modified. It is usually called from a setter. Properties published by including the optional <code>txt</code> property in the device description are updated only after changed is called.</p>
+<pre><code class="language-js"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">OnOffLight</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">WebThing</span> </span>{
+	...
+	set on(state) {
+    	<span class="hljs-keyword">this</span>.state = state;
+    	<span class="hljs-keyword">this</span>.changed();
+	}
+	...
+}
+</code></pre>
+<hr />
+
+</div>
+
+        </div>
+    </body>
+</html>

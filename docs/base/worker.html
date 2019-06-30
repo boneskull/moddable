@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moddable</title>
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata|Open+Sans" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/hljs.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/markdown.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
+</head>
+    <body>
+<div id="header">
+    <div class="package"></div>
+    <a href="https:&#x2F;&#x2F;github.com&#x2F;moddable-opensource&#x2F;moddable" class="badge" title="Github.com"><img src="/assets/images/github.png" alt="Github" /></a>
+    <a href="/" class="home"><strong>Moddable</strong> <span class="headline">Moddable SDK</span></a>
+</div>
+        <div id="container">
+            <div id="sidebar">
+<ul class="list">
+    <li>
+        <h4><a href="/">Home</a></h4>
+        <ul>
+            <li><a href="https://www.moddable.com">Moddable</a></li>
+            <li><a href="/">Documentation</a></li>
+        </ul>
+    </li>
+    <li>
+        <h4><a href="/">Resources</a></h4>
+        <ul>
+            <li><a href="https://github.com/moddable-opensource/moddable">GitHub</a></li>
+            <li><a href="/">Link 2</a></li>
+        </ul>
+    </li>
+</ul>
+            </div>
+
+<div id="content">
+<h1>Worker</h1>
+<p>Copyright 2018 Moddable Tech, Inc.</p>
+<p>Revised: March 19, 2018</p>
+<p><strong>Warning</strong>: These notes are preliminary. Omissions and errors are likely. If you encounter problems, please ask for assistance.</p>
+<p>The Moddable runtime integrates with XS to allow a multiple virtual machines to co-exist on a single microcontroller. The majority of projects use only a single virtual machine. However, there are situations where the several independent runtime contexts provided by having several virtual machines is advantageous. This isolation is useful to fully separate a particular set of scripts, for example user installed modules, from the core project functionality for security, privacy, and reliability reasons. Another useful situation is to allow scripts to perform blocking operations in one virtual machine while scripts in another virtual machine remain fully responsive.</p>
+<p>Undertake the use of multiple virtual machines in a project with care. Each virtual machine requires additional RAM, and RAM is the most limited resource on most microcontroller deployments. In addition, the asynchronous nature of communication between virtual machines adds complexity to the overall system. Still, having multiple virtual machines is useful, even essential, in some circumstances. The remainder of this document describes how to use multiple virtual machines with the Moddable SDK together with some implementation details.</p>
+<h2>Web Workers</h2>
+<p>The <code>Worker</code> class is an API for working with virtual machines. The implementation is based on the <a href="https://www.w3.org/TR/workers/">Web Workers</a> API from the web with some differences:</p>
+<ul>
+<li>The implementation is a small subset of the Web Workers API.</li>
+<li>Workers are always launched from a module, never from a script file.</li>
+<li>One addition has been made to specify the memory configuration of a new worker.</li>
+</ul>
+<p>Those familiar with Web Workers are strongly advised to read this document to understand whether the implementation differences are relevant to their use of workers.</p>
+<p>This document contains a standalone description of the <code>Worker</code> class implemented in the Moddable SDK, without reference to the Web Worker specification. The <a href="../../examples/base/worker/"><code>worker</code> example</a> is a simple example of using the <code>Worker</code> class.</p>
+<h2>class Worker</h2>
+<p>Scripts import the <code>Worker</code> class to be able to create a new worker.</p>
+<pre><code>import Worker from &quot;worker&quot;;
+</code></pre>
+<h3>Launching a worker</h3>
+<p>To launch a worker, create an instance of the <code>Worker</code> class, passing the name of the module to invoke when the worker starts to run. In the following example, the module run at worker start is <code>simpleworker</code>.</p>
+<pre><code>let aWorker = new Worker(&quot;simpleworker&quot;);
+</code></pre>
+<p>The call to the <code>Worker</code> constructor returns only after execution of the specified module completes. If the worker module generates an exception during this step, an exception is propagated so that the call to <code>new Worker</code> throws an exception. This behavior means that the invoking virtual machine blocks until the new worker virtual machine has fully completely initialization. Consequently, an operations performed in a newly instantiated virtual machine should be relatively brief.</p>
+<h3>Launching a worker with memory configuration</h3>
+<p>The previous example launches the worker with the default memory configuration. This may not be large enough for the worker, or may allocate more RAM than needed by the worker. An optional configuration dictionary allows the script instantiating a new virtual machine to set the memory use.</p>
+<pre><code>let aWorker = new Worker(&quot;simpleworker&quot;,
+		{allocation: 8192, stackCount: 64, slotCount: 64});
+</code></pre>
+<h3>Sending a message to a worker</h3>
+<p>Messages to workers are JavaScript objects and binary data. The JavaScript objects can be considered equivalent to JSON. The binary data is an <code>ArrayBuffer</code>. All messages are passed by copy, so the size of the message should be as small as practical.</p>
+<pre><code>aWorker.postMessage({hello: &quot;world&quot;, count: 12});
+aWorker.postMessage(new ArrayBuffer(12));
+</code></pre>
+<h3>Receiving a message from a worker</h3>
+<p>The worker instance has an <code>onmessage</code> function which receives all messages from the worker. It is typically assigned immediately after the worker is constructed:</p>
+<pre><code>aWorker.onmessage = function(message) {
+	trace(message, &quot;\n&quot;);
+}
+</code></pre>
+<p>An alternative approach is to create a subclass of <code>Worker</code> which contains the <code>onmessage</code> function. This uses less memory  and runs somewhat faster.</p>
+<pre><code>class MyWorker extends Worker {
+	onmessage(message) {
+		trace(message, &quot;\n&quot;);
+	}
+}
+...
+let aWorker = new MyWorker(&quot;simpleworker&quot;);
+</code></pre>
+<h3>Terminating a worker</h3>
+<p>The script that instantiates a worker may terminate the worker.</p>
+<pre><code>aWorker.terminate();
+</code></pre>
+<p>Once a worker is terminated, no further calls should be made to the worker instance.</p>
+<h3>Worker script start-up</h3>
+<p>When the Worker constructor is called, the module at the path specified (<code>simpleworker</code> in the preceding examples) is loaded and run. The worker itself typically performs two tasks. The first is initialization and the second is installing a function to receive messages. The receiving function is installed on the global object <code>self</code> and is named <code>onmessage</code>.</p>
+<pre><code>let count = 1;
+let state = INITIALIZED;
+
+self.onmessage = function (message) {
+	trace(message, &quot;\n&quot;);
+}
+</code></pre>
+<h3>Sending a message from worker script</h3>
+<p>The messages sent by a worker script may be a JavaScript object or an <code>ArrayBuffer</code>, just as with messages sent to a worker script. Messages are sent using the <code>postMessage</code> function on the global object <code>self</code>.</p>
+<pre><code>self.postMessage({hello: &quot;from  worker&quot;, counter: count++});
+</code></pre>
+<h3>Worker script terminating itself</h3>
+<p>A worker script terminates itself by calling <code>close</code> on the global object <code>self</code>.  This is equivalent to the instantiating script calling <code>terminate</code> on the worker instance.</p>
+<pre><code>self.close()
+</code></pre>
+<h3>constructor(modulePath[, dictionary])</h3>
+<p>The <code>Worker</code> constructor takes a path to the module used to initialize the new worker instance.</p>
+<pre><code>let aWorker = new Worker(&quot;simpleworker&quot;);
+</code></pre>
+<p>An optional dictionary contains configuration properties for the new worker. If the dictionary is not provided, the default parameters are used. These defaults vary by host runtime, so it is recommended to always provide a memory configuration.</p>
+<pre><code>let aWorker = new Worker(&quot;simpleworker&quot;,
+		{allocation: 8192, stackCount: 64, slotCount: 64});
+</code></pre>
+<p>The <code>allocation</code> property is the total memory shared by the new virtual machine for its chunk heap, slot heap, and stack. The <code>stackCount</code> property is the number of slot entries on the virtual machine's stack. The <code>slotCount</code> property is the initial number of slots in the virtual machine's slot heap.</p>
+<p>If an error occurs or an exception is thrown during execution of the module, the <code>Worker</code> constructor also throws an error.</p>
+<h3>terminate()</h3>
+<p>The <code>terminate</code> function immediately ends execution of the worker instance, freeing all resources owned by the worker.</p>
+<pre><code>aWorker.terminate();
+</code></pre>
+<p>Once a worker has been terminated, no further calls should be made to it.</p>
+<h3>postMessage(msg)</h3>
+<p>The <code>postMessage</code> function queues a message for delivery to the worker. Messages are either a JavaScript object, roughly equivalent to JSON objects, or an <code>ArrayBuffer</code>.</p>
+<pre><code>aWorker.postMessage(&quot;hello&quot;);
+aWorker.postMessage({msg: &quot;hello&quot;, when: Date.now()});
+aWorker.postMessage(new ArrayBuffer(8));
+</code></pre>
+<p>Messages are passed by copy, so they should be in small in size as practical. Messages are  delivered in the same order they were sent.</p>
+<h3>onmessage property</h3>
+<p>The worker <code>onmessage</code> property contains a function which receives messages from the worker.</p>
+<pre><code>aWorker.onmessage = function(msg) {
+	trace(msg, &quot;\n&quot;);
+}
+</code></pre>
+<h2>Shared Workers</h2>
+<p>The <code>SharedWorker</code> class is an API for working with shared virtual machines. The implementation is based on the <a href="https://html.spec.whatwg.org/multipage/workers.html#shared-workers-introduction">Shared Workers</a> API from the web with some differences, including:</p>
+<ul>
+<li>The <code>close</code> function on the message port is not yet implemented, so Shared Workers cannot be terminated</li>
+<li>Workers are always launched from a module, never from a script file.</li>
+</ul>
+<h2>class SharedWorker</h2>
+<p>Scripts import the <code>SharedWorker</code> class to be able to connect to a shared worker, creating the shared worker if it is not currently instantiated.</p>
+<pre><code>import {SharedWorker} from &quot;worker&quot;;
+</code></pre>
+<p><strong>Note</strong>: Examples and documentation needed.</p>
+<h2>Scheduling</h2>
+<p>Depending on the host runtime, workers may be preemptively scheduled (e.g. run in parallel to each other and the main virtual machine, or they may be cooperatively scheduled (e.g. other virtual machines may only run after the current virtual machine yields). Cooperative scheduling is useful for isolating scripts but does not prevent one virtual machine from blocking another.</p>
+<p>The Web Worker specification requires assumes that all Workers are preemptively scheduled. On some microcontrollers, preemptive scheduling is impractical (too much memory required) or nearly impossible (not supported by the host RTOS).</p>
+<p>Each host of the Moddable SDK runtime decided whether to support multiple virtual machines. If it does, it then decides whether to support preemptive or cooperative scheduling.  The ESP8266 runtime is built on a cooperative task model and so implements cooperative scheduling of virtual machines. The ESP32 is built on FreeRTOS, a preemptively scheduled RTOS, an so supports preemptive scheduling. When deciding whether to use multiple virtual machines in a project, check to see what is supported by the host runtime.</p>
+<h2>xsbug support</h2>
+<p>The debugger for the XS virtual machine, <code>xsbug</code>, supports working with multiple virtual machines simultaneously. Each virtual machine appears in a separate tab with the name of the module path used to initialize the worker.</p>
+<p><img src="assets/xsbug.png" alt="" /></p>
+<h2>Shared Memory and Atomics</h2>
+<p>The ECMAScript 2016 standard includes support for Shared Memory and Atomics. These are powerful tools for efficient communication between virtual machines. The XS virtual machine fully implements these features. However, they have not yet been integrated into the Moddable SDK runtime for microcontrollers.</p>
+
+</div>
+
+        </div>
+    </body>
+</html>

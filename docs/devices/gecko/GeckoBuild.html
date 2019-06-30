@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moddable</title>
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata|Open+Sans" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/hljs.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/markdown.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
+</head>
+    <body>
+<div id="header">
+    <div class="package"></div>
+    <a href="https:&#x2F;&#x2F;github.com&#x2F;moddable-opensource&#x2F;moddable" class="badge" title="Github.com"><img src="/assets/images/github.png" alt="Github" /></a>
+    <a href="/" class="home"><strong>Moddable</strong> <span class="headline">Moddable SDK</span></a>
+</div>
+        <div id="container">
+            <div id="sidebar">
+<ul class="list">
+    <li>
+        <h4><a href="/">Home</a></h4>
+        <ul>
+            <li><a href="https://www.moddable.com">Moddable</a></li>
+            <li><a href="/">Documentation</a></li>
+        </ul>
+    </li>
+    <li>
+        <h4><a href="/">Resources</a></h4>
+        <ul>
+            <li><a href="https://github.com/moddable-opensource/moddable">GitHub</a></li>
+            <li><a href="/">Link 2</a></li>
+        </ul>
+    </li>
+</ul>
+            </div>
+
+<div id="content">
+<h1>Gecko</h1>
+<h2>About This Document</h2>
+<p>This document describes how to set up and build Moddable applications for the Silicon Labs Gecko boards and processors.</p>
+<h2>Table of Contents</h2>
+<ul>
+<li><a href="#about-gecko">About Gecko</a></li>
+<li><a href="#development-workflow">Development workflow</a>
+<ul>
+<li><a href="#mcconfig-and-subplatforms">mcconfig and Subplatforms</a></li>
+</ul>
+</li>
+<li><a href="#getting-started">Getting Started</a>
+<ul>
+<li><a href="#install-simplicity-studio">Install Simplicity Studio</a>
+<ul>
+<li><a href="#create-a-new-simplicity-studio-project">Create a new Simplicity Studio Project</a></li>
+</ul>
+</li>
+<li><a href="#get-moddable-open-source">Get Moddable Open Source</a></li>
+<li><a href="#build-xs_gecko-a-archive">Build xs_gecko.a archive</a>
+<ul>
+<li><a href="#modify-simplicity-studio-project">Modify Simplicity Studio Project</a></li>
+<li><a href="#integrate-moddable-runtime">Integrate Moddable runtime</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#pin-and-feature-configuration">Pin and Feature configuration</a>
+<ul>
+<li><a href="#debugging">Debugging</a>
+<ul>
+<li><a href="#connecting-xsbug">Connecting xsbug</a></li>
+</ul>
+</li>
+<li><a href="#sleep">Sleep</a></li>
+<li><a href="#analog">Analog</a></li>
+<li><a href="#spi">SPI</a></li>
+<li><a href="#digital">Digital</a></li>
+<li><a href="#i2c">I2C</a></li>
+<li><a href="#radio">Radio</a>
+<ul>
+<li><a href="#radio-setup">Radio setup</a></li>
+<li><a href="#radio-main-c">Radio main.c</a></li>
+</ul>
+</li>
+<li><a href="#notes-and-troubleshooting">Notes and Troubleshooting</a></li>
+<li><a href="#useful-pin-configurations">Useful pin configurations</a>
+<ul>
+<li><a href="#giant-gecko-pin-configuration">Giant Gecko pin configuration</a></li>
+<li><a href="#mighty-gecko-pin-configuration">Mighty Gecko pin configuration</a></li>
+<li><a href="#thunderboard-sense-2-gecko-pin-configuration">Thunderboard Sense 2 pin configuration</a></li>
+</ul>
+</li>
+<li><a href="#example-apps-with-gecko-support"> Example apps with gecko support</a></li>
+</ul>
+</li>
+</ul>
+<h2>About Gecko</h2>
+<p>The Gecko series of processors from Silicon Labs are low-powered ARM based devices.</p>
+<p>With the goal of consuming very little current, the Geckos are highly configurable. Peripherals, subsystems, clocks and oscillators can be enabled or disabled with high specificity.</p>
+<p>Sleep is another important aspect of the Gecko platform. To achieve low power goals, the device must sleep when it is not active. Managing the various sleep modes and cycles is a big focus of the Gecko implementation.</p>
+<p>Moddable on Gecko runs on the bare metal. It is very efficient and gives a great deal of control to the developer. However, expertise and time are required to get it right.</p>
+<p>Four models of Gecko are supported in the Moddable SDK today.</p>
+<p>The Giant Gecko is based off of the EFM32 family of devices. Its platform identifier is <strong>gecko/giant</strong>. We've worked with the EFM32GG STK3700 - <a href="https://www.silabs.com/products/development-tools/mcu/32-bit/efm32-giant-gecko-starter-kit">Giant Gecko Starter Kit</a>.</p>
+<p>The Mighty Gecko is a family of devices based off of the EFR32 that include radio hardware. Its platform identifier is <strong>gecko/mighty</strong>. We've worked with the <a href="https://www.silabs.com/products/development-tools/wireless/mesh-networking/mighty-gecko-starter-kit">EFR32 Mighty Gecko Starter Kit</a>.</p>
+<p>The Thunderboard Sense 2 is also a Mighty Gecko based radio device that includes a number of sensors included on the board. Its platform identifier is <strong>gecko/thunderboard2</strong>. <a href="https://www.silabs.com/products/development-tools/thunderboard/thunderboard-sense-two-kit">Thunderboard™ Sense 2 IoT Development Kit</a></p>
+<p>The Blue Gecko is a Bluetooth focused board based off the EFR32 family of devices. Its platform identifier is <strong>gecko/blue</strong>. We've worked with the <a href="https://www.silabs.com/products/development-tools/wireless/bluetooth/blue-gecko-bluetooth-low-energy-soc-starter-kit">EFR32 Blue Gecko Bluetooth Starter Kit</a>.</p>
+<h3>Development workflow</h3>
+<p>After the initial setup, there are two major steps to build a Moddable application for Gecko.</p>
+<p>First, the JavaScript application, assets, modules and XS runtime are built into an archive using Moddable's <code>mcconfig</code> tool. This produces a <code>xs_gecko.a</code> archive file.</p>
+<p>Second, a Simplicity Studio project builds an application stub and device libraries which are linked to the Moddable archive.</p>
+<p>After the application is built, Simplicity Studio uploads the binary to the device and can be used to debug C code. JavaScript code can be debugged with the <strong>xsbug</strong> debugger as described below.</p>
+<h4><code>mcconfig</code> and Subplatforms</h4>
+<p>Each major Gecko model is represented by a sub-platform in the model build, both in the manifests and in the command line arguments to <code>mcconfig</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Platform</th>
+<th>Subplatform</th>
+<th>Platform Flag</th>
+<th>Device</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>gecko</td>
+<td>giant</td>
+<td><strong>-p gecko/giant</strong></td>
+<td>Giant Gecko</td>
+</tr>
+<tr>
+<td>gecko</td>
+<td>mighty</td>
+<td><strong>-p gecko/mighty</strong></td>
+<td>Mighty Gecko</td>
+</tr>
+<tr>
+<td>gecko</td>
+<td>thunderboard2</td>
+<td><strong>-p gecko/thunderboard2</strong></td>
+<td>Thunderboard Sense 2</td>
+</tr>
+<tr>
+<td>gecko</td>
+<td>blue</td>
+<td><strong>-p gecko/blue</strong></td>
+<td>Blue Gecko</td>
+</tr>
+</tbody>
+</table>
+<p>The platform flag is used with <code>mcconfig</code>.</p>
+<pre><code>$ mcconfig -d -m -p gecko/mighty
+</code></pre>
+<p>If the platform flag specifies a subplatform, then <code>mcconfig</code> will load the build rules from <code>$MODDABLE/tools/mcconfig/</code><em>platform</em><code>/mk.</code><em>subplatform</em><code>.mk</code>.</p>
+<p>In the <code>manifest.json</code> file, the <code>platforms</code> section can specify both <code>platform</code> and <code>platform/subplatform</code> subsections. The items are merged with more specific <code>platform/subplatform</code> specifications overriding general <code>platform</code> specifications.</p>
+<h2>Getting Started</h2>
+<h3>Install Simplicity Studio</h3>
+<p>To get started, install <a href="https://www.silabs.com/products/development-tools/software/simplicity-studio">Simplicity Studio</a>. These instructions are based on on MacOS with v.4.2 of Simplicity Studio.</p>
+<p>Plug in your board when launching for the first time so that Simplicity Studio updates with the correct SDKs. Install 32 bit MCU, Flex and Bluetooth.</p>
+<p>As of this writing, the current versions are:</p>
+<pre><code>Gecko SDK Suite - 2.2.2
+32-bit MCU SDK - 5.4.0.0
+Flex SDK - 2.2.2.1
+Bluetooth SDK - 2.8.1.0
+</code></pre>
+<blockquote>
+<p>If the SDK version changes, or you wish to use a specific SDK version, change the <strong>SDK_BASE</strong> build define in $MODDABLE/tools/mcconfig/gecko/make.<em>subplatform</em>.mk.</p>
+</blockquote>
+<h4>Create a new Simplicity Studio Project</h4>
+<p>Each time you work with a new board variant, install a sample project for your device or board.</p>
+<p>When you have your device connected, choose an example project from the Launcher screen:</p>
+<p><img src="assets/NewProject.png" alt="New Project" /></p>
+<ol>
+<li>Choose the Launcher</li>
+<li>Choose your device</li>
+<li>Find an example for your device</li>
+</ol>
+<p>We've used</p>
+<table>
+<thead>
+<tr>
+<th>Device</th>
+<th>Example project</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Giant Gecko</td>
+<td><code>STK3700_powertest</code></td>
+</tr>
+<tr>
+<td>Mighty Gecko</td>
+<td><code>simple_rail_without_hal</code>, <code>simple_trx_with_fifo</code></td>
+</tr>
+<tr>
+<td>Thunderboard Sense 2</td>
+<td><code>soc-thunderboard-sense-2</code>, <code>soc-empty</code></td>
+</tr>
+<tr>
+<td>Blue Gecko</td>
+<td><code>soc-ibeacon</code>, <code>soc-thermometer</code></td>
+</tr>
+</tbody>
+</table>
+<p>Build, install and run the sample to become familiar with the process.</p>
+<blockquote>
+<p>Note: It is necessary to start with an example project with your board connected so that Simplicity Studio will populate the build rules for the project with the appropriate values for your device.</p>
+<p>Also note: There are many variants of a family of devices.</p>
+</blockquote>
+<p>Please note the board (4) and part (2).</p>
+<p>Export the part and board as <code>GECKO_PART</code> and <code>GECKO_BOARD</code>.</p>
+<pre><code>export GECKO_PART=EFR32MG12P432F1024GL125
+export GECKO_BOARD=BRD4161A
+</code></pre>
+<p>This allows the build system to find the appropriate register definition files, configuration, etc. for your specific board.</p>
+<blockquote>
+<p><strong>Thunderboard Sense 2</strong>: if you start with <code>soc-thunderboard-sense-2</code>, you will have to change the size of the <code>__STACK_SIZE</code> and <code>__HEAP_SIZE</code>.
+See the <a href="#notes-and-troubleshooting">Notes and Troubleshooting</a> section below.</p>
+</blockquote>
+<h3>Get Moddable Open Source</h3>
+<p>Follow the macOS <a href="../../Moddable_SDK_-_Getting_Started.html">Host environment setup</a> section of the Moddable Getting Started guide.</p>
+<h3>Build xs_gecko.a archive</h3>
+<p>Use <code>mcconfig</code> to build the moddable library and application for your Gecko sub-platform:</p>
+<pre><code>$ cd $(MODDABLE)/examples/helloworld
+$ mcconfig -d -m -p gecko/mighty
+</code></pre>
+<p>Note: the <code>-d</code> option to mcconfig builds the debug version. <strong>helloworld</strong> uses the debugger to display its output.</p>
+<p>See the <strong>Debugging</strong> section below for instructions on connecting to xsbug.</p>
+<h4>Modifications to the Simplicity Studio project for the Moddable sdk.</h4>
+<p>It is necessary to change certain settings in the Simplicity Studio project to build an application using the Moddable SDK.</p>
+<p>Open the properties window for the project and select <em>C/C++ Build-&gt;Settings</em>.</p>
+<ol>
+<li>In the <strong>Other Objects</strong> section, click the <em>add document</em> icon <img src="assets/AddDoc.png" alt="Add Document" /> to add the Moddable archive to your project.</li>
+</ol>
+<p><img src="assets/AddArchive.png" alt="Add Archive" /></p>
+<ol start="2">
+<li>
+<p>Select &quot;File system...&quot;</p>
+</li>
+<li>
+<p>Navigate to your moddable directory and select the <strong>xs_gecko.a</strong> archive file.</p>
+</li>
+</ol>
+<p>It is located in $MODDABLE/build/bin/gecko/<em>platform</em>/debug/<em>application</em>/xs_gecko.a</p>
+<blockquote>
+<p>You will need to change this file path to match the application you are building.</p>
+</blockquote>
+<p>You may also need to add the <code>math</code> library:</p>
+<p>Open the properties window for the project and select <em>C/C++ Build-&gt;Settings</em>.</p>
+<ol>
+<li>In the <strong>GNU ARM C Linker section</strong>, select <strong>Libraries</strong>.</li>
+</ol>
+<p><img src="assets/AddLibrary.png" alt="Add Library" /></p>
+<ol start="2">
+<li>
+<p>Click the <em>add document</em> icon <img src="assets/AddDoc.png" alt="Add Document" /> to add a library to your project.</p>
+</li>
+<li>
+<p>Type in <strong>'m'</strong> to add the &quot;Math&quot; library.</p>
+</li>
+</ol>
+<h4>Integrate Moddable runtime</h4>
+<p>In the Simplicity Studio sample app's <strong>main.c</strong>, add a few things:</p>
+<pre><code>int gResetCause = 0;
+uint32_t gWakeupPin = 0;
+
+void assertEFM() { } // maybe  void assertEFM(const char *file, int line) {} depending on your SDK
+</code></pre>
+<p>Near the beginning of main(), add some code to get the reset cause. This must be done early in device initialization.</p>
+<pre><code>  gResetCause = RMU_ResetCauseGet();
+  if (gResetCause &amp; (RMU_RSTCAUSE_EM4RST |  RMU_RSTCAUSE_EXTRST)) {
+	  gWakeupPin = GPIO_EM4GetPinWakeupCause();
+  }
+  RMU_ResetCauseClear();
+</code></pre>
+<p>Do other setup for your device/application as necessary.</p>
+<p>Add a call to <strong>xs_setup()</strong> to configure the XS runtime and debugger:</p>
+<pre><code>xs_setup();
+</code></pre>
+<p>In your main loop, call xs_loop(); repeatedly.</p>
+<pre><code>while(1) {
+	xs_loop();
+}
+</code></pre>
+<h2>Pin and Feature configuration</h2>
+<p>The pins and features of the Gecko family are highly configurable. For each application, the specific configuration is defined in the application's <code>manifest.json</code> file.</p>
+<p>In the <code>manifest.json</code> platforms:defines section there are defines for the various peripherals to specify what pins, ports, clocks, irq, etc. to use.</p>
+<pre><code>    &quot;gecko/mighty&quot;: {
+        &quot;defines&quot;: {
+            &quot;sleep&quot;: {
+                &quot;idleLevel&quot; : 3,
+                &quot;retention&quot;: { &quot;memory&quot;: false, &quot;gpio&quot;: false },
+                &quot;wakeup&quot;: { &quot;pin&quot;: 7, &quot;port&quot;: &quot;gpioPortF&quot;, &quot;level&quot;: 0, &quot;register&quot;: &quot;GPIO_EXTILEVEL_EM4WU1&quot; },
+            },
+</code></pre>
+<p>The various pin/port/location values for specific interfaces can be found in the particular data sheet for your chip family.</p>
+<h3>Debugging</h3>
+<p>Native code is debugged with Simplicity Studio.</p>
+<p>XS script code can be debugged with xsbug by using a FTDI adapter. On the adapter, the pins RX, TX and GND will be used.</p>
+<p>On your device, you will need to use a UART or USART and specify it in a <strong>defines</strong> section for your platform. Other required definitions include the TX and RX pins and location. Baud rate can also be defined, defaulting to 115200. Examples are shown below.</p>
+<h5>Connecting xsbug</h5>
+<p>Prior to launching your application from Simplicity Studio, start the <strong>xsbug.app</strong> application and use <strong>serial2xsbug</strong> to connect the FTDI adapter.</p>
+<pre><code>$ open $MODDABLE/build/bin/mac/release/xsbug.app
+$ serial2xsbug /dev/cu.usbserial-AL035VAU 115200 8N1
+</code></pre>
+<p>In this case, the FTDI adapter is identified by the MacOS as <code>/dev/cu.usbserial-AL035VAU</code>.</p>
+<h5>Example manifest.json defines for xsbug</h5>
+<p>An example, using UART1 on Giant Gecko, USART1 on Mighty Gecko and USART0 on Thunderboard 2:</p>
+<pre><code>&quot;platforms&quot;: {
+	&quot;gecko/giant&quot;: {
+		&quot;defines&quot;: {
+			&quot;debugger&quot;: {
+				&quot;interface&quot;: { &quot;UART&quot;: 1 },
+				&quot;location&quot;: 2,
+				&quot;tx&quot; : { &quot;pin&quot;: 9, &quot;port&quot;: &quot;gpioPortB&quot; },
+				&quot;rx&quot; : { &quot;pin&quot;: 10, &quot;port&quot;: &quot;gpioPortB&quot; },
+			},
+		},
+	},
+	&quot;gecko/mighty&quot;: {
+		&quot;defines&quot;: {
+			&quot;debugger&quot;: {
+				&quot;interface&quot;: { &quot;USART&quot;: 1 },
+				&quot;location&quot;: 19,
+				&quot;tx&quot; : { &quot;pin&quot;: 11, &quot;port&quot;: &quot;gpioPortD&quot; },
+				&quot;rx&quot; : { &quot;pin&quot;: 12, &quot;port&quot;: &quot;gpioPortD&quot; },
+			},
+		},
+	},
+	&quot;gecko/thunderboard2&quot;: {
+		&quot;defines&quot;: {
+			&quot;debugger&quot;: {
+				&quot;interface&quot;: { &quot;USART&quot;: 0 },
+				&quot;tx&quot; : { &quot;pin&quot;: 3, &quot;port&quot;: &quot;gpioPortF&quot;, &quot;location&quot;: 27 },
+				&quot;rx&quot; : { &quot;pin&quot;: 4, &quot;port&quot;: &quot;gpioPortF&quot;, &quot;location&quot;: 27 },
+			},
+		},
+	},
+</code></pre>
+<p>An alternate configuration, using USART0 on Giant Gecko,and USART3 on Mighty Gecko:</p>
+<pre><code>&quot;platforms&quot;: {
+	&quot;gecko/giant&quot;: {
+		&quot;defines&quot;: {
+			&quot;debugger&quot;: {
+				&quot;interface&quot;: { &quot;USART&quot;: 0 },
+				&quot;location&quot;: 5,
+				&quot;tx&quot; : { &quot;pin&quot;: 0, &quot;port&quot;: &quot;gpioPortC&quot; },
+				&quot;rx&quot; : { &quot;pin&quot;: 1, &quot;port&quot;: &quot;gpioPortC&quot; },
+			},
+		},
+	},
+	&quot;gecko/mighty&quot;: {
+		&quot;defines&quot;: {
+			&quot;debugger&quot;: {
+				&quot;interface&quot;: { &quot;USART&quot;: 3 },
+				&quot;location&quot;: 10,
+				&quot;tx&quot; : { &quot;pin&quot;: 6, &quot;port&quot;: &quot;gpioPortB&quot; },
+				&quot;rx&quot; : { &quot;pin&quot;: 7, &quot;port&quot;: &quot;gpioPortB&quot; },
+			},
+		},
+	},
+</code></pre>
+<h3>Sleep</h3>
+<p>The Gecko series devices are designed to use little power. Careful programming and management of sleep cycles are necessary to optimize power usage for your application.</p>
+<p>The Moddable SDK sleeps at idle times, while waiting for sensor or user input, or until a specific time for sensor output. Fewer interfaces are active at higher sleep levels, so it may be necessary to reduce the sleep level for your application to operate correctly.</p>
+<p>By default, Moddable uses Sleep level EM3 while waiting. Certain Gecko interfaces are shut down at level EM3. For example, while operating the Mighty Gecko radio, the sleep level must be constrained to EM1.</p>
+<h4>EM4 Sleep</h4>
+<p>Gecko devices also have a deep sleep level EM4. At this level, the device is almost entirely shut off, including RAM, peripherals and most clocks. While in this state, the device can be awoken by a signal on an external GPIO pin or a timer expiration using a low power clock. When awoken, the device reboots.</p>
+<p>During EM4 sleep, a small amount of memory can be kept active at the expense of a slightly increased power draw. The GPIO state can also be retained.</p>
+<p>At wakeup, an application can check for the cause of wakeup and perform actions to restore state from some data stored in the retention memory.</p>
+<h5>manifest.json file:</h5>
+<pre><code>&quot;include&quot;: [
+    &quot;$(MODULES)/base/sleep/manifest.json&quot;,
+],
+
+&quot;platforms&quot;: {
+	&quot;gecko/mighty&quot;: {
+		&quot;defines&quot;: {
+			&quot;sleep&quot;: {
+				&quot;idleLevel&quot; : 3,
+				&quot;retention&quot;: { &quot;memory&quot;: false, &quot;gpio&quot;: true },
+				&quot;wakeup&quot;: { &quot;pin&quot;: 7, &quot;port&quot;: &quot;gpioPortF&quot;, &quot;level&quot;: 0, &quot;register&quot;: &quot;GPIO_EXTILEVEL_EM4WU1&quot; },
+			},
+		},
+</code></pre>
+<p><code>idleLevel</code>: Specifies the maximum sleep level allowed during idle periods.</p>
+<p><code>retention</code>:<code>memory</code>: enables or disables retention memory.</p>
+<p><code>retention</code>:<code>gpio</code>: enables or disables gpio retention state.</p>
+<p><code>wakeup</code>:<code>port</code> and <code>pin</code> defines the pin used to wake from EM4.</p>
+<p><code>wakeup</code>:<code>level</code> indicates whether pulling the wakeup pin low (0) or high (1) wakes the device.</p>
+<p><code>wakeup</code>:<code>register</code> specifies which GPIO interrupt register to use.</p>
+<p>The various Gecko devices specify port/pin combinations that will wake the device from EM4 sleep. The device's data sheet will specify what pins can be used, and what GPIO interupt register to use.</p>
+<h3>class Sleep</h3>
+<p>The JavaScript <code>Sleep</code> class provides access to Gecko's sleep functions to scripts.</p>
+<pre><code>import Sleep from &quot;sleep&quot;;
+</code></pre>
+<h4>Determine cause of wakeup</h4>
+<pre><code>if (Sleep.getWakeupCause() &amp; Sleep.ExternalReset)
+	trace(&quot;woke up by button\n&quot;);
+</code></pre>
+<p>To determine the cause of wakeup, use:</p>
+<pre><code>let wakeupcause = Sleep.getWakeupCause();
+</code></pre>
+<p><strong>wakeupcause</strong> is a bitmask of:</p>
+<pre><code>Sleep.PowerOnReset      = 0b00000001;		// power applied
+Sleep.ExternalReset     = 0b00000010;		// reset button
+Sleep.SysRequestReset   = 0b00000100;		// software reset
+Sleep.EM4WakeupReset    = 0b00001000;		// woke from EM4
+Sleep.BrownOutReset     = 0b00010000;		// power dipped too low
+Sleep.LockupReset       = 0b00100000;		// device hung
+Sleep.WatchdogReset     = 0b01000000;		// watchdog timer expired
+</code></pre>
+<h4>Storing data for retention during EM4 sleep</h4>
+<p>During EM4 sleep, RAM is shut off. A small amount of memory persists, and is available for retreival after wakeup.</p>
+<pre><code>	let index;
+	
+	index = Sleep.getPersistentValue(0);
+	Sleep.setPersistentValue(0, ++index);
+</code></pre>
+<p>To store a 32-bit <strong>value</strong> in one of 32 <strong>location</strong>s, use:</p>
+<pre><code>Sleep.setPersistentValue(location, value);
+</code></pre>
+<p>To retrieve a 32-bit <strong>value</strong> from <strong>location</strong>, use:</p>
+<pre><code>value = Sleep.getPersistentValue(location);
+</code></pre>
+<h4>Entering EM4 Sleep</h4>
+<p>To enter EM4 sleep, use:</p>
+<pre><code>	let sleepTime = 10000;
+	Sleep.sleepEM4(sleepTime);
+</code></pre>
+<p>This sleeps the device in the lowest power mode for about 10 seconds.</p>
+<blockquote>
+<p>For devices that use the Cryotimer: the sleepTime value is reduced to a base 2 value as that is what is supported by the Cryotimer. That is, sleepTime is 1, 2, 4, 8, 16, 32... ms.</p>
+</blockquote>
+<h3>Digital</h3>
+<p>On Gecko, GPIO pins are specified by port and pin.</p>
+<pre><code>let led1 = new Digital({pin: 4, port: &quot;gpioPortF&quot;, mode: Digital.Output});
+</code></pre>
+<p>When using the Digital Monitor, the port is used to create the pin, but is ignored when discerning the interrupt. That is, a monitor created for GPIO PC0 (GPIO port C, pin 0) will also be triggered by PD0 (and PA0, PB0, etc.)</p>
+<h3>Analog</h3>
+<p>Gecko devices have a number of analog inputs and can be configured to use various pins and voltage references.</p>
+<h5>manifest.json file:</h5>
+<pre><code>	&quot;gecko/mighty&quot;: {
+		&quot;defines&quot;: {
+			&quot;analog&quot;: {
+				&quot;interface&quot;: { &quot;ADC&quot;: 0 },
+				&quot;ref&quot;: &quot;adcRefVDD&quot;,
+				&quot;input1&quot;: &quot;adcPosSelAPORT2XCH9&quot;,
+				&quot;input2&quot;: &quot;adcPosSelAPORT3YCH22&quot;,
+			},
+			&quot;modules&quot;: {
+				&quot;*&quot;: [
+					&quot;$(BUILD)/devices/gecko/analog/*&quot;,
+				],
+			},
+</code></pre>
+<p><strong>interface</strong> specifies which ADC interface to use.</p>
+<p><strong>input_n_</strong> specifies a particular pin for input. Moddable currently supports 5 concurrent input sources on Gecko.</p>
+<p><code>adcPosSelAPORT2XCH9</code> - APORT2X, Channel 9 refers to pin <strong>PC9</strong> on the Mighty Gecko.</p>
+<p>See your Gecko device data-sheet for the values to use to set a particular pin for analog input.</p>
+<p><strong>ref</strong> specifies an analog voltage reference source. The default value is <strong>adcRefVDD</strong>. Other possibilities include <strong>adcRef1V25</strong>, <strong>adcRef2V5</strong> and others, as included by your device.</p>
+<h3>class Analog</h3>
+<pre><code>import Analog from &quot;analog&quot;
+...
+let voltage1 = Analog.read(1);
+let voltage2 = Analog.read(2);
+</code></pre>
+<p><code>Analog.read(1)</code> reads from <code>input1</code> described in the <code>manifest.json</code> fragment above. <code>Analog.read(2)</code> reads from <code>input2</code> described in the <code>manifest.json</code> fragment above.</p>
+<h3>SPI</h3>
+<p>Gecko devices can run the SPI interface over a number of USART ports.</p>
+<p>The <code>manifest.json</code> file contains defines for the base SPI pins</p>
+<h5>manifest.json file:</h5>
+<pre><code>	&quot;include&quot;: [
+		&quot;$(MODULES)/pins/spi/manifest.json&quot;,
+	],
+	&quot;gecko/mighty&quot;: {
+		&quot;defines&quot;: {
+			&quot;spi&quot;: {
+				&quot;interface&quot;: { &quot;USART&quot;: 1 },
+				&quot;location&quot;: &quot;1&quot;,
+				&quot;mosi&quot;: { &quot;pin&quot;: &quot;0&quot;, &quot;port&quot;: &quot;gpioPortD&quot; },					&quot;miso&quot;: { &quot;pin&quot;: &quot;1&quot;, &quot;port&quot;: &quot;gpioPortD&quot; },
+				&quot;sck&quot;: { &quot;pin&quot;: &quot;2&quot;, &quot;port&quot;: &quot;gpioPortD&quot; },
+			},
+			&quot;ili9341&quot;: {
+				&quot;hz&quot;: 40000000,
+				&quot;cs&quot;: { &quot;pin&quot;: 9, &quot;port&quot;: &quot;gpioPortA&quot;, },
+				&quot;dc&quot;: { &quot;pin&quot;: 6, &quot;port&quot;: &quot;gpioPortB&quot;, },
+			}
+		},
+</code></pre>
+<p>This section of the <code>manifest.json</code> defines the <strong>SPI</strong> pins, ports, and locations, and which interface to use.</p>
+<p>The <strong>interface</strong> definition specifies which USART interface to use.</p>
+<p><strong>location</strong> specifies which pin configuration to use for the <em>interface</em>. See your Gecko device data-sheet for which pins refer to what USART location.</p>
+<p>Other definitions for a specific SPI device's driver will define the <strong>CS</strong> (chip-select) pin, <strong>HZ</strong> (speed in hz) and other driver specific defines.</p>
+<h3>I2C</h3>
+<p>Gecko devices have a number of I2C interfaces.</p>
+<h5>manifest.json file:</h5>
+<pre><code>	&quot;include&quot;: [
+		&quot;$(MODULES)/pins/i2c/manifest.json&quot;,
+	],
+	&quot;gecko/mighty&quot;: {
+		&quot;defines&quot;: {
+			&quot;i2c&quot;: {
+				&quot;interface&quot;: { &quot;I2C&quot;: 0 },
+				&quot;sda&quot;: { &quot;pin&quot;: 11, &quot;port&quot;: &quot;gpioPortC&quot;, &quot;location&quot;: 16 },
+				&quot;scl&quot;: { &quot;pin&quot;: 10, &quot;port&quot;: &quot;gpioPortC&quot;, &quot;location&quot;: 14 },
+			},
+</code></pre>
+<p>The <strong>interface</strong> definition specifies which I2C interface to use.</p>
+<p>In this example, <strong>I2C0</strong> is used. The pin PC11 is the SDA pin for I2C0 at location 16 (I2C0_SDA#16). The pin PC10 is the SCL pin for I2C0 at location 14.</p>
+<p><strong>location</strong> specifies which pin configuration to use for the <em>interface</em>. See your Gecko device data-sheet for which pins refer to what I2C location.</p>
+<p>Note: some Gecko devices split the location for various pins. The I2C defined in the <code>manifest.json</code> fragment above shows a different pin location for <code>sda</code> and <code>scl</code>.</p>
+<h3>Radio</h3>
+<h4>Radio setup</h4>
+<p>Using the radio on Mighty Gecko requires additional work in Simplicity Studio.</p>
+<p>As a base application, use <strong>RAIL: Simple TRX with FiFo</strong>. After creating the sample project, Simplicity Studio will open a application configuration window.</p>
+<p>Click the &quot;Generate&quot; button to create the radio support files for the project.</p>
+<h4>Radio main.c</h4>
+<p>The changes to the project's <code>main.c</code> are a bit more involved than the simple examples above.</p>
+<p>For the <code>simple_rail_without_hal</code> example:</p>
+<pre><code>$MODDABLE/build/devices/gecko/project/radio/simple_rail_without_hal/main.c
+</code></pre>
+<p>For the <code>simple_trx_with_fifo</code> example:</p>
+<pre><code>$MODDABLE/build/devices/gecko/project/radio/simple_trx_with_fifo/main.c
+</code></pre>
+<p>Copy the particular <code>main.c</code> file into your Simplicity Studio's project, replacing the existing <code>main.c</code>.</p>
+<p>Continue with <em><strong>Build xs_gecko.a archive</strong></em> above.</p>
+<h3>BLE</h3>
+<p>The Moddable SDK includes Bluetooth Low Energy (BLE) protocol support for Blue Gecko devices. Our BLE API <a href="https://github.com/Moddable-OpenSource/moddable/blob/public/documentation/network/ble.html">documentation</a> includes details for building Blue Gecko BLE apps.</p>
+<h3>Notes and Troubleshooting</h3>
+<ul>
+<li>During the final link, if Simplicity Studio does not find the Cryotimer routines or defines,  copy the code and header files to your project.</li>
+</ul>
+<p><code>em_cryotimer.h</code> is located in: <code>/Applications/Simplicity Studio.app/Contents/Eclipse/developer/sdks/gecko_sdk_suite/v2.2/platform/emlib/inc/em_cryotimer.h</code></p>
+<p><code>em_cryotimer.c</code> is located in: <code>/Applications/Simplicity Studio.app/Contents/Eclipse/developer/sdks/gecko_sdk_suite/v2.2/platform/emlib/src/em_cryotimer.c</code></p>
+<ul>
+<li>
+<p>During the final link, if Simplicity Studio does not find the <code>xs_gecko.a</code> file, either the library path is incorrect, or you have not built the <code>xs_gecko.a</code> file with <strong>mcconfig</strong>.</p>
+<pre><code>  $ cd .../application_path
+  $ mcconfig -d -m -p gecko/mighty
+</code></pre>
+</li>
+<li>
+<p>Unexplainable crashes can occur if Stack or Heap space run out:</p>
+</li>
+</ul>
+<p>Depending on the processor and project configuration, you may need to adjust the stack size and heap size of the project.</p>
+<p>In <strong>GNU ARM C Compiler -&gt; Symbols</strong> and <strong>GNU ARM Assembler -&gt; Symbols</strong>, add a <code>__STACK_SIZE</code> and/or <code>__HEAP_SIZE</code></p>
+<pre><code>__STACK_SIZE=0x4000
+__HEAP_SIZE=0xA000
+</code></pre>
+<ul>
+<li>Some Simplicity Studio example radio projects use a fixed size packet length.</li>
+</ul>
+<p>You can increase that by changing the Radio Profile. When starting a new radio project, Simplicity Studio creates the ISC file, select the <strong>Radio Configuration</strong> tab and change the <em>Select a radio PHY for selected profile</em> to <strong>Custom Settings</strong>.</p>
+<p><img src="assets/ISC-RadioConfig.png" alt="ISC Custom Settings" /></p>
+<p>Scroll down to <strong>Profile options-&gt;Packet</strong> and select the <strong>Frame Fixed Length</strong> tab.</p>
+<p><img src="assets/FrameLength.png" alt="Frame Fixed Length" /></p>
+<p>Change the payload size to the size you need. Then click the <strong>Generate</strong> button to create the radio support files for the project and rebuild the Simplicity Studio project.</p>
+<h2>Useful pin configurations</h2>
+<p>The Gecko reference boards expose many pins. There is a pre-populated expansion connector on the right side of the board, and rows of pins at the top and bottom of the board.</p>
+<p>For most Moddable examples, the pins used are located on the expansion connector for easy access.</p>
+<p>Below are some default hookup schemes:</p>
+<h3>Giant Gecko pin configuration</h3>
+<p>Giant Gecko locates the xsbug serial pins on the top row of pins, other peripherals on the expansion port.</p>
+<p><img src="assets/stk3700-BreakoutPins.png" alt="STK3700 Breakout pins" /></p>
+<h4>xsbug Connection</h4>
+<table>
+<thead>
+<tr>
+<th>Pin</th>
+<th>Interface / Location</th>
+<th>Hardware</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PB9</td>
+<td>UART1_TX#2</td>
+<td>FTDI TX</td>
+</tr>
+<tr>
+<td>PB10</td>
+<td>UART1_RX#2</td>
+<td>FTDI RX</td>
+</tr>
+<tr>
+<td>GND</td>
+<td>GND</td>
+<td>FTDI GND</td>
+</tr>
+</tbody>
+</table>
+<p><img src="assets/GG3700Expansion.png" alt="STK3700 Expansion pinout" /></p>
+<h4>Epaper Display</h4>
+<table>
+<thead>
+<tr>
+<th>Pin</th>
+<th>Interface / Location</th>
+<th>Hardware</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PD0</td>
+<td>USART1_TX#1</td>
+<td>SPI_MOSI</td>
+</tr>
+<tr>
+<td>PD1</td>
+<td>USART1_RX#1</td>
+<td>SPI_MISO</td>
+</tr>
+<tr>
+<td>PD2</td>
+<td>USART1_SCLK#1</td>
+<td>SPI_SCK</td>
+</tr>
+<tr>
+<td>PD3</td>
+<td>GPIO</td>
+<td>SPI_CS</td>
+</tr>
+<tr>
+<td>PC3</td>
+<td>GPIO</td>
+<td>D/C</td>
+</tr>
+<tr>
+<td>PC4</td>
+<td>GPIO</td>
+<td>Busy</td>
+</tr>
+<tr>
+<td>PC0</td>
+<td>GPIO</td>
+<td>RST</td>
+</tr>
+</tbody>
+</table>
+<h4>I2C Sensors</h4>
+<table>
+<thead>
+<tr>
+<th>Pin</th>
+<th>Interface / Location</th>
+<th>Hardware</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PD6</td>
+<td>I2C0_SDA#1</td>
+<td>Sensor SDA</td>
+</tr>
+<tr>
+<td>PD7</td>
+<td>I2C0_SCL#1</td>
+<td>Sensor SCL</td>
+</tr>
+</tbody>
+</table>
+<h4>Onboard Switches &amp; LEDs</h4>
+<table>
+<thead>
+<tr>
+<th>Pin</th>
+<th>Interface / Location</th>
+<th>Hardware</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PE2</td>
+<td>LED0</td>
+<td>Right LED</td>
+</tr>
+<tr>
+<td>PE3</td>
+<td>LED1</td>
+<td>Left LED</td>
+</tr>
+<tr>
+<td>PB9</td>
+<td>SW0</td>
+<td>Push Button 0</td>
+</tr>
+<tr>
+<td>PB10</td>
+<td>SW1</td>
+<td>Push Button 1</td>
+</tr>
+</tbody>
+</table>
+<h3>Mighty Gecko pin configuration</h3>
+<h4>WSTK Onboard Pins</h4>
+<p><img src="assets/WSTKBoardPins.png" alt="WSTK Board pinout" /></p>
+<h4>Side Expansion Header</h4>
+<p><img src="assets/WirelessSTKExpansion.png" alt="WSTK Expansion pinout" /></p>
+<h4>xsbug Connection</h4>
+<table>
+<thead>
+<tr>
+<th>Pin</th>
+<th>Interface / Location</th>
+<th>Hardware</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PD11</td>
+<td>USART1_TX#19</td>
+<td>FTDI RX</td>
+</tr>
+<tr>
+<td>PD12</td>
+<td>USART1_RX#19</td>
+<td>FTDI TX</td>
+</tr>
+<tr>
+<td>GND</td>
+<td>GND</td>
+<td>FTDI GND</td>
+</tr>
+</tbody>
+</table>
+<h4>Epaper Display</h4>
+<table>
+<thead>
+<tr>
+<th>Pin</th>
+<th>Interface / Location</th>
+<th>Hardware</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PA6</td>
+<td>USART2_TX#1</td>
+<td>SPI_MOSI</td>
+</tr>
+<tr>
+<td>PA7</td>
+<td>USART2_RX#1</td>
+<td>SPI_MISO</td>
+</tr>
+<tr>
+<td>PA8</td>
+<td>USART2_SCLK#1</td>
+<td>SPI_SCK</td>
+</tr>
+<tr>
+<td>PA9</td>
+<td>GPIO</td>
+<td>SPI_CS</td>
+</tr>
+<tr>
+<td>PD9</td>
+<td>GPIO</td>
+<td>D/C</td>
+</tr>
+<tr>
+<td>PD10</td>
+<td>GPIO</td>
+<td>Busy</td>
+</tr>
+<tr>
+<td>PD8</td>
+<td>GPIO</td>
+<td>RST</td>
+</tr>
+</tbody>
+</table>
+<h4>I2C Sensors</h4>
+<table>
+<thead>
+<tr>
+<th>Pin</th>
+<th>Interface / Location</th>
+<th>Hardware</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PC11</td>
+<td>I2C0_SDA#16</td>
+<td>Sensor SDA</td>
+</tr>
+<tr>
+<td>PC10</td>
+<td>I2C0_SCL#14</td>
+<td>Sensor SCL</td>
+</tr>
+</tbody>
+</table>
+<h4>Onboard Switches &amp; LEDs</h4>
+<table>
+<thead>
+<tr>
+<th>Pin</th>
+<th>Interface / Location</th>
+<th>Hardware</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PF4</td>
+<td>LED0</td>
+<td>Right LED</td>
+</tr>
+<tr>
+<td>PF5</td>
+<td>LED1</td>
+<td>Left LED</td>
+</tr>
+<tr>
+<td>PF6</td>
+<td>SW0</td>
+<td>Push Button 0</td>
+</tr>
+<tr>
+<td>PF7</td>
+<td>SW1</td>
+<td>Push Button 1</td>
+</tr>
+</tbody>
+</table>
+<h3>Thunderboard Sense 2 pin configuration</h3>
+<p><img src="assets/TBS2Pinout.png" alt="Thunderboard Sense 2 pinout" /></p>
+<h4>xsbug Connection</h4>
+<table>
+<thead>
+<tr>
+<th>Pin</th>
+<th>Interface / Location</th>
+<th>Hardware</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PF3</td>
+<td>USART0_TX#27</td>
+<td>FTDI RX</td>
+</tr>
+<tr>
+<td>PF4</td>
+<td>USART0_RX#27</td>
+<td>FTDI TX</td>
+</tr>
+<tr>
+<td>GND</td>
+<td>GND</td>
+<td>FTDI GND</td>
+</tr>
+</tbody>
+</table>
+<h4>Epaper Display</h4>
+<table>
+<thead>
+<tr>
+<th>Pin</th>
+<th>Interface / Location</th>
+<th>Hardware</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PK0</td>
+<td>USART2_TX#29</td>
+<td>SPI_MOSI</td>
+</tr>
+<tr>
+<td>PK1</td>
+<td>USART2_RX#30</td>
+<td>SPI_MISO</td>
+</tr>
+<tr>
+<td>PF7</td>
+<td>USART2_SCLK#18</td>
+<td>SPI_SCK</td>
+</tr>
+<tr>
+<td>PA5</td>
+<td>GPIO</td>
+<td>SPI_CS</td>
+</tr>
+<tr>
+<td>PF6</td>
+<td>GPIO</td>
+<td>D/C</td>
+</tr>
+<tr>
+<td>PF5</td>
+<td>GPIO</td>
+<td>Busy</td>
+</tr>
+<tr>
+<td>PA7</td>
+<td>GPIO</td>
+<td>RST</td>
+</tr>
+</tbody>
+</table>
+<h4>I2C Sensors</h4>
+<table>
+<thead>
+<tr>
+<th>Pin</th>
+<th>Interface / Location</th>
+<th>Hardware</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PC10</td>
+<td>I2C0_SDA#15</td>
+<td>Sensor SDA</td>
+</tr>
+<tr>
+<td>PC11</td>
+<td>I2C0_SCL#15</td>
+<td>Sensor SCL</td>
+</tr>
+</tbody>
+</table>
+<h4>Onboard Switches &amp; LEDs</h4>
+<table>
+<thead>
+<tr>
+<th>Pin</th>
+<th>Interface / Location</th>
+<th>Hardware</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PD8</td>
+<td>LED_RED</td>
+<td>Red LED</td>
+</tr>
+<tr>
+<td>PD9</td>
+<td>LED_GREEN</td>
+<td>Green LED</td>
+</tr>
+<tr>
+<td>PD14</td>
+<td>PUSH_BUTTON0</td>
+<td>Push Button 0</td>
+</tr>
+<tr>
+<td>PD15</td>
+<td>PUSH_BUTTON1</td>
+<td>Push Button 1</td>
+</tr>
+</tbody>
+</table>
+<h2>Example apps with gecko support</h2>
+<table>
+<thead>
+<tr>
+<th>App</th>
+<th>Feature</th>
+<th>Giant</th>
+<th>Mighty</th>
+<th>Thunderboard Sense 2</th>
+<th>Blue</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>helloworld</td>
+<td>xsbug</td>
+<td>x</td>
+<td>x</td>
+<td>x</td>
+<td>x</td>
+</tr>
+<tr>
+<td>base/sleep</td>
+<td>sleep</td>
+<td>x</td>
+<td>x</td>
+<td>x</td>
+<td></td>
+</tr>
+<tr>
+<td>network/ble/*</td>
+<td>BLE</td>
+<td></td>
+<td></td>
+<td></td>
+<td>x</td>
+</tr>
+<tr>
+<td>drivers/TMP102</td>
+<td>I2C</td>
+<td>x</td>
+<td>x</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>drivers/HMC5883L</td>
+<td>I2C</td>
+<td>x</td>
+<td>x</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>drivers/ls013b4dn04</td>
+<td>Sharp Memory Display</td>
+<td>x</td>
+<td>x</td>
+<td>x</td>
+<td></td>
+</tr>
+<tr>
+<td>pins/monitor</td>
+<td>GPIO Interrupt</td>
+<td></td>
+<td>x</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>pins/simpleAnalog</td>
+<td>analog</td>
+<td></td>
+<td>x</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>piu/balls</td>
+<td>SPI / ili9341</td>
+<td>x</td>
+<td>x</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>piu/transitions</td>
+<td>SPI / ili9341</td>
+<td>x</td>
+<td>x</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>piu/cards</td>
+<td>SPI / ili9341</td>
+<td>x</td>
+<td>x</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>piu/love-e-ink</td>
+<td>SPI / destm32s</td>
+<td>x</td>
+<td>x</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>drivers/radio/radiotest</td>
+<td>radio</td>
+<td></td>
+<td>x</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+</div>
+
+        </div>
+    </body>
+</html>

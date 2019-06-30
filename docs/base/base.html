@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moddable</title>
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata|Open+Sans" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/hljs.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/markdown.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
+</head>
+    <body>
+<div id="header">
+    <div class="package"></div>
+    <a href="https:&#x2F;&#x2F;github.com&#x2F;moddable-opensource&#x2F;moddable" class="badge" title="Github.com"><img src="/assets/images/github.png" alt="Github" /></a>
+    <a href="/" class="home"><strong>Moddable</strong> <span class="headline">Moddable SDK</span></a>
+</div>
+        <div id="container">
+            <div id="sidebar">
+<ul class="list">
+    <li>
+        <h4><a href="/">Home</a></h4>
+        <ul>
+            <li><a href="https://www.moddable.com">Moddable</a></li>
+            <li><a href="/">Documentation</a></li>
+        </ul>
+    </li>
+    <li>
+        <h4><a href="/">Resources</a></h4>
+        <ul>
+            <li><a href="https://github.com/moddable-opensource/moddable">GitHub</a></li>
+            <li><a href="/">Link 2</a></li>
+        </ul>
+    </li>
+</ul>
+            </div>
+
+<div id="content">
+<h1>Base</h1>
+<p>Copyright 2017 Moddable Tech, Inc.<BR>
+Revised: November 7, 2018</p>
+<p><strong>Warning</strong>: These notes are preliminary. Omissions and errors are likely. If you encounter problems, please ask for assistance.</p>
+<h2>Table of Contents</h2>
+<ul>
+<li><a href="#timer">Timer</a></li>
+<li><a href="#time">Time</a></li>
+<li><a href="#debug">Debug</a></li>
+<li><a href="#uuid">UUID</a></li>
+<li><a href="#instrumentation">Instrumentation</a></li>
+<li><a href="#console">Console</a></li>
+<li><a href="#cli">CLI</a></li>
+<li><a href="#worker">Worker</a></li>
+</ul>
+<p><a id="timer"></a></p>
+<h2>class Timer</h2>
+<ul>
+<li><strong>Source code:</strong> <a href="../../modules/base/timer">timer</a></li>
+<li><strong>Relevant Examples:</strong> <a href="../../examples/base/timers/">timers</a></li>
+</ul>
+<p>The <code>Timer</code> class provides both time-based callbacks and a delay function.</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> Timer <span class="hljs-keyword">from</span> <span class="hljs-string">"timer"</span>;
+</code></pre>
+<h3><code>Timer.set(callback[, interval, repeat])</code></h3>
+<p>The <code>set</code> function is used to request a function be called once after a certain period.</p>
+<p>An immediate timer is called on the next cycle through the run loop. To set an immediate timer, call <code>set</code> with a single argument.</p>
+<pre><code class="language-js">Timer.set(<span class="hljs-function"><span class="hljs-params">id</span> =&gt;</span> trace(<span class="hljs-string">"immediate fired\n"</span>);
+</code></pre>
+<p>A one shot timer is called once after a specified number of milliseconds. If the number of milliseconds is zero, a one shot timer is equivalent to an immediate timer.</p>
+<pre><code class="language-js">Timer.set(<span class="hljs-function"><span class="hljs-params">id</span> =&gt;</span> trace(<span class="hljs-string">"one shot fired\n"</span>), <span class="hljs-number">1000</span>);
+</code></pre>
+<p>Calling <code>set</code> with a <code>repeat</code> is equivalent to a repeating timer with the first callback triggered after the <code>interval</code>.</p>
+<pre><code class="language-js">Timer.set(<span class="hljs-function"><span class="hljs-params">id</span> =&gt;</span> trace(<span class="hljs-string">"repeat fired\n"</span>, <span class="hljs-number">1000</span>, <span class="hljs-number">100</span>);
+</code></pre>
+<p>The callback function receives the timer id as the first argument.</p>
+<hr />
+<h3><code>Timer.repeat(callback, interval)</code></h3>
+<p>A repeating timer is called continuously until stopped using the <code>Timer.clear</code> function.</p>
+<pre><code class="language-js">Timer.repeat(<span class="hljs-function"><span class="hljs-params">id</span> =&gt;</span> trace(<span class="hljs-string">"repeat fired\n"</span>), <span class="hljs-number">1000</span>);
+</code></pre>
+<p>The callback function receives the timer id as the first argument.</p>
+<hr />
+<h3><code>Timer.schedule(id, interval[, repeat])</code></h3>
+<p>The <code>schedule</code> function is used to reschedule an existing timer.</p>
+<p>In the following example, the callback function is triggered twice at one second intervals and then rescheduled to once every two seconds.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> state = <span class="hljs-number">0</span>;
+Timer.repeat(<span class="hljs-function"><span class="hljs-params">id</span> =&gt;</span> {
+	<span class="hljs-keyword">if</span> (<span class="hljs-number">0</span> == state)
+		state = <span class="hljs-number">1</span>;
+	<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (<span class="hljs-number">1</span> == state) {
+		state = <span class="hljs-number">2</span>;
+		Timer.schedule(id, <span class="hljs-number">2000</span>, <span class="hljs-number">2000</span>);
+	}
+}, <span class="hljs-number">1000</span>);
+</code></pre>
+<hr />
+<h3><code>Timer.clear(id)</code></h3>
+<p>The <code>clear</code> function cancels a timer. The <code>Timer.set</code> and <code>Timer.repeat</code> functions returns the ID for a timer, which is then passed to clear.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> aTimer = Timer.set(<span class="hljs-function"><span class="hljs-params">id</span> =&gt;</span> trace(<span class="hljs-string">"one shot\n"</span>), <span class="hljs-number">1000</span>);
+Timer.clear(aTimer);
+</code></pre>
+<blockquote>
+<p><strong>Note</strong>: Immediate and one shot timers are automatically cleared after invoking their callback function. There is no need to call <code>clear</code> except to cancel the timer before it fires.</p>
+</blockquote>
+<hr />
+<h3><code>Timer.delay(ms)</code></h3>
+<p>The <code>delay</code> function delays execution for the specified number of milliseconds.</p>
+<pre><code class="language-js">Timer.delay(<span class="hljs-number">500</span>);	<span class="hljs-comment">// delay 1/2 second</span>
+</code></pre>
+<hr />
+<p><a id="time"></a></p>
+<h2>class Time</h2>
+<ul>
+<li><strong>Source code:</strong> <a href="../../modules/base/time">time</a></li>
+<li><strong>Relevant Examples:</strong> <a href="../../examples/network/sntp/">sntp</a>, <a href="../../examples/network/mdns/ntpclient">ntpclient</a>, <a href="../../examples/network/ble/ios-time-sync">ios-time-sync</a></li>
+</ul>
+<p>The <code>Time</code> class provides time functions and a tick counter.</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> Time <span class="hljs-keyword">from</span> <span class="hljs-string">"time"</span>;
+</code></pre>
+<h3><code>Time.set(seconds)</code></h3>
+<p>The <code>set</code> function sets the system time. The <code>seconds</code> argument corresponds to the number of seconds elapsed since January 1, 1970, i.e. Unix time.</p>
+<hr />
+<h3><code>timezone</code> property</h3>
+<p>The <code>timezone</code> property is set to the time zone offset in seconds from UTC.</p>
+<pre><code class="language-js">Time.timezone = +<span class="hljs-number">9</span> * <span class="hljs-number">60</span> * <span class="hljs-number">60</span>;	<span class="hljs-comment">// Set time zone to UTC+09:00</span>
+</code></pre>
+<hr />
+<h3><code>dst</code> property</h3>
+<p>The <code>dst</code> property is set to the daylight saving time (DST) offset in seconds.</p>
+<pre><code class="language-js">Time.dst = <span class="hljs-number">60</span> * <span class="hljs-number">60</span>;	<span class="hljs-comment">// Set DST</span>
+</code></pre>
+<hr />
+<h3><code>ticks</code> property</h3>
+<p>The <code>ticks</code> property returns the value of a millisecond counter. The value returned does not correspond to the time of day. The milliseconds are used to calculate time differences.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> start = Time.ticks;
+<span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">1000</span>; i++)
+	;
+<span class="hljs-keyword">let</span> stop = Time.ticks;
+trace(<span class="hljs-string">`Operation took <span class="hljs-subst">${stop - start}</span> milliseconds\n`</span>);
+</code></pre>
+<hr />
+<p><a id="debug"></a></p>
+<h2>class Debug</h2>
+<ul>
+<li><strong>Source code:</strong> <a href="../../modules/base/debug">debug</a></li>
+</ul>
+<p>The <code>Debug</code> class provides functions that are useful during the development process.</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> Debug <span class="hljs-keyword">from</span> <span class="hljs-string">"debug"</span>;
+</code></pre>
+<h3><code>Debug.gc([enable])</code></h3>
+<p>The <code>gc</code> function can be used to turn the JavaScript garbage collector on and off, as well as to run the garbage collector on-demand.</p>
+<p>Calling <code>Debug.gc</code> with no arguments runs the garbage collector immediately.</p>
+<pre><code class="language-js">Debug.gc();
+</code></pre>
+<p>Calling <code>Debug.gc</code> with a single boolean argument enables or disables the garbage collector.</p>
+<pre><code class="language-js">Debug.gc(<span class="hljs-literal">true</span>)	<span class="hljs-comment">// enable garbage collector</span>
+Debug.gc(<span class="hljs-literal">false</span>);	<span class="hljs-comment">// disable garbage collector</span>
+</code></pre>
+<hr />
+<p><a id="uuid"></a></p>
+<h2>class UUID</h2>
+<ul>
+<li><strong>Source code:</strong> <a href="../../modules/base/uuid">uuid</a></li>
+<li><strong>Relevant Examples:</strong> <a href="../../examples/base/uuid">uuid</a></li>
+</ul>
+<p>The <code>UUID</code> class provides a single function to generate a <a href="https://en.wikipedia.org/wiki/Universally_unique_identifier">UUID</a> string.</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> UUID <span class="hljs-keyword">from</span> <span class="hljs-string">"uuid"</span>;
+</code></pre>
+<blockquote>
+<p><strong>Note</strong>: Generating a truly unique UUID requires that the device running this function have a unique MAC address and the valid time. Neither of these is guaranteed on all microcontrollers. For production software release, check your device configuration.</p>
+</blockquote>
+<h3><code>UUID()</code></h3>
+<p>The <code>UUID</code> function returns a new UUID formatted as a string.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> value = UUID();	<span class="hljs-comment">// 1080B49C-59FC-4A32-A38B-DE7E80117842</span>
+</code></pre>
+<hr />
+<p><a id="instrumentation"></a></p>
+<h2>class Instrumentation</h2>
+<ul>
+<li><strong>Source code:</strong> <a href="../../modules/base/instrumentation">instrumentation</a></li>
+<li><strong>Relevant Examples:</strong> <a href="../../examples/base/instrumentation">instrumentation</a></li>
+</ul>
+<p>The <code>Instrumentation</code> class returns statistics on the behavior of the runtime, including memory use, open file count, and rendering frame rate.</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> Instrumentation <span class="hljs-keyword">from</span> <span class="hljs-string">"instrumentation"</span>;
+</code></pre>
+<h3><code>get(what)</code></h3>
+<p>The <code>get</code> function returns the value of the instrumented item at the index specified by the <code>what</code> parameter. Instrumented items are consecutively numbered starting at index 1.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> pixelsDrawn = Instrumentation.get(<span class="hljs-number">1</span>);
+</code></pre>
+<p>The table below describes the instrumented items that are available. The following instrumented items are reset at one second intervals: Pixels Drawn, Frames Drawn, Poco Display List Used, Piu Command List Used, Network Bytes Read, Network Bytes Written, and Garbage Collection Count.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Index</th>
+<th style="text-align:left">Short Description</th>
+<th style="text-align:left">Long Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:left">Pixels drawn</td>
+<td style="text-align:left">The total number of pixels rendered to by Poco during the current interval. This value includes pixels drawn to a display device and pixels rendered offscreen.</td>
+</tr>
+<tr>
+<td style="text-align:center">2</td>
+<td style="text-align:left">Frames drawn</td>
+<td style="text-align:left">The total number of frames rendered by Poco during the most recent interval. Frames are counted by calls to Poco.prototype.end() and by Piu frame updates.</td>
+</tr>
+<tr>
+<td style="text-align:center">3</td>
+<td style="text-align:left">Network bytes read</td>
+<td style="text-align:left">The total number of bytes received by the Socket module during the current interval. This includes bytes received over TCP and UDP.</td>
+</tr>
+<tr>
+<td style="text-align:center">4</td>
+<td style="text-align:left">Network bytes written</td>
+<td style="text-align:left">The total number of bytes send by the Socket module during the current interval. This includes bytes sent using TCP and UDP.</td>
+</tr>
+<tr>
+<td style="text-align:center">5</td>
+<td style="text-align:left">Network sockets</td>
+<td style="text-align:left">The total number of active network sockets created by the Socket module. This includes TCP sockets, TCP listeners, and UDP sockets.</td>
+</tr>
+<tr>
+<td style="text-align:center">6</td>
+<td style="text-align:left">Timers</td>
+<td style="text-align:left">The number of allocated timers created by the Timer module.</td>
+</tr>
+<tr>
+<td style="text-align:center">7</td>
+<td style="text-align:left">Files</td>
+<td style="text-align:left">The number of open files and directory iterators created the File module.</td>
+</tr>
+<tr>
+<td style="text-align:center">8</td>
+<td style="text-align:left">Poco display list used</td>
+<td style="text-align:left">The peak size in bytes of the Poco display list in the current interval.</td>
+</tr>
+<tr>
+<td style="text-align:center">9</td>
+<td style="text-align:left">Piu command list used</td>
+<td style="text-align:left">The peak size in bytes of the Piu command list in the current interval.</td>
+</tr>
+<tr>
+<td style="text-align:center">10</td>
+<td style="text-align:left">System free memory</td>
+<td style="text-align:left">The number of free bytes in the system memory heap. This value is not available on the simulator.</td>
+</tr>
+<tr>
+<td style="text-align:center">11</td>
+<td style="text-align:left">Slot heap size</td>
+<td style="text-align:left">Number of bytes in use in the slot heap of the primary XS machine. Some of these bytes may be freed when the garbage collector next runs.</td>
+</tr>
+<tr>
+<td style="text-align:center">12</td>
+<td style="text-align:left">Chunk heap size</td>
+<td style="text-align:left">Number of bytes in use in the chunk heap of the primary XS machine. Some of these bytes may be freed when the garbage collector next runs.</td>
+</tr>
+<tr>
+<td style="text-align:center">13</td>
+<td style="text-align:left">Keys used</td>
+<td style="text-align:left">Number of runtime keys allocated by the primary XS machine. Once allocated keys are never deallocated.</td>
+</tr>
+<tr>
+<td style="text-align:center">14</td>
+<td style="text-align:left">Garbage collection count</td>
+<td style="text-align:left">The number of times the garbage collector has run in the current interval.</td>
+</tr>
+<tr>
+<td style="text-align:center">15</td>
+<td style="text-align:left">Modules loaded</td>
+<td style="text-align:left">The number of JavaScript modules that are currently loaded in the primary XS machine. This number does not include modules which are preloaded.</td>
+</tr>
+<tr>
+<td style="text-align:center">16</td>
+<td style="text-align:left">Stack peak</td>
+<td style="text-align:left">The maximum depth in bytes of the stack of the primary XS virtual machine during the current interval.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><a id="console"></a></p>
+<h2>class Console</h2>
+<ul>
+<li><strong>Source code:</strong> <a href="../../modules/base/console">console</a></li>
+<li><strong>Relevant Examples:</strong> <a href="../../examples/base/console">console</a></li>
+</ul>
+<p>The <code>Console</code> class implements a serial terminal for debugging and diagnostic purposes. The <code>Console</code> module uses <code>CLI</code> modules to implement the terminal commands.</p>
+<!-- complete -->
+<hr />
+<p><a id="cli"></a></p>
+<h2>class CLI</h2>
+<ul>
+<li><strong>Source code:</strong> <a href="../../modules/base/cli">cli</a></li>
+<li><strong>Relevant Examples:</strong> <a href="../../examples/base/console">console</a>, <a href="../../examples/network/telnet">telnet</a></li>
+</ul>
+<p>The <code>CLI</code> class is a plug-in interface for commands used in a command line interface. <code>CLI</code> classes implement commands for use by the <code>Console</code> module (serial command line) and <code>Telnet</code> module (network command line).</p>
+<!-- complete -->
+<hr />
+<p><a id="worker"></a></p>
+<h2>class Worker</h2>
+<p>See the <a href="./worker.html">Worker documentation</a> for more information about the <code>Worker</code> class.</p>
+
+</div>
+
+        </div>
+    </body>
+</html>

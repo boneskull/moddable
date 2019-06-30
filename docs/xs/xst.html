@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moddable</title>
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata|Open+Sans" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/hljs.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/markdown.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
+</head>
+    <body>
+<div id="header">
+    <div class="package"></div>
+    <a href="https:&#x2F;&#x2F;github.com&#x2F;moddable-opensource&#x2F;moddable" class="badge" title="Github.com"><img src="/assets/images/github.png" alt="Github" /></a>
+    <a href="/" class="home"><strong>Moddable</strong> <span class="headline">Moddable SDK</span></a>
+</div>
+        <div id="container">
+            <div id="sidebar">
+<ul class="list">
+    <li>
+        <h4><a href="/">Home</a></h4>
+        <ul>
+            <li><a href="https://www.moddable.com">Moddable</a></li>
+            <li><a href="/">Documentation</a></li>
+        </ul>
+    </li>
+    <li>
+        <h4><a href="/">Resources</a></h4>
+        <ul>
+            <li><a href="https://github.com/moddable-opensource/moddable">GitHub</a></li>
+            <li><a href="/">Link 2</a></li>
+        </ul>
+    </li>
+</ul>
+            </div>
+
+<div id="content">
+<h1>xst</h1>
+<p><code>xst</code> is the XS test engine, a JavaScript engine to test XS on Linux, macOS and Windows.</p>
+<h2>Build</h2>
+<h3>Linux</h3>
+<pre><code>cd $MODDABLE/xs/makefiles/lin
+make
+</code></pre>
+<h3>macOS</h3>
+<pre><code>cd $MODDABLE/xs/makefiles/mac
+make
+</code></pre>
+<h3>Windows</h3>
+<pre><code>cd %MODDABLE%\xs\makefiles\win
+build
+</code></pre>
+<h2>Download</h2>
+<p>You can use the <a href="https://github.com/GoogleChromeLabs/jsvu">jsvu CLI</a> to install or update  <strong>xst</strong>.</p>
+<p>You can also download the latest versions of <code>xst</code>
+from the <a href="https://github.com/Moddable-OpenSource/moddable-xst/releases">moddable-xst</a> repository into a directory that is on your <code>PATH</code></p>
+<h2>Usage</h2>
+<pre><code>xst [-h] [-e] [-m] [-s] [-v] strings...
+</code></pre>
+<ul>
+<li><code>-h</code>: print this help message</li>
+<li><code>-e</code>: eval <code>strings</code></li>
+<li><code>-m</code>: <code>strings</code> are paths to modules</li>
+<li><code>-s</code>: <code>strings</code> are paths to scripts</li>
+<li><code>-v</code>: print XS version</li>
+</ul>
+<p>Without the <code>-e</code>, <code>-m</code> or <code>-s</code> options, <code>strings</code> are paths to <strong>test262</strong> cases or directories.</p>
+<h3>eshost</h3>
+<p>To test XS with <strong>eshost</strong>, install the <a href="https://github.com/bterlson/eshost-cli">eshost CLI</a>. Then add XS to the hosts:</p>
+<pre><code>eshost --add 'XS' xs ~/.jsvu/xst
+</code></pre>
+<p><strong>eshost</strong> uses the <code>-s</code> option of <strong>xst</strong>.</p>
+<h3>test262</h3>
+<p>To test XS with <strong>test262</strong>, clone <a href="https://github.com/tc39/test262">test262</a> and change the directory to the <code>test</code> directory inside the <code>test262</code> directory. For instance:</p>
+<pre><code>cd ~/test262/test
+xst language/block-scope
+xst built-ins/TypedArrays/buffer-arg-*
+</code></pre>
+<p>See <a href="https://github.com/Moddable-OpenSource/moddable/blob/public/documentation/xs/XS%20Conformance.html">XS Conformance</a> for details about how <strong>XS</strong> currently passes <strong>test262</strong> cases.</p>
+
+</div>
+
+        </div>
+    </body>
+</html>

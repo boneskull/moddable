@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moddable</title>
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata|Open+Sans" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/hljs.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/markdown.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
+</head>
+    <body>
+<div id="header">
+    <div class="package"></div>
+    <a href="https:&#x2F;&#x2F;github.com&#x2F;moddable-opensource&#x2F;moddable" class="badge" title="Github.com"><img src="/assets/images/github.png" alt="Github" /></a>
+    <a href="/" class="home"><strong>Moddable</strong> <span class="headline">Moddable SDK</span></a>
+</div>
+        <div id="container">
+            <div id="sidebar">
+<ul class="list">
+    <li>
+        <h4><a href="/">Home</a></h4>
+        <ul>
+            <li><a href="https://www.moddable.com">Moddable</a></li>
+            <li><a href="/">Documentation</a></li>
+        </ul>
+    </li>
+    <li>
+        <h4><a href="/">Resources</a></h4>
+        <ul>
+            <li><a href="https://github.com/moddable-opensource/moddable">GitHub</a></li>
+            <li><a href="/">Link 2</a></li>
+        </ul>
+    </li>
+</ul>
+            </div>
+
+<div id="content">
+<h1>SecureSocket</h1>
+<p>Copyright 2017 Moddable Tech, Inc.</p>
+<p>Revised: May 10, 2017</p>
+<p>Warning: These notes are preliminary. Omissions and errors are likely. If you encounter problems, please ask for assistance.</p>
+<h2>Introduction</h2>
+<p>SecureSocket is an implementation of TLS for the Moddable SDK. It is an evolution of the SecureSocket for Kinoma Element with significant changes to drastically reduce RAM requirements. The essential function and operation remain the same.</p>
+<p>At this time, there is no Listener in SecureSocket, only the Socket, which is TCP-only (no UDP).</p>
+<h3>Use</h3>
+<p>SecureSocket implements the same API as the Socket class. See the documentation of the Socket class for details.</p>
+<p>SecureSocket extends the dictionary of the constructor with an additional property named &quot;secure&quot; which is itself a dictionary used to configure the TLS connection.</p>
+<p>In the following example, the TLS socket is created with support for version 0x303 of TLS, which corresponds to TLS 1.2.</p>
+<pre><code>const host = &quot;www.example.com&quot;;
+const port = 443;
+
+let socket = new SecureSocket({host, port,
+		secure: {protocolVersion: 0x303}});
+</code></pre>
+<h3>Dictionary</h3>
+<p>The &quot;secure&quot; dictionary may contain the following properties:</p>
+<ul>
+<li><code>protocolVersion</code> - the minimum version of the TLS protocol to implement. TLS 1.0 is used by default.</li>
+<li><code>certificate</code> - a certificate in DER (binary) format contained in an <code>ArrayBuffer</code>, <code>Uint8Array</code>, or host buffer</li>
+<li><code>trace</code>  - if true, the TLS stack outputs a trace of its activity. This can be useful in diagnosing failures.</li>
+<li><code>verify</code> - if false, the certificate chain provided by the server is not verified. This should never be done in production systems but can be useful when debugging.</li>
+<li><code>tls_max_fragment_length</code> - a number indicating the requested maximum fragment size. Unfortunately, many servers ignore this optional extension. When supported, can help reduce memory requirements.</li>
+<li><code>tls_server_name</code> - TBD</li>
+<li><code>tls_signature_algorithms</code> - TBD</li>
+<li><code>tls_application_layer_protocol_negotiation</code> - TBD</li>
+</ul>
+<h3>HTTPS</h3>
+<p>The HTTP client accepts an optional Socket property in the dictionary of its constructor. Set this to SecureSocket to make an HTTPS request.</p>
+<pre><code>import SecureSocket from &quot;securesocket&quot;;
+
+let request = new Request({host: &quot;www.howsmyssl.com&quot;, path: &quot;/&quot;,
+	response: String, Socket: SecureSocket, port: 443});
+</code></pre>
+<p>The secure property may also be provided:</p>
+<pre><code>let request = new Request({host: &quot;www.howsmyssl.com&quot;, path: &quot;/&quot;,
+	response: String, Socket: SecureSocket, port: 443,
+	secure: {trace: true, protocolVersion: 0x303});
+</code></pre>
+<h3>WSS</h3>
+<p>The WebSockets client accepts an optional Socket property in the dictionary of its constructor. Set this to SecureSocket to make an WSS request.</p>
+<pre><code>import {Client} from &quot;websocket&quot;
+import SecureSocket from &quot;securesocket&quot;;
+
+let ws = new Client({host: &quot;echo.websocket.org&quot;, port: 443,
+	Socket: SecureSocket, secure: {protocolVersion: 0x302}});
+</code></pre>
+<h3>Certificates</h3>
+<p>Work on built-in certificates is on-going. Kinoma Element carries about 300 KB of built-in certificates to be able to connect to a majority of the internet web sites. Many devices, the ESP8266 of note, do not have enough free flash to hold these in the current implementation.</p>
+<p>The certificate store is located at ${MODDABLE}/modules/crypt/data. The content of this directory must be pruned before building or the link will fail. Only <code>ca.ski</code> is required. This is the index of certificates. All others can be removed. Of course, with no certificates no web sites will work with verification enabled.</p>
+<p>For testing, I leave only ca9.der, ca17.der, ca56.der, ca107.der, ca109.der, ca118.der, and ca220.der. To determine which certificate is required for a given web site, remove all certificates and the try to access the web site and see what certificate fails to load.</p>
+<p>As an alternative to the certificate store, you can put the certificates needed in your application and pass the appropriate certificate in the &quot;secure&quot; dictionary.</p>
+<pre><code>let request = new Request({host: &quot;www.howsmyssl.com&quot;, path: &quot;/&quot;,
+		response: String, Socket: SecureSocket, port: 443,
+		secure: {certificate: new Resource(&quot;ca109.der&quot;)}});
+</code></pre>
+<h3>Memory</h3>
+<p>The TLS handshake require a fair amount of memory. The exact amount required varies depending on the site you are connecting to.  As a rough guideline, the following should be free:</p>
+<ul>
+<li>4 KB of stack</li>
+<li>10 KB in the chunk heap</li>
+<li>6 KB in the slot heap</li>
+<li>2 KB in the system heap</li>
+</ul>
+<p>Once the handshake is complete (e.g. once the secure connection is established), memory use drops considerably.</p>
+<p>However, if the server sends large fragments (e.g. apple.com sends 16 KB fragments), there is not enough free RAM on the ESP8266 to buffer them. The requests will fail. Secure web servers designed to work with IoT devices will use smaller fragments by default and/or will support the tls_max_fragment_length extension.</p>
+<p>When working with HTTPS, it is best to use streaming mode to retrieve the response body as it arrives rather than having the http client buffer the entire response body in memory.</p>
+<h3>macOS</h3>
+<p>SecureSocket works on macOS. The code is the same. macOS is more generous with memory, so requests may succeed on macOS that fail on an MCU.</p>
+<h3>To do</h3>
+<p>Large fragments (e.g. larger than can be fully buffered in RAM) may be possible to support, but it will be complicated.</p>
+<p>GCM mode is untested.</p>
+<p>Much more testing.</p>
+<p>Sort out how to handle built-in certificates.</p>
+<p>Listener.</p>
+
+</div>
+
+        </div>
+    </body>
+</html>

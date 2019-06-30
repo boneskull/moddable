@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moddable</title>
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata|Open+Sans" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/hljs.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/markdown.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
+</head>
+    <body>
+<div id="header">
+    <div class="package"></div>
+    <a href="https:&#x2F;&#x2F;github.com&#x2F;moddable-opensource&#x2F;moddable" class="badge" title="Github.com"><img src="/assets/images/github.png" alt="Github" /></a>
+    <a href="/" class="home"><strong>Moddable</strong> <span class="headline">Moddable SDK</span></a>
+</div>
+        <div id="container">
+            <div id="sidebar">
+<ul class="list">
+    <li>
+        <h4><a href="/">Home</a></h4>
+        <ul>
+            <li><a href="https://www.moddable.com">Moddable</a></li>
+            <li><a href="/">Documentation</a></li>
+        </ul>
+    </li>
+    <li>
+        <h4><a href="/">Resources</a></h4>
+        <ul>
+            <li><a href="https://github.com/moddable-opensource/moddable">GitHub</a></li>
+            <li><a href="/">Link 2</a></li>
+        </ul>
+    </li>
+</ul>
+            </div>
+
+<div id="content">
+<h1>Poco</h1>
+<p>Copyright 2016-2018 Moddable Tech, Inc.<BR>
+Revised: November 26, 2018</p>
+<h2>About This Document</h2>
+<p>This document describes the Poco renderer, starting with a set of examples that introduce many of the main concepts of working with Poco. Following the examples is the reference for Poco, which fully describes each function call.</p>
+<h2>Table of Contents</h2>
+<ul>
+<li><a href="#examples">Examples</a>
+<ul>
+<li><a href="#rectangle">Rectangle</a></li>
+<li><a href="#origin">Origin</a></li>
+<li><a href="#clip">Clip</a></li>
+<li><a href="#monochrome-bitmap">Monochrome Bitmap</a></li>
+<li><a href="#color-bitmap">Color Bitmap</a></li>
+<li><a href="#pattern">Pattern</a></li>
+<li><a href="#gray-bitmap">Gray Bitmap</a></li>
+<li><a href="#offscreen-bitmap">Offscreen Bitmap</a></li>
+<li><a href="#alpha">Alpha</a></li>
+<li><a href="#jpeg">JPEG</a></li>
+<li><a href="#text">Text</a></li>
+</ul>
+</li>
+<li><a href="#pixel-formats">Pixel formats</a>
+<ul>
+<li><a href="#destination-pixel-formats">Destination pixel formats</a></li>
+<li><a href="#display-pixel-format">Display pixel format</a></li>
+<li><a href="#source-bitmap-pixel-formats">Source bitmap pixel formats</a></li>
+<li><a href="#compressed-pixel-formats">Compressed pixel formats</a></li>
+</ul>
+</li>
+<li><a href="#immediate-mode-rendering">Immediate mode rendering</a></li>
+<li><a href="#rotation">Rotation</a></li>
+<li><a href="#javascript-api-reference">JavaScript API Reference</a>
+<ul>
+<li><a href="#js-functions">Functions</a></li>
+<li><a href="#js-properties">Properties</a></li>
+</ul>
+</li>
+<li><a href="#c-api-reference">C API Reference</a>
+<ul>
+<li><a href="#c-data-structures">Data structures</a></li>
+<li><a href="#c-functions">Functions</a></li>
+</ul>
+</li>
+<li><a href="#odds-and-ends">Odds and Ends</a></li>
+</ul>
+<p><a id="examples"></a></p>
+<h2>Examples</h2>
+<p>These examples illustrate working with the Poco renderer. They all use the JavaScript API, and they also use asset loaders and other capabilities of Commodetto.</p>
+<p>To keep the following examples concise and focused, the code makes several assumptions:</p>
+<ul>
+<li>
+<p>The examples assume a <code>PixelsOut</code> object in the global variable <code>screen</code>.</p>
+</li>
+<li>
+<p>They assume that the following color variables are defined:</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">let</span> white = poco.makeColor(<span class="hljs-number">255</span>, <span class="hljs-number">255</span>, <span class="hljs-number">255</span>);
+<span class="hljs-keyword">let</span> black = poco.makeColor(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>);
+<span class="hljs-keyword">let</span> gray = poco.makeColor(<span class="hljs-number">128</span>, <span class="hljs-number">128</span>, <span class="hljs-number">128</span>);
+<span class="hljs-keyword">let</span> red = poco.makeColor(<span class="hljs-number">255</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>);
+<span class="hljs-keyword">let</span> green = poco.makeColor(<span class="hljs-number">0</span>, <span class="hljs-number">255</span>, <span class="hljs-number">0</span>);
+<span class="hljs-keyword">let</span> blue = poco.makeColor(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">255</span>);
+</code></pre>
+</li>
+<li>
+<p>They assume that the drawing commands occur between calls to <code>begin</code> and <code>end</code>.</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">let</span> poco = <span class="hljs-keyword">new</span> Poco(screen);
+poco.begin();
+...	<span class="hljs-comment">// example code here</span>
+poco.end();
+</code></pre>
+</li>
+</ul>
+<p>Each example includes the image rendered by the code. The images are scaled 150% here to make them easier to see; this scaling causes some blurring and introduces some jaggedness that is not in the actual image.</p>
+<hr />
+<p><a id="rectangle"></a></p>
+<h3>Rectangle</h3>
+<p>This example fills <code>screen</code> with gray pixels, covers the left half with red pixels, and then uses a 50% blending level (128) to draw blue pixels over the middle half of the screen.</p>
+<pre><code class="language-javascript">poco.fillRectangle(gray, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, poco.width, poco.height);
+poco.fillRectangle(red, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, poco.width / <span class="hljs-number">2</span>, poco.height);
+poco.blendRectangle(blue, <span class="hljs-number">128</span>, poco.width / <span class="hljs-number">4</span>, <span class="hljs-number">0</span>, poco.width / <span class="hljs-number">2</span>, poco.height);
+</code></pre>
+<img src="../assets/poco/fillrectangle.png" width="180" height="135"/>
+<hr />
+<p><a id="origin"></a></p>
+<h3>Origin</h3>
+<p>This example shows how to move the drawing origin. Poco maintains an origin stack that is pushed when the origin changes and popped when <code>origin</code> is called with no arguments. Each change to the origin offsets the previous origin. The origin stack is convenient for building container-based user interfaces.</p>
+<pre><code class="language-javascript">poco.fillRectangle(gray, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, poco.width, poco.height);
+
+poco.origin(<span class="hljs-number">10</span>, <span class="hljs-number">10</span>);
+poco.fillRectangle(red, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">40</span>, <span class="hljs-number">20</span>);
+
+poco.origin(<span class="hljs-number">25</span>, <span class="hljs-number">25</span>);
+poco.fillRectangle(green, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">40</span>, <span class="hljs-number">20</span>);
+
+poco.origin(<span class="hljs-number">25</span>, <span class="hljs-number">25</span>);
+poco.fillRectangle(blue, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">40</span>, <span class="hljs-number">20</span>);
+
+poco.blendRectangle(black, <span class="hljs-number">128</span>, <span class="hljs-number">-4</span>, <span class="hljs-number">-4</span>, <span class="hljs-number">20</span>, <span class="hljs-number">10</span>);
+poco.origin();
+
+poco.blendRectangle(black, <span class="hljs-number">128</span>, <span class="hljs-number">-4</span>, <span class="hljs-number">-4</span>, <span class="hljs-number">20</span>, <span class="hljs-number">10</span>);
+poco.origin();
+
+poco.blendRectangle(black, <span class="hljs-number">128</span>, <span class="hljs-number">-4</span>, <span class="hljs-number">-4</span>, <span class="hljs-number">20</span>, <span class="hljs-number">10</span>);
+poco.origin();
+</code></pre>
+<img src="../assets/poco/origin.png" width="180" height="135"/>
+<hr />
+<p><a id="clip"></a></p>
+<h3>Clip</h3>
+<p>This example shows how to use the drawing clip. Poco maintains a clip stack that is pushed when the clip changes and popped when <code>clip</code> is called with no arguments. Each change intersects the clip with the previous clip. The clip stack is convenient for building container-based user interfaces.</p>
+<pre><code class="language-javascript">poco.fillRectangle(gray, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, poco.width, poco.height);
+
+poco.clip(<span class="hljs-number">20</span>, <span class="hljs-number">20</span>, poco.width - <span class="hljs-number">40</span>, poco.height - <span class="hljs-number">40</span>);
+poco.fillRectangle(green, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, poco.width, poco.height);
+
+poco.clip(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">40</span>, <span class="hljs-number">40</span>);
+poco.fillRectangle(blue, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, poco.width, poco.height);
+
+poco.fillRectangle(white, <span class="hljs-number">26</span>, <span class="hljs-number">0</span>, <span class="hljs-number">2</span>, poco.height);
+
+poco.clip();
+poco.fillRectangle(red, <span class="hljs-number">30</span>, <span class="hljs-number">0</span>, <span class="hljs-number">2</span>, poco.height);
+
+poco.clip();
+poco.fillRectangle(black, <span class="hljs-number">34</span>, <span class="hljs-number">0</span>, <span class="hljs-number">2</span>, poco.height);
+</code></pre>
+<img src="../assets/poco/clip.png" width="180" height="135"/>
+<hr />
+<p><a id="monochrome-bitmap"></a></p>
+<h3>Monochrome Bitmap</h3>
+<p>This example draws a monochrome bitmap (in which all pixels are either black or white) of an envelope. It shows how to control the color of the foreground and background pixels, as well as whether each is drawn. The bitmap is stored in a 1-bit BMP file with dimensions of 32 x 23.</p>
+<pre><code class="language-javascript">poco.fillRectangle(gray, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, poco.width, poco.height);
+
+<span class="hljs-keyword">let</span> envelope = parseBMP(<span class="hljs-keyword">new</span> Resource(<span class="hljs-string">"envelope.bmp"</span>));
+poco.drawMonochrome(envelope, black, white, <span class="hljs-number">14</span>, <span class="hljs-number">10</span>);
+poco.drawMonochrome(envelope, red, white, <span class="hljs-number">14</span>, <span class="hljs-number">55</span>);
+poco.drawMonochrome(envelope, green, <span class="hljs-literal">undefined</span>, <span class="hljs-number">74</span>, <span class="hljs-number">10</span>);
+poco.drawMonochrome(envelope, <span class="hljs-literal">undefined</span>, blue, <span class="hljs-number">74</span>, <span class="hljs-number">55</span>);
+</code></pre>
+<img src="../assets/poco/monochrome.png" width="180" height="135"/>
+<hr />
+<p><a id="color-bitmap"></a></p>
+<h3>Color Bitmap</h3>
+<p>This example draws a color bitmap image of a face in two ways using <code>drawBitmap</code>: on the left side of the screen, it draws the full image; on the right side, it draws only the eyes and mouth, using the optional source rectangle parameters of <code>drawBitmap</code>.</p>
+<pre><code class="language-javascript">poco.fillRectangle(gray, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, poco.width, poco.height);
+
+<span class="hljs-keyword">let</span> image = parseBMP(<span class="hljs-keyword">new</span> Resource(<span class="hljs-string">"lvb.bmp"</span>));
+
+<span class="hljs-keyword">let</span> x = <span class="hljs-number">0</span>;
+<span class="hljs-keyword">let</span> y = <span class="hljs-built_in">Math</span>.round((poco.height - image.height) / <span class="hljs-number">2</span>);
+poco.drawBitmap(image, x, y);
+
+x = image.width;
+poco.drawBitmap(image, x + <span class="hljs-number">25</span>, y + <span class="hljs-number">38</span>, <span class="hljs-number">25</span>, <span class="hljs-number">38</span>, <span class="hljs-number">11</span>, <span class="hljs-number">7</span>);   <span class="hljs-comment">// left eye</span>
+poco.drawBitmap(image, x +  <span class="hljs-number">7</span>, y + <span class="hljs-number">40</span>,  <span class="hljs-number">7</span>, <span class="hljs-number">40</span>, <span class="hljs-number">10</span>, <span class="hljs-number">6</span>);   <span class="hljs-comment">// right eye</span>
+poco.drawBitmap(image, x + <span class="hljs-number">15</span>, y + <span class="hljs-number">56</span>, <span class="hljs-number">15</span>, <span class="hljs-number">56</span>, <span class="hljs-number">16</span>, <span class="hljs-number">6</span>);   <span class="hljs-comment">// mouth</span>
+</code></pre>
+<img src="../assets/poco/bitmap.png" width="180" height="135"/>
+<hr />
+<p><a id="pattern"></a></p>
+<h3>Pattern</h3>
+<p>This examples uses <code>fillPattern</code> to draw a single 30-pixel-square pattern in two ways: first the entire pattern is used to fill the screen; then a 7-pixel-square area of the pattern is used to fill the center part of the screen.</p>
+<p>Unlike the previous examples, this one does not first call <code>fillRectangle</code> to clear the screen, because the first call to <code>fillPattern</code> covers all the screen's pixels.</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">let</span> pattern = parseBMP(<span class="hljs-keyword">new</span> Resource(<span class="hljs-string">"pattern1.bmp"</span>));
+poco.fillPattern(pattern, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, poco.width, poco.height);
+poco.fillPattern(pattern, <span class="hljs-number">28</span>, <span class="hljs-number">28</span>, <span class="hljs-number">63</span>, <span class="hljs-number">35</span>, <span class="hljs-number">21</span>, <span class="hljs-number">14</span>, <span class="hljs-number">7</span>, <span class="hljs-number">7</span>);
+</code></pre>
+<img src="../assets/poco/pattern.png" width="180" height="135"/>
+<hr />
+<p><a id="gray-bitmap"></a></p>
+<h3>Gray Bitmap</h3>
+<p>This example uses <code>drawGray</code> to draw a 16-level gray image in several colors. <code>drawGray</code> treats the pixel values as alpha blending levels, blending the specified color with the background.</p>
+<pre><code class="language-javascript">poco.fillRectangle(gray, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, poco.width, poco.height);
+
+<span class="hljs-keyword">let</span> image = parseBMP(<span class="hljs-keyword">new</span> Resource(<span class="hljs-string">"envelope-gray.bmp"</span>));
+
+poco.drawGray(image, black, <span class="hljs-number">10</span>, <span class="hljs-number">2</span>);
+poco.drawGray(image, white, <span class="hljs-number">10</span>, <span class="hljs-number">47</span>);
+
+poco.drawGray(image, black, <span class="hljs-number">70</span>, <span class="hljs-number">2</span>);
+poco.drawGray(image, green, <span class="hljs-number">70</span> + <span class="hljs-number">2</span>, <span class="hljs-number">2</span> + <span class="hljs-number">2</span>);
+
+poco.drawGray(image, white, <span class="hljs-number">70</span>, <span class="hljs-number">47</span>);
+poco.drawGray(image, red, <span class="hljs-number">70</span> + <span class="hljs-number">2</span>, <span class="hljs-number">47</span> + <span class="hljs-number">2</span>);
+</code></pre>
+<img src="../assets/poco/gray.png" width="180" height="135"/>
+<hr />
+<p><a id="offscreen-bitmap"></a></p>
+<h3>Offscreen Bitmap</h3>
+<p>This example uses <code>BufferOut</code> to create an offscreen bitmap, fills the bitmap with a series of inset squares, and then uses the offscreen bitmap as a pattern to fill the screen. It uses two instances of <code>Poco</code>: the first to draw to the offscreen bitmap and the second to draw to the screen.</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> BufferOut <span class="hljs-keyword">from</span> <span class="hljs-string">"commodetto/BufferOut"</span>;
+
+<span class="hljs-keyword">let</span> offscreen = <span class="hljs-keyword">new</span> BufferOut({<span class="hljs-attr">width</span>: <span class="hljs-number">30</span>, <span class="hljs-attr">height</span>: <span class="hljs-number">30</span>, <span class="hljs-attr">pixelFormat</span>: poco.pixelsOut.pixelFormat});
+<span class="hljs-keyword">let</span> pocoOff = <span class="hljs-keyword">new</span> Poco(offscreen);
+pocoOff.begin();
+	pocoOff.fillRectangle(gray, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">30</span>, <span class="hljs-number">30</span>);
+	pocoOff.fillRectangle(red, <span class="hljs-number">2</span>, <span class="hljs-number">2</span>, <span class="hljs-number">26</span>, <span class="hljs-number">26</span>);
+	pocoOff.fillRectangle(black, <span class="hljs-number">4</span>, <span class="hljs-number">4</span>, <span class="hljs-number">22</span>, <span class="hljs-number">22</span>);
+	pocoOff.fillRectangle(blue, <span class="hljs-number">6</span>, <span class="hljs-number">6</span>, <span class="hljs-number">18</span>, <span class="hljs-number">18</span>);
+	pocoOff.fillRectangle(white, <span class="hljs-number">8</span>, <span class="hljs-number">8</span>, <span class="hljs-number">14</span>, <span class="hljs-number">14</span>);
+	pocoOff.fillRectangle(green, <span class="hljs-number">10</span>, <span class="hljs-number">10</span>, <span class="hljs-number">10</span>, <span class="hljs-number">10</span>);
+	pocoOff.fillRectangle(gray, <span class="hljs-number">13</span>, <span class="hljs-number">13</span>, <span class="hljs-number">4</span>, <span class="hljs-number">4</span>);
+pocoOff.end();
+
+poco.fillPattern(offscreen.bitmap, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, poco.width, poco.height);
+</code></pre>
+<img src="../assets/poco/offscreen.png" width="180" height="135"/>
+<hr />
+<p><a id="alpha"></a></p>
+<h3>Alpha</h3>
+<p>This example shows how to draw a bitmap through an alpha mask. The bitmap to draw and the mask are in separate bitmaps, enabling an image to be drawn using more than one alpha mask. The example draws one bitmap through both a circle and a square mask, and also draws the original image and mask.</p>
+<pre><code class="language-javascript">poco.fillRectangle(gray, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, poco.width, poco.height);
+
+<span class="hljs-keyword">let</span> girl = parseBMP(<span class="hljs-keyword">new</span> Resource(<span class="hljs-string">"girl.bmp"</span>));
+<span class="hljs-keyword">let</span> circle = parseBMP(<span class="hljs-keyword">new</span> Resource(<span class="hljs-string">"mask_circle.bmp"</span>));
+<span class="hljs-keyword">let</span> square = parseBMP(<span class="hljs-keyword">new</span> Resource(<span class="hljs-string">"mask_square.bmp"</span>));
+
+poco.drawBitmap(girl, <span class="hljs-number">0</span>, <span class="hljs-number">2</span>);
+poco.drawGray(circle, black, <span class="hljs-number">40</span>, <span class="hljs-number">2</span>);
+poco.drawMasked(girl, <span class="hljs-number">80</span>, <span class="hljs-number">2</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>,
+				circle.width, circle.height, circle, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>);
+
+poco.drawBitmap(girl, <span class="hljs-number">0</span>, <span class="hljs-number">47</span>);
+poco.drawGray(square, black, <span class="hljs-number">40</span>, <span class="hljs-number">47</span>);
+poco.drawMasked(girl, <span class="hljs-number">80</span>, <span class="hljs-number">47</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>,
+				square.width, square.height, square, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>);
+</code></pre>
+<img src="../assets/poco/alpha.png" width="180" height="135"/>
+<hr />
+<p><a id="jpeg"></a></p>
+<h3>JPEG</h3>
+<p>These two examples show different methods for working with JPEG images. The first example decompresses the full JPEG into a bitmap in memory and then renders the bitmap to the screen. The call to <code>trace</code> shows how to access the bitmap's width and height.</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> JPEG <span class="hljs-keyword">from</span> <span class="hljs-string">"commodetto/readJPEG"</span>;
+
+<span class="hljs-keyword">let</span> piano = JPEG.decompress(<span class="hljs-keyword">new</span> Resource(<span class="hljs-string">"piano.jpg"</span>));
+trace(<span class="hljs-string">`width <span class="hljs-subst">${piano.width}</span>, height <span class="hljs-subst">${piano.height}</span>\n`</span>);
+poco.drawBitmap(piano, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>);
+</code></pre>
+<p>The second example decodes the JPEG image one block at a time, drawing the block to the screen before decoding the next block. The advantage of this approach is that only a single JPEG block (typically 8 x 8 or 16 x 16 pixels) need be in memory at a time. The disadvantage is that the JPEG image appears to the user one block at a time rather than all at once.</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">let</span> jpeg = <span class="hljs-keyword">new</span> JPEG(<span class="hljs-keyword">new</span> Resource(<span class="hljs-string">"piano.jpg"</span>));
+<span class="hljs-keyword">let</span> block;
+<span class="hljs-keyword">while</span> (block = jpeg.read()) {
+	poco.begin(block.x, block.y, block.width, block.height);
+		poco.drawBitmap(block, block.x, block.y);
+	poco.end();
+}
+</code></pre>
+<p>When complete, each approach generates the same result.</p>
+<img src="../assets/poco/jpeg.png" width="180" height="135"/>
+<hr />
+<p><a id="text"></a></p>
+<h3>Text</h3>
+<p>Poco supports the BMPFont format for fonts used to rendering text. BMFont is a gray or color font used in games for anti-aliased fonts. A BMFont consists of two files: the font metrics and the font image.</p>
+<p>The following example loads and draws a 36-point Palatino BMFont.</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> parseBMF <span class="hljs-keyword">from</span> <span class="hljs-string">"commodetto/parseBMF"</span>;
+
+poco.fillRectangle(gray, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, poco.width, poco.height);
+poco.fillRectangle(white, <span class="hljs-number">2</span>, <span class="hljs-number">2</span>, poco.width - <span class="hljs-number">4</span>, poco.height - <span class="hljs-number">4</span>);
+
+<span class="hljs-keyword">let</span> palatino36 = parseBMF(<span class="hljs-keyword">new</span> Resource(<span class="hljs-string">"palatino_36.fnt"</span>));
+palatino36.bitmap = parseBMP(<span class="hljs-keyword">new</span> Resource(<span class="hljs-string">"palatino_36.bmp"</span>));
+
+poco.drawText(<span class="hljs-string">"Hello."</span>, palatino36, black, <span class="hljs-number">4</span>, <span class="hljs-number">20</span>);
+poco.drawText(<span class="hljs-string">"Hello."</span>, palatino36, green, <span class="hljs-number">4</span>, <span class="hljs-number">55</span>);
+</code></pre>
+<img src="../assets/poco/text1.png" width="180" height="135"/>
+<p>To truncate text when rendering, provide the optional <code>width</code> argument to <code>drawText</code> indicating the horizontal space available for the text.</p>
+<pre><code class="language-javascript">poco.fillRectangle(gray, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, poco.width, poco.height);
+poco.fillRectangle(white, <span class="hljs-number">2</span>, <span class="hljs-number">2</span>, poco.width - <span class="hljs-number">4</span>, poco.height - <span class="hljs-number">4</span>);
+
+<span class="hljs-keyword">let</span> palatino36 = parseBMF(<span class="hljs-keyword">new</span> Resource(<span class="hljs-string">"palatino_36.fnt"</span>));
+palatino36.bitmap = parseBMP(<span class="hljs-keyword">new</span> Resource(<span class="hljs-string">"palatino_36.bmp"</span>));
+
+poco.drawText(<span class="hljs-string">"Hello, world. This is long."</span>, palatino36, red, <span class="hljs-number">2</span>, <span class="hljs-number">10</span>);
+poco.drawText(<span class="hljs-string">"Hello, world. This is long."</span>, palatino36, green, <span class="hljs-number">2</span>, <span class="hljs-number">45</span>, poco.width - <span class="hljs-number">2</span>);
+</code></pre>
+<img src="../assets/poco/text2.png" width="180" height="135"/>
+<p>Text is horizontally and vertically aligned using the <code>height</code> property of the font and measuring the width of strings using <code>getTextWidth</code>.</p>
+<pre><code class="language-javascript">poco.fillRectangle(gray, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, poco.width, poco.height);
+poco.fillRectangle(white, <span class="hljs-number">2</span>, <span class="hljs-number">2</span>, poco.width - <span class="hljs-number">4</span>, poco.height - <span class="hljs-number">4</span>);
+
+<span class="hljs-keyword">let</span> palatino12 = parseBMF(<span class="hljs-keyword">new</span> Resource(<span class="hljs-string">"OpenSans-SemiboldItalic-18.fnt"</span>));
+palatino12.bitmap = parseBMP(<span class="hljs-keyword">new</span> Resource(<span class="hljs-string">"OpenSans-SemiboldItalic-18.bmp"</span>));
+
+poco.drawText(<span class="hljs-string">"T Left"</span>, palatino12, red,
+			  <span class="hljs-number">2</span>, <span class="hljs-number">2</span>);
+poco.drawText(<span class="hljs-string">"T Right"</span>, palatino12, green,
+			  poco.width - <span class="hljs-number">2</span> - poco.getTextWidth(<span class="hljs-string">"T Right"</span>, palatino12), <span class="hljs-number">2</span>);
+
+poco.drawText(<span class="hljs-string">"B Left"</span>, palatino12, blue,
+			  <span class="hljs-number">2</span>, poco.height - <span class="hljs-number">2</span> - palatino12.height);
+poco.drawText(<span class="hljs-string">"B Right"</span>, palatino12, gray,
+			  poco.width - <span class="hljs-number">2</span> - poco.getTextWidth(<span class="hljs-string">"B Right"</span>, palatino12),
+			  poco.height - <span class="hljs-number">2</span> - palatino12.height);
+
+poco.drawText(<span class="hljs-string">"Centered"</span>, palatino12, black,
+			  (poco.width - poco.getTextWidth(<span class="hljs-string">"Centered"</span>, palatino12)) / <span class="hljs-number">2</span>,
+			  (poco.height - palatino12.height) / <span class="hljs-number">2</span>);
+</code></pre>
+<img src="../assets/poco/text3.png" width="180" height="135"/>
+<p>The <code>drawText</code> function also accepts a 16-gray-level alpha bitmap in the <code>color</code> argument. This bitmap is used to draw fonts that consist of multiple colors. The following example shows drawing Open Sans Bold Italic with both black and white pixels in the glyph images.</p>
+<pre><code class="language-javascript">poco.fillRectangle(green, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, screen.width, screen.height);
+
+<span class="hljs-keyword">let</span> openSans52 = parseBMF(<span class="hljs-keyword">new</span> Resource(<span class="hljs-string">"OpenSans-BoldItalic-52.fnt"</span>));
+openSans52.bitmap = parseBMP(<span class="hljs-keyword">new</span> Resource(<span class="hljs-string">"OpenSans-BoldItalic-52-color.bmp"</span>));
+openSans52.mask = parseBMP(<span class="hljs-keyword">new</span> Resource(<span class="hljs-string">"OpenSans-BoldItalic-52-alpha.bmp"</span>));
+
+poco.drawText(<span class="hljs-string">"Poco"</span>, openSans52, openSans52.mask, <span class="hljs-number">0</span>, <span class="hljs-number">5</span>);
+</code></pre>
+<img src="../assets/poco/text4.png" width="180" height="135"/>
+<p>The following image is a section of the <code>OpenSans-BoldItalic-52.bmp</code> file, which contains the glyph images.</p>
+<img src="../assets/poco/text_opensans_glyphs.png"/>
+<p>This is a section of the <code>OpenSans-BoldItalic-52-alpha.bmp</code> file, which contains the alpha channel of the glyph images:</p>
+<img src="../assets/poco/text_opensans_mask.png"/>
+<hr />
+<p><a id="pixel-formats"></a></p>
+<h2>Pixel formats</h2>
+<p><a id="destination-pixel-formats"></a></p>
+<h3>Destination pixel formats</h3>
+<p>Poco renders to the following pixel formats:</p>
+<ul>
+<li>16-bit RGB565 little-endian</li>
+<li>8-bit RGB332</li>
+<li>8-bit gray</li>
+<li>4-bit indexed color</li>
+<li>4-bit gray</li>
+</ul>
+<p>To keep the size of the code deployed to the target device small, Poco is configured at build time to render only one of these pixel formats.</p>
+<p><a id="display-pixel-format"></a></p>
+<h3>Display pixel format</h3>
+<p>For displays that require a different output format, the display driver is responsible for converting between a supported rendering format and the hardware required format. For example, many common LCD controllers require 16-bit RGB565 big-endian pixels. The display drivers for these controllers accept Poco rendered 16-bit RGB565 little-endian pixels and convert them to big-endian while transmitting to the LCD controller. Similarly, many displays are monochrome (1-bit). Their display driver accept pixels rendered in 4-bit or 8-bit gray and converts them to 1-bit for the monochrome display.</p>
+<p><a id="source-bitmap-pixel-formats"></a></p>
+<h3>Source bitmap pixel formats</h3>
+<p>Poco supports 1-bit monochrome and 4-bit gray bitmaps as sources for rendering to all pixel formats. In addition, the configured destination pixel format is always supported as a source format. For example, when the rendering pixel format is 16-bit RGB565 little-endian, supported source pixel formats are 1-bit monochrome, 4-bit gray, and 16-bit RGB565 little-endian.</p>
+<p><a id="compressed-pixel-formats"></a></p>
+<h3>Compressed pixel formats</h3>
+<p>Poco implements support for two compressed pixel formats.</p>
+<p>The first is a weighted run-length compression of 4-bit gray bitmaps. These are commonly used for anti-aliased fonts and image masks. They use the <code>CommodettoBitmap</code> and <code>PocoBitmap</code> data structures with the pixel format set to <code>(kCommodettoBitmapGray16 | kCommodettoBitmapPacked)</code>.</p>
+<p>The second is a variant of the ColorCell algorithm used to compress full color images. These are not referenced by the <code>CommodettoBitmap</code> and <code>PocoBitmap</code> data structures, but treated as an image file in the same way as BMP, PNG, and JPEG. ColorCell images use 16-bit RGB565 little-endian pixels and consequently may only be rendered to 16-bit RGB565 little-endian destinations.</p>
+<hr />
+<p><a id="immediate-mode-rendering"></a></p>
+<h2>Immediate mode rendering</h2>
+<p>By default, Poco is a scanline display list renderer. That means it stores all the drawing commands and then renders them all at once when all drawing commands for a given frame have been queued. When used with a display that has full frame buffers stored in memory accessible to Poco and is double buffered (e.g. has two frame buffers it flips between), scanline display list rendering is less efficient than immediate mode rendering, which executes each drawing command as it is received.</p>
+<p>Poco optionally supports immediate mode rendering. To enable this support, define <code>kPocoFrameBuffer</code> to 1 when building Poco, and use <code>PocoDrawingBeginFrameBuffer</code>/<code>PocoDrawingEndFrameBuffer</code> in place of <code>PocoDrawingBegin</code>/<code>PocoDrawingEnd</code> in the C code. No changes are required to JavaScript code to use immediate mode.</p>
+<hr />
+<p><a id="rotation"></a></p>
+<h2>Rotation</h2>
+<p>Poco provides support for rendering to a <code>PixelsOut</code> at 0, 90, 180, or 270 degree rotations. This support allows use of a display in any orientation, independent of the natural scan order of the hardware.</p>
+<p>The rotation is selected at build time, not run time, by defining <code>kPocoRotation</code> to the target rotation (e.g. 90). The default rotation value is 0. The rotation is applied to the coordinates, both destination and source, of all drawing operations. Any assets (e.g. stored bitmaps and fonts) must be rotated prior to being passed to Poco. This is done either manually (e.g. in Photoshop) or automatically (e.g. by the png2bmp tool in the Moddable SDK).</p>
+<p>This approach to rotation allows rendering of rotated output at the same performance level as unrotated images, and without requiring an intermediate bitmap buffer.</p>
+<hr />
+<p><a id="javascript-api-reference"></a></p>
+<h2>JavaScript API Reference</h2>
+<p>Poco is a renderer, a subclass of the Commodetto <code>Render</code> class.</p>
+<pre><code class="language-javascript"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Poco</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Render</span>
+</span></code></pre>
+<p><a id="js-functions"></a></p>
+<h3>Functions</h3>
+<h4><code>constructor(pixelsOut, dictionary)</code></h4>
+<p>Poco extends the <code>Render</code> dictionary with the <code>displayListLength</code> property, which specifies the size of the display list buffer in bytes. Applications typically use the default display list length. Poco detects when a drawing operation would overflow the display list, ignores the drawing operation, and throws an exception when <code>end</code> is called.</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> Poco <span class="hljs-keyword">from</span> <span class="hljs-string">"commodetto/Poco"</span>;
+	
+<span class="hljs-keyword">let</span> screen = ... <span class="hljs-comment">// SPIOut instance</span>
+<span class="hljs-keyword">let</span> poco = <span class="hljs-keyword">new</span> Poco(screen, {<span class="hljs-attr">displayListLength</span>: <span class="hljs-number">4096</span>});
+</code></pre>
+<hr />
+<h4><code>clip(x, y, width, height)</code></h4>
+<p>Poco maintains a clip rectangle that is applied to all drawing operations.</p>
+<p>When <code>begin</code> is called, the clip rectangle is set to the update area passed to <code>begin</code>. Poco maintains a clip stack, eliminating the need for applications to save and restore the current clip. Calling <code>clip</code> with four arguments intersects the current clip with the area contained by the arguments; calling it with no arguments pops the clip stack, restoring the previous clip.</p>
+<pre><code class="language-javascript">poco.clip(<span class="hljs-number">10</span>, <span class="hljs-number">10</span>, <span class="hljs-number">10</span>, <span class="hljs-number">10</span>);
+poco.clip();
+</code></pre>
+<p>The clip stack holds several clips, as follows:</p>
+<pre><code class="language-javascript">poco.begin();			<span class="hljs-comment">// Clip is entire PixelsOut area</span>
+poco.clip(<span class="hljs-number">10</span>, <span class="hljs-number">10</span>, <span class="hljs-number">10</span>, <span class="hljs-number">10</span>);	<span class="hljs-comment">// Clip is {x: 10, y: 10, w: 10, h: 10}</span>
+poco.clip(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">15</span>, <span class="hljs-number">15</span>);	<span class="hljs-comment">// Clip is {x: 10, y: 10, w: 5, h: 5}</span>
+poco.clip();			<span class="hljs-comment">// Clip is {x: 10, y: 10, w: 10, h: 10}</span>
+poco.clip()			<span class="hljs-comment">// Clip is entire PixelsOut area</span>
+poco.end();
+</code></pre>
+<p>If the clip stack overflows or underflows, an exception is thrown from <code>end</code>. The clip stack must be empty when <code>end</code> is called or an exception is thrown.</p>
+<blockquote>
+<p><strong>Note:</strong> <code>clip</code> and <code>origin</code> share the same stack, and so must be popped in the order they were pushed.</p>
+</blockquote>
+<hr />
+<h4><code>origin(x, y)</code></h4>
+<p>Poco maintains an origin that is applied to all drawing operations.</p>
+<p>When <code>begin</code> is called, the origin is set to <code>{x: 0, y: 0}</code>. Poco maintains an origin stack, eliminating the need for applications to save and restore the current origin. Calling <code>origin</code> with two arguments offsets the current origin by the arguments; calling it with no arguments pops the origin stack, restoring the previous origin.</p>
+<pre><code class="language-javascript">poco.begin();			<span class="hljs-comment">// Origin is {x: 0, y: 0}</span>
+poco.origin(<span class="hljs-number">10</span>, <span class="hljs-number">10</span>);		<span class="hljs-comment">// Origin is {x: 10, y: 10}</span>
+poco.origin(<span class="hljs-number">5</span>, <span class="hljs-number">5</span>);		<span class="hljs-comment">// Origin is {x: 15, y: 15}</span>
+poco.origin();			<span class="hljs-comment">// Origin is {x: 10, y: 10}</span>
+poco.origin();			<span class="hljs-comment">// Origin is {x: 0, y: 0}</span>
+poco.end();
+</code></pre>
+<p>If the origin stack overflows or underflows, an exception is thrown from <code>end</code>. The origin stack must be empty when <code>end</code> is called, or an exception will be thrown.</p>
+<blockquote>
+<p><strong>Note:</strong> Changing the origin does not change the clip rectangle. Note too that <code>clip</code> and <code>origin</code> share the same stack, and so must be popped in the order they were pushed.</p>
+</blockquote>
+<hr />
+<h4><code>makeColor(r, g, b)</code></h4>
+<p>The <code>makeColor</code> function takes red, green, and blue values from 0 to 255 and returns the corresponding pixel value. The returned pixel is in the format of the <code>PixelsOut</code> instance bound to the <code>Poco</code> instance.</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">let</span> red = poco.makeColor(<span class="hljs-number">255</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>);
+<span class="hljs-keyword">let</span> green = poco.makeColor(<span class="hljs-number">0</span>, <span class="hljs-number">255</span>, <span class="hljs-number">0</span>);
+<span class="hljs-keyword">let</span> blue = poco.makeColor(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">255</span>);
+<span class="hljs-keyword">let</span> black = poco.makeColor(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>);
+<span class="hljs-keyword">let</span> white = poco.makeColor(<span class="hljs-number">255</span>, <span class="hljs-number">255</span>, <span class="hljs-number">255</span>);
+<span class="hljs-keyword">let</span> gray = poco.makeColor(<span class="hljs-number">127</span>, <span class="hljs-number">127</span>, <span class="hljs-number">127</span>);
+</code></pre>
+<p>Many rendering functions take a color as an argument. Use <code>makeColor</code> to calculate the color to avoid a dependency on the pixel format.</p>
+<hr />
+<h4><code>fillRectangle(color, x, y, width, height)</code></h4>
+<p>The <code>fillRectangle</code> function fills the area specified by the <code>x</code>, <code>y</code>, <code>width</code>, and <code>height</code> arguments with the specified color.</p>
+<pre><code class="language-javascript">poco.fillRectangle(green, <span class="hljs-number">10</span>, <span class="hljs-number">20</span>, <span class="hljs-number">40</span>, <span class="hljs-number">40</span>);
+</code></pre>
+<hr />
+<h4><code>blendRectangle(color, blend, x, y, width, height)</code></h4>
+<p>The <code>blendRectangle</code> function blends the specified color with the pixels in the area specified by the <code>x</code>, <code>y</code>, <code>width</code>, and <code>height</code> arguments. The <code>blend</code> argument determines the level of blending, from a value of 0 for transparent to a value of 255 for opaque.</p>
+<p>The following code draws 16 horizontal green lines with increasing opacity.</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">let</span> green = poco.makeColor(<span class="hljs-number">0</span>, <span class="hljs-number">255</span>, <span class="hljs-number">0</span>);
+<span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> blend = <span class="hljs-number">15</span>, y = <span class="hljs-number">0</span>; blend &lt; <span class="hljs-number">256</span>; blend += <span class="hljs-number">16</span>, y += <span class="hljs-number">1</span>)
+	poco.blendRectangle(green, blend, <span class="hljs-number">0</span>, y, pixelsOut.width, <span class="hljs-number">1</span>);
+</code></pre>
+<hr />
+<h4><code>drawPixel(color, x, y)</code></h4>
+<p>The <code>drawPixel</code> function draws a single pixel of the specified color at the location specified by the <code>x</code> and <code>y</code> arguments.</p>
+<pre><code class="language-javascript">poco.drawPixel(poco.makeColor(<span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">127</span>), <span class="hljs-number">5</span>, <span class="hljs-number">5</span>);
+</code></pre>
+<blockquote>
+<p><strong>Note:</strong> Making many calls to <code>drawPixel</code> in a single frame can quickly fill the display list.</p>
+</blockquote>
+<hr />
+<h4><code>drawBitmap(bits, x, y, sx, sy, sw, sh)</code></h4>
+<p>The <code>drawBitmap</code> function draws all or part of a bitmap with pixels of type <code>Bitmap.Default</code>. The bitmap is specified by the <code>bits</code> argument, and the location to draw the bitmap is specified by the <code>x</code> and <code>y</code> arguments. The following code draws the entire image at location <code>{x: 10, y: 5}</code>.</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">let</span> image = parseBMP(<span class="hljs-keyword">new</span> Resource(<span class="hljs-string">"image.bmp"</span>));
+poco.drawBitmap(image, <span class="hljs-number">10</span>, <span class="hljs-number">5</span>);
+</code></pre>
+<p>The optional <code>sx</code>, <code>sy</code>, <code>sw</code>, and <code>sh</code> arguments specify the area of the bitmap to draw. If they are omitted, the entire bitmap is drawn.</p>
+<p>The following code draws the bottom half of the bitmap at location <code>{x: 0, y: 0}</code>.</p>
+<pre><code class="language-javascript">poco.drawBitmap(image, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, image.height / <span class="hljs-number">2</span>, image.width, image.height / <span class="hljs-number">2</span>);
+</code></pre>
+<hr />
+<h4><code>drawMonochrome(monochrome, fore, back, x, y, sx, sy, sw, sh)</code></h4>
+<p>The <code>drawMonochrome</code> function draws all or part of a bitmap with pixels of type <code>Bitmap.Monochrome</code>. The bitmap is specified by the <code>bits</code> argument, and the location to draw the bitmap is specified by the <code>x</code> and <code>y</code> arguments.</p>
+<p>The <code>fore</code> and <code>back</code> arguments specify the foreground and background colors to apply to the black and white pixels of the bitmap. If <code>fore</code> is <code>undefined</code>, the foreground pixels are not drawn; if <code>back</code> is <code>undefined</code>, the background pixels are not drawn.</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">let</span> red = poco.makeColor(<span class="hljs-number">255</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>);
+<span class="hljs-keyword">let</span> gray = poco.makeColor(<span class="hljs-number">128</span>, <span class="hljs-number">128</span>, <span class="hljs-number">128</span>);
+<span class="hljs-keyword">let</span> white = poco.makeColor(<span class="hljs-number">255</span>, <span class="hljs-number">255</span>, <span class="hljs-number">255</span>);
+<span class="hljs-keyword">let</span> icon = parseBMP(<span class="hljs-keyword">new</span> Resource(<span class="hljs-string">"icon.bmp"</span>));
+	
+poco.drawMonochrome(icon, red, white, <span class="hljs-number">0</span>, <span class="hljs-number">5</span>);  <span class="hljs-comment">// red foreground and white background</span>
+poco.drawMonochrome(icon, gray, <span class="hljs-literal">undefined</span>, <span class="hljs-number">0</span>, <span class="hljs-number">5</span>);  <span class="hljs-comment">// only foreground pixels in gray</span>
+poco.drawMonochrome(icon, <span class="hljs-literal">undefined</span>, red, <span class="hljs-number">0</span>, <span class="hljs-number">5</span>);  <span class="hljs-comment">// only background pixels in red</span>
+</code></pre>
+<p>The optional <code>sx</code>, <code>sy</code>, <code>sw</code>, and <code>sh</code> arguments specify the area of the bitmap to draw. If they are omitted, the entire bitmap is drawn.</p>
+<hr />
+<h4><code>drawGray(bits, color, x, y, sx, sy, sw, sh[, blend])</code></h4>
+<p>The <code>drawGray</code> function draws all or part of a bitmap with pixels of type <code>Bitmap.Gray16</code>. The bitmap is specified by the <code>bits</code> argument, and the location to draw the bitmap is specified by the <code>x</code> and <code>y</code> arguments. The pixels of the bitmap are treated as alpha values and are blended with the background. The <code>color</code> argument specifies the color to apply when blending.</p>
+<p>The optional <code>sx</code>, <code>sy</code>, <code>sw</code>, and <code>sh</code> arguments specify the area of the bitmap to draw. If they are omitted, the entire bitmap is drawn.</p>
+<p>The optional <code>blend</code> argument applies an additional blend level to all pixels in the bitmap prior to blending with the background. The <code>blend</code> value ranges from 0 for transparent to 255 for opaque.</p>
+<hr />
+<h4><code>drawMasked(bits, x, y, sx, sy, sw, sh, mask, mask_sx, mask_sy[, blend])</code></h4>
+<p>The <code>drawMasked</code> function uses two bitmaps--an image and the alpha channel--to alpha-blend the image through the mask onto the destination. The image, specified by the <code>bits</code> argument, is in <code>Bitmap.Default</code> format. The alpha channel, specified by the <code>mask</code> argument, is in <code>Bitmap.Gray16</code> format.</p>
+<p>The <code>x</code> and <code>y</code> arguments specify where to locate the merged image in the output. The <code>sx</code>, <code>sy</code>, <code>sw</code>, and <code>sh</code> arguments specify the area of the image to use. The <code>mask_sx</code> and <code>mask_sy</code> arguments specify the top-left corner of the mask bitmap to use; the dimensions of the mask bitmap area are taken from the <code>sw</code> and <code>sh</code> arguments.</p>
+<p>The following example draws a button image with an alpha channel. The image and alpha channel are stored in separate files, each previously extracted from a PNG file with an alpha channel.</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">let</span> buttonImage = parseBMP(<span class="hljs-keyword">new</span> Resource(<span class="hljs-string">"button_image.bmp"</span>));
+<span class="hljs-keyword">let</span> buttonAlpha = parseBMP(<span class="hljs-keyword">new</span> Resource(<span class="hljs-string">"button_alpha.bmp"</span>));
+poco.drawMasked(buttonImage, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>,
+	buttonImage.width, buttonImage.height, buttonAlpha, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>);
+</code></pre>
+<p>Storing the alpha channel separately from the image is unusual, and has benefits for resource constrained devices:</p>
+<ul>
+<li>The alpha channel image can be 4 bits per pixel, which gives good results at half the size.</li>
+<li>The image can be rendered with and without an alpha channel.</li>
+<li>A single mask can be applied to any image, allowing for effects and animations.</li>
+</ul>
+<p>The optional <code>blend</code> argument applies an additional blend level to all pixels in the alpha channel bitmap prior to blending with the background. The <code>blend</code> value ranges from 0 for transparent to 255 for opaque.</p>
+<hr />
+<h4><code>fillPattern(bits, x, y, w, h [, sx, sx, sx, sh])</code></h4>
+<p>The <code>fillPattern</code> function fills an area by repeatedly drawing all or part of a bitmap with pixels of type <code>Bitmap.Default</code>. The bitmap is specified by the <code>bits</code> argument. The location of the area to fill is specified by the <code>x</code> and <code>y</code> arguments, and the dimensions of the area are specified by the <code>w</code> and <code>h</code> arguments.</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">let</span> pattern = parseBMP(<span class="hljs-keyword">new</span> Resource(<span class="hljs-string">"pattern.bmp"</span>));
+poco.fillPattern(pattern, <span class="hljs-number">10</span>, <span class="hljs-number">10</span>, <span class="hljs-number">90</span>, <span class="hljs-number">90</span>);
+</code></pre>
+<p>The optional <code>sx</code>, <code>sy</code>, <code>sw</code>, and <code>sh</code> arguments specify the area of the bitmap to use. If they are omitted, the entire bitmap is used.</p>
+<pre><code class="language-javascript">poco.fillPattern(pattern, <span class="hljs-number">10</span>, <span class="hljs-number">10</span>, <span class="hljs-number">90</span>, <span class="hljs-number">90</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">8</span>, <span class="hljs-number">8</span>);
+</code></pre>
+<hr />
+<h4><code>drawText(text, font, color, x, y[, width])</code></h4>
+<p>The <code>drawText</code> function draws the <code>text</code> string using the BMFont in the <code>font</code> argument. The text is drawn in the color of the <code>color</code> argument at the location of the <code>x</code> and <code>y</code> arguments. Text is drawn using top-left alignment.</p>
+<p>The following code draws the string <code>&quot;Hello, world&quot;</code> twice: first in the top-left corner of the screen using the Chicago font in black, and then beneath that string using the Palatino 36 font in red.</p>
+<pre><code class="language-javascript">poco.drawText(<span class="hljs-string">"Hello, world"</span>, chicagoFont, black, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>);
+poco.drawText(<span class="hljs-string">"Hello, world"</span>, palatino36, red, <span class="hljs-number">0</span>, chicagoFont.height);
+</code></pre>
+<p>If the optional <code>width</code> argument is provided, the text is truncated on the right edge when it is too long to fit unclipped in the available width. When truncation occurs, three periods (<code>...</code>) are drawn at the end of the string.</p>
+<p>Characters in the text string that are not part of the font are ignored.</p>
+<p>To draw full-color text with anti-aliased edges, use a BMFont with a bitmap in <code>Bitmap.Default</code> format. In place of the <code>color</code> argument, pass a mask bitmap in the <code>Bitmap.Gray16</code> format. The mask must be at least as large as the BMFont's glyph atlas. When each glyph is drawn, the pixels in the mask image corresponding to the glyph in the font image are used to alpha-blend each glyph with the destination.</p>
+<hr />
+<h4><code>getTextWidth(text, font)</code></h4>
+<p>The <code>getTextWidth</code> function calculates the width in pixels of the <code>text</code> string when rendered using <code>font</code>.</p>
+<p>The following code draws the string <code>&quot;Hello, world&quot;</code> horizontally centered at the top of display.</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">let</span> text = <span class="hljs-string">"Hello, world"</span>;
+<span class="hljs-keyword">let</span> width = poco.getTextWidth(text, palatino36);
+poco.drawText(text, palatino36, green, (pixelsOut.width - width) / <span class="hljs-number">2</span>, <span class="hljs-number">0</span>);
+</code></pre>
+<p>The height of the font is available in the <code>font.height</code> property.</p>
+<p>Characters in the text string that are not part of the font are not rendered.</p>
+<hr />
+<h4><code>drawFrame(frame, dictionary, x, y)</code></h4>
+<p>The <code>drawFrame</code> function renders the ColorCell compressed image referenced by the <code>frame</code> argument at the location specified by the <code>x</code> and <code>y</code> arguments. The <code>dictionary</code> argument is an <code>Object</code> that contains width and height properties that indicate the source dimensions of the image.</p>
+<hr />
+<p><a id="js-properties"></a></p>
+<h3>Properties</h3>
+<h4><code>height</code></h4>
+<p>The logical height in pixels of the Poco instance after rotation is applied. When rotation is 0 or 180, this is equal to the <code>PixelsOut</code> instance's height; when rotation is 90 or 270, it is equal to the <code>PixelsOut</code> instance's width.</p>
+<hr />
+<h4><code>width</code></h4>
+<p>The logical width in pixels of the Poco instance after rotation is applied. When rotation is 0 or 180, this is equal to the <code>PixelsOut</code> instance's width; when rotation is 90 or 270, it is equal to the <code>PixelsOut</code> instance's height.</p>
+<hr />
+<p><a id="c-api-reference"></a></p>
+<h2>C API Reference</h2>
+<p>The Poco C API is a low-level rendering engine. It is based on a display list, meaning that all drawing calls are queued to a list prior to rendering. A display list enables the renderer to generate as little as a single scanline of fully composed output at a time, minimizing memory use by eliminating the need for a frame buffer in the memory of the application processor.</p>
+<p>The Poco C API may be used independently of Commodetto and its JavaScript API. It makes no allocations and almost no external calls (only to <code>memcpy</code>), relying on the caller to provide memory.</p>
+<p><a id="c-data-structures"></a></p>
+<h3>Data Structures</h3>
+<p><a id="poco-record"></a></p>
+<h5><code>PocoRecord</code></h5>
+<p><code>PocoRecord</code> maintains state for Poco. Many of the fields are private to the implementation and should not be accessed directly by users of the library. The <code>PocoRecord</code> data structure should be initialized to 0, and the same <code>PocoRecord</code> structure must be passed to all Poco function calls.</p>
+<p>The following fields in <code>PocoRecord</code> are public and can be accessed by users of the library. Poco expects these fields to be initialized by the users of the library before the first call to Poco is made.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Field</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><code>width</code></td>
+<td style="text-align:left">width of output in pixels</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>height</code></td>
+<td style="text-align:left">height of output in pixels</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>displayList</code></td>
+<td style="text-align:left">pointer to start of memory for display list</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>displayListEnd</code></td>
+<td style="text-align:left">pointer to end of memory for display list</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>pixelsLength</code></td>
+<td style="text-align:left">size in bytes of pixels array</td>
+</tr>
+</tbody>
+</table>
+<p>The following fields are available to read from the <code>PocoRecord</code> structure between calls to <code>PocoDrawingBegin</code> and <code>PocoDrawingEnd</code>:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Field</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><code>xOrigin</code></td>
+<td style="text-align:left"><em>x</em> coordinate of drawing origin</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>yOrigin</code></td>
+<td style="text-align:left"><em>y</em> coordinate of drawing origin</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>x</code></td>
+<td style="text-align:left"><em>x</em> coordinate of drawing clip</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>y</code></td>
+<td style="text-align:left"><em>y</em> coordinate of drawing clip</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>w</code></td>
+<td style="text-align:left">width of drawing clip</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>h</code></td>
+<td style="text-align:left">height of drawing clip</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>xMax</code></td>
+<td style="text-align:left">right coordinate of drawing clip, <code>x + w</code></td>
+</tr>
+<tr>
+<td style="text-align:center"><code>yMax</code></td>
+<td style="text-align:left">bottom coordinate of drawing clip, <code>y + h</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h5><code>PocoCoordinate</code></h5>
+<p><code>PocoCoordinate</code> is a signed integer value. When used in Commodetto, it is aliased to <code>CommodettoCoordinate</code>. See the description of <code>CommodettoCoordinate</code> in the <a href="./commodetto.html">Commodetto documentation</a> for additional information.</p>
+<hr />
+<h5><code>PocoDimension</code></h5>
+<p><code>PocoDimension</code> is an unsigned integer value. When used in Commodetto, it is aliased to <code>CommodettoDimension</code>. See the description of <code>CommodettoDimension</code> in the <a href="./commodetto.html">Commodetto documentation</a> for additional information.</p>
+<hr />
+<h5><code>PocoPixel</code></h5>
+<p><code>PocoPixel</code> is an integer value. When used in Commodetto, it is aliased to <code>CommodettoPixel</code>. See the description of <code>CommodettoPixel</code> in the <a href="./commodetto.html">Commodetto documentation</a> for additional information.</p>
+<hr />
+<h5><code>PocoBitmapFormat</code></h5>
+<p><code>PocoBitmapFormat</code> is an integer value. When used in Commodetto, it is aliased to <code>CommodettoBitmapFormat</code>. See the description of <code>CommodettoBitmapFormat</code> in the <a href="./commodetto.html">Commodetto documentation</a> for additional information.</p>
+<hr />
+<h5><code>PocoRectangle</code></h5>
+<p><code>PocoRectangle</code> defines the area enclosed by a rectangle, with the top-left coordinate and the dimensions.</p>
+<pre><code class="language-c"><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> {</span>
+	PocoCoordinate	x;
+	PocoCoordinate	y;
+	PocoDimension	w;
+	PocoDimension	h;
+} PocoRectangleRecord, *PocoRectangle;
+</code></pre>
+<hr />
+<h5><code>PocoBitmap</code></h5>
+<p>The <code>PocoBitmap</code> structure contains the width and height of the bitmap in pixels, the format of the pixels in the bitmap, and a pointer to the pixel data.</p>
+<pre><code class="language-c"><span class="hljs-keyword">typedef</span> <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">PocoBitmapRecord</span> {</span>
+	PocoDimension			width;
+	PocoDimension			height;
+	PocoBitmapFormat		format;
+	PocoPixel				*pixels;
+} PocoBitmapRecord, *PocoBitmap;
+</code></pre>
+<p>The pixels are organized left to right, top to bottom, with no padding between rows. There is no <code>rowBytes</code> or <code>stride</code> field in <code>PocoBitmap</code>.</p>
+<blockquote>
+<p><strong>Note:</strong> Unlike <code>CommodettoBitmap</code>, <code>PocoBitmap</code> does not have an option to store an offset in place of the pixels pointer.</p>
+</blockquote>
+<hr />
+<p><a id="c-functions"></a></p>
+<h3>Functions</h3>
+<p>Before calls to Poco can be made, a <code>PocoRecord</code> structure must be allocated and initialized. See <a href="#poco-record"><code>PocoRecord</code></a> for details.</p>
+<h5><code>PocoMakeColor</code></h5>
+<pre><code class="language-c"><span class="hljs-function">PocoPixel <span class="hljs-title">PocoMakeColor</span><span class="hljs-params">(Poco poco, <span class="hljs-keyword">uint8_t</span> r, <span class="hljs-keyword">uint8_t</span> g, <span class="hljs-keyword">uint8_t</span> b)</span></span>;
+</code></pre>
+<p><code>PocoMakeColor</code> takes red, green, and blue values from 0 to 255 and returns a <code>PocoPixel</code> value. The returned pixel value can be used as a color argument in some rendering calls.</p>
+<blockquote>
+<p><strong>Note:</strong> In the current implementation the poco parameter is unused because Poco is always built with support for only a single output pixel format.</p>
+</blockquote>
+<hr />
+<h5><code>PocoDrawingBegin</code></h5>
+<pre><code class="language-c"><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">PocoDrawingBegin</span><span class="hljs-params">(Poco poco, PocoCoordinate x, PocoCoordinate y,
+	PocoDimension w, PocoDimension h)</span></span>;
+</code></pre>
+<p><code>PocoDrawingBegin</code> begins the rendering process for an update area of pixels bounded by the <code>x</code>, <code>y</code>, <code>w</code>, and <code>h</code> parameters. Calls to draw can only be made between calls to <code>PocoDrawingBegin</code> and <code>PocoDrawingEnd</code>.</p>
+<blockquote>
+<p><strong>Important:</strong> The caller of <code>PocoDrawingBegin</code> is responsible for ensuring that the drawing calls cover all pixels in the update area. Poco does not maintain the previous frame. Any pixels that are not drawn will contain unpredictable values.</p>
+</blockquote>
+<hr />
+<h5><code>PocoDrawingEnd</code></h5>
+<pre><code class="language-c"><span class="hljs-function"><span class="hljs-keyword">int</span> <span class="hljs-title">PocoDrawingEnd</span><span class="hljs-params">(Poco poco, PocoPixel *pixels, <span class="hljs-keyword">int</span> byteLength,
+	PocoRenderedPixelsReceiver pixelReceiver, <span class="hljs-keyword">void</span> *refCon)</span></span>;
+
+<span class="hljs-function"><span class="hljs-keyword">typedef</span> <span class="hljs-title">void</span> <span class="hljs-params">(*PocoRenderedPixelsReceiver)</span><span class="hljs-params">(PocoPixel *pixels,
+	<span class="hljs-keyword">int</span> byteCount, <span class="hljs-keyword">void</span> *refCon)</span></span>;
+</code></pre>
+<p><code>PocoDrawingEnd</code> renders the drawing commands added to the display list since the call to <code>PocoDrawingBegin</code>.</p>
+<p>The caller of <code>PocoDrawingEnd</code> provides a buffer for the rendered pixels in the <code>pixels</code> and <code>byteLength</code> arguments. Poco renders as many rows of pixels as possible into the buffer and then calls the <code>pixelReceiver</code> function to output the pixels. The buffer need be only large enough to hold a single row of pixels. A buffer that can hold several rows of pixels reduces rendering overhead.</p>
+<p>If an error occurs, adding commands to the display list as the result of drawing calls or in the execution of <code>PocoDrawingEnd</code>, <code>PocoDrawingEnd</code> returns a nonzero result:</p>
+<ul>
+<li>1 -- display list overflow</li>
+<li>2 -- clip and origin stack overflow</li>
+<li>3 -- clip and origin stack underflow or out-of-sequence pop</li>
+</ul>
+<hr />
+<h5><code>PocoRectangleFill</code></h5>
+<pre><code class="language-c"><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">PocoRectangleFill</span><span class="hljs-params">(Poco poco, PocoPixel color, <span class="hljs-keyword">uint8_t</span> blend,
+	PocoCoordinate x, PocoCoordinate y, PocoDimension w, PocoDimension h)</span></span>;
+</code></pre>
+<p><code>PocoRectangleFill</code> fills the area defined by the <code>x</code>, <code>y</code>, <code>w</code>, and <code>h</code> arguments as specified by <code>color</code>. If the level specified by <code>blend</code> is <code>kPocoOpaque</code> (255), the color is drawn over with the background without blending; for other blending levels the color is blended proportionally with the background.</p>
+<hr />
+<h5><code>PocoPixelDraw</code></h5>
+<pre><code class="language-c"><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">PocoPixelDraw</span><span class="hljs-params">(Poco poco, PocoPixel color,
+		PocoCoordinate x, PocoCoordinate y)</span></span>;
+</code></pre>
+<p><code>PocoPixelDraw</code> renders a single pixel at the location specified by <code>x</code> and <code>y</code> in the specified color.</p>
+<hr />
+<h5><code>PocoBitmapDraw</code></h5>
+<pre><code class="language-c"><span class="hljs-function">PocoCommand <span class="hljs-title">PocoBitmapDraw</span><span class="hljs-params">(Poco poco, PocoBitmap bits,
+			PocoCoordinate x, PocoCoordinate y,
+			PocoDimension sx, PocoDimension sy,
+			PocoDimension sw, PocoDimension sh)</span></span>;
+</code></pre>
+<p><code>PocoBitmapDraw</code> renders all or part of the bitmap <code>bits</code>, of type <code>kCommodettoBitmapDefault</code>, at the location specified by <code>x</code> and <code>y</code>. The <code>sx</code>, <code>sy</code>, <code>sw</code>, and <code>sh</code> arguments define the area of the bitmap to render.</p>
+<hr />
+<h5><code>PocoMonochromeBitmapDraw</code></h5>
+<pre><code class="language-c"><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">PocoMonochromeBitmapDraw</span><span class="hljs-params">(Poco poco, PocoBitmap bits,
+		PocoMonochromeMode mode, PocoPixel fgColor, PocoPixel bgColor,
+		PocoCoordinate x, PocoCoordinate y,
+		PocoDimension sx, PocoDimension sy,
+		PocoDimension sw, PocoDimension sh)</span></span>;
+</code></pre>
+<p><code>PocoMonochromeBitmapDraw</code> renders all or part of bitmap <code>bits</code> of type <code>kCommodettoBitmapMonochrome</code> at the location specified by <code>x</code> and <code>y</code>. The <code>sx</code>, <code>sy</code>, <code>sw</code>, and <code>sh</code> arguments define the area of the bitmap to render. The <code>mode</code> argument determines which pixels are drawn:</p>
+<ul>
+<li><code>kPocoMonochromeForeground</code> -- Only foreground pixels are drawn (1 pixels in the bitmap).</li>
+<li><code>kPocoMonochromeBackground</code> -- Only background pixels are drawn (0 pixels in the bitmap).</li>
+<li><code>kPocoMonochromeForeAndBackground</code> -- Both foreground and background pixels are drawn.</li>
+</ul>
+<p>The <code>fgColor</code> and <code>bgColor</code> arguments specify the colors to use to render the foreground and background pixels.</p>
+<h5><code>PocoGrayBitmapDraw</code></h5>
+<pre><code class="language-c"><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">PocoGrayBitmapDraw</span><span class="hljs-params">(Poco poco, PocoBitmap bits,
+		PocoPixel color, <span class="hljs-keyword">uint8_t</span> blend,
+		PocoCoordinate x, PocoCoordinate y,
+		PocoDimension sx, PocoDimension sy,
+		PocoDimension sw, PocoDimension sh)</span></span>;
+</code></pre>
+<p><code>PocoGrayBitmapDraw</code> renders all or part of bitmap <code>bits</code>, of type <code>kCommodettoBitmapGray16</code>, at the location specified by <code>x</code> and <code>y</code>. The <code>sx</code>, <code>sy</code>, <code>sw</code>, and <code>sh</code> arguments define the area of the bitmap to render. The pixels of the bitmap are treated as alpha blending levels and are used to blend the <code>color</code> argument with the background pixels. The <code>blend</code> argument is applied to the blend level of each pixel, with values ranging from 0 for transparent to 255 for opaque.</p>
+<hr />
+<h5><code>PocoBitmapDrawMasked</code></h5>
+<pre><code class="language-c"><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">PocoBitmapDrawMasked</span><span class="hljs-params">(Poco poco, PocoBitmap bits, <span class="hljs-keyword">uint8_t</span> blend,
+		PocoCoordinate x, PocoCoordinate y,
+		PocoDimension sx, PocoDimension sy,
+		PocoDimension sw, PocoDimension sh,
+		PocoBitmap mask, PocoDimension mask_sx, PocoDimension mask_sy)</span></span>;
+</code></pre>
+<p><code>PocoBitmapDrawMasked</code> renders the pixels of bitmap <code>bits</code>, of type <code>kCommodettoBitmapDefault</code>, enclosed by <code>sx</code>, <code>sy</code>, <code>sw</code>, and <code>sh</code> at the location specified by <code>x</code> and <code>y</code>. The pixels are drawn using the corresponding pixels of the bitmap <code>mask</code>, of type <code>kCommodettoBitmapGray16</code>, enclosed by <code>mask_x</code>, <code>mask_y</code>, <code>sw</code>, and <code>sh</code> as alpha blending levels. The <code>blend</code> argument is applied to the blend level of each pixel, with values ranging from 0 for transparent to 255 for opaque.</p>
+<hr />
+<h5><code>PocoBitmapPattern</code></h5>
+<pre><code class="language-c"><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">PocoBitmapPattern</span><span class="hljs-params">(Poco poco, PocoBitmap bits,
+		PocoCoordinate x, PocoCoordinate y,
+		PocoDimension w, PocoDimension h,
+		PocoDimension sx, PocoDimension sy,
+		PocoDimension sw, PocoDimension sh)</span></span>;
+</code></pre>
+<p><code>PocoBitmapPattern</code> fills the area enclosed by the <code>x</code>, <code>y</code>, <code>w</code>, and <code>h</code> arguments with repeating copies of the area of the bitmap <code>bits</code> enclosed by the <code>sx</code>, <code>sy</code>, <code>sw</code>, and <code>sh</code> arguments. The bitmap must be of type <code>kCommodettoBitmapDefault</code>.</p>
+<hr />
+<h5><code>PocoDrawFrame</code></h5>
+<pre><code class="language-c"><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">PocoDrawFrame</span><span class="hljs-params">(Poco poco,
+	<span class="hljs-keyword">uint8_t</span> *data, <span class="hljs-keyword">uint32_t</span> dataSize,
+	PocoCoordinate x, PocoCoordinate y,
+	PocoDimension w, PocoDimension h)</span></span>;
+</code></pre>
+<p><code>PocoDrawFrame</code> renders a compressed image stored in the Moddable variant of the ColorCell algorithm. The image to render is pointed to by the <code>data</code> argument with a byte count specified by the <code>dataSize</code> argument. The image is rendered at the location specified by the <code>x</code> and <code>y</code> arguments. The source dimensions (unclipped size) of the compressed image are given by the <code>w</code> and <code>h</code> arguments.</p>
+<hr />
+<h5><code>PocoClipPush</code></h5>
+<pre><code class="language-c"><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">PocoClipPush</span><span class="hljs-params">(Poco poco, PocoCoordinate x, PocoCoordinate y,
+		 PocoDimension w, PocoDimension h)</span></span>;
+</code></pre>
+<p><code>PocoClipPush</code> pushes the current clip area on the stack and then replaces the current clip with the intersection of the current clip and the area enclosed by the <code>x</code>, <code>y</code>, <code>w</code>, and <code>h</code> arguments.</p>
+<hr />
+<h5><code>PocoClipPop</code></h5>
+<pre><code class="language-c"><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">PocoClipPop</span><span class="hljs-params">(Poco poco)</span></span>;
+</code></pre>
+<p><code>PocoClipPop</code> pops the clip from the stack and replaces the current clip with the popped value.</p>
+<hr />
+<h5><code>PocoOriginPush</code></h5>
+<pre><code class="language-c"><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">PocoOriginPush</span><span class="hljs-params">(Poco poco, PocoCoordinate x, PocoCoordinate y)</span></span>;
+</code></pre>
+<p><code>PocoOriginPush</code> pushes the current origin on the stack and then offsets the current origin by the <code>x</code> and <code>y</code> arguments.</p>
+<hr />
+<h5><code>PocoOriginPop</code></h5>
+<pre><code class="language-c"><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">PocoOriginPop</span><span class="hljs-params">(Poco poco)</span></span>;
+</code></pre>
+<p><code>PocoOriginPop</code> pops the origin from the stack and replaces the current origin with the popped value.</p>
+<hr />
+<h5><code>PocoDrawingBeginFrameBuffer</code></h5>
+<pre><code class="language-c"><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">PocoDrawingBeginFrameBuffer</span><span class="hljs-params">(Poco poco, PocoCoordinate x, PocoCoordinate y,
+	PocoDimension w, PocoDimension h,
+	PocoPixel *pixels, <span class="hljs-keyword">int16_t</span> rowBytes)</span></span>;
+</code></pre>
+<p><code>PocoDrawingBeginFrameBuffer</code> begins the immediate mode rendering process for an update area of pixels bounded by the <code>x</code>, <code>y</code>, <code>w</code>, and <code>h</code> parameters. The <code>pixels</code> parameter points to first scan line of output pixels. The <code>rowBytes</code> parameters is the stride in bytes between scanlines.</p>
+<hr />
+<h5><code>PocoDrawingEndFrameBuffer</code></h5>
+<pre><code class="language-c"><span class="hljs-function"><span class="hljs-keyword">int</span> <span class="hljs-title">PocoDrawingEndFrameBuffer</span><span class="hljs-params">(Poco poco;
+</span></span></code></pre>
+<p><code>PocoDrawingEndFrameBuffer</code> indicates that all drawing is complete for the current frame.</p>
+<hr />
+<p><a id="odds-and-ends"></a></p>
+<h2>Odds and Ends</h2>
+<h3>Relationship to Commodetto</h3>
+<p>The C API of Poco may be used independently from Commodetto. Poco is the first renderer integrated into Commodetto. Poco runs on all hardware capable of supporting Commodetto--in particular the XS JavaScript engine. The Poco C API can also run on considerably less powerful hardware than Commodetto.</p>
+<h3>About the Name &quot;Poco&quot;</h3>
+<p>The word <em>poco</em> is a term used in music meaning &quot;a little.&quot;</p>
+
+</div>
+
+        </div>
+    </body>
+</html>

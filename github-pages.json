@@ -1,0 +1,16 @@
+{
+  "outputDir": "docs",
+  "templateDir": "docs-template",
+  "mdDir": "documentation",
+  "readme": "documentation/index.md",
+  "important": ["CNAME"],
+  "templates": {},
+  "view": {
+    "title": "Moddable",
+    "gitUrl": "https://github.com/moddable-opensource/moddable",
+    "name": "Moddable",
+    "headline": "Moddable SDK"
+  },
+  "port": 8080,
+  "repo": "https://github.com/moddable-opensource/moddable"
+}

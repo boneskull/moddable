@@ -7,7 +7,7 @@ The examples demonstrate how to use many of the capabilities of the Moddable SDK
 
 This document is a guide to building example applications in the Moddable SDK. It describes how to build apps using the `mcconfig` command line tool, configure builds for target platforms, and modify builds to support different screen/touch drivers and Wi-Fi configurations for microcontroller device targets.
 
-> **Note**: This document assumes you have installed the Moddable SDK on your development machine. The [Getting Started](../documentation/Moddable%20SDK%20-%20Getting%20Started.md) document describes how to install the SDK.
+> **Note**: This document assumes you have installed the Moddable SDK on your development machine. The [Getting Started](../documentation/Moddable_SDK_-_Getting_Started.md) document describes how to install the SDK.
 
 ## Table of Contents
 

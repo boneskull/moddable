@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moddable</title>
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata|Open+Sans" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/hljs.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/markdown.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
+</head>
+    <body>
+<div id="header">
+    <div class="package"></div>
+    <a href="https:&#x2F;&#x2F;github.com&#x2F;moddable-opensource&#x2F;moddable" class="badge" title="Github.com"><img src="/assets/images/github.png" alt="Github" /></a>
+    <a href="/" class="home"><strong>Moddable</strong> <span class="headline">Moddable SDK</span></a>
+</div>
+        <div id="container">
+            <div id="sidebar">
+<ul class="list">
+    <li>
+        <h4><a href="/">Home</a></h4>
+        <ul>
+            <li><a href="https://www.moddable.com">Moddable</a></li>
+            <li><a href="/">Documentation</a></li>
+        </ul>
+    </li>
+    <li>
+        <h4><a href="/">Resources</a></h4>
+        <ul>
+            <li><a href="https://github.com/moddable-opensource/moddable">GitHub</a></li>
+            <li><a href="/">Link 2</a></li>
+        </ul>
+    </li>
+</ul>
+            </div>
+
+<div id="content">
+<h1>SSD1306 display driver</h1>
+<p>Copyright 2017 Moddable Tech, Inc.</p>
+<p>Revised: December 28, 2017</p>
+<p><strong>Warning</strong>: These notes are preliminary. Omissions and errors are likely. If you encounter problems, please ask for assistance.</p>
+<p>The <a href="https://cdn-shop.adafruit.com/datasheets/SSD1306.pdf">SSD1306</a> OLED display controller drives monochrome (1-bit) displays. Displays are 128 pixels wide, and available in heights of 32, 64, and 128 pixels. The SSD1306 controller may be connected using SPI or I2C.</p>
+<h3>Adding SSD1306 to a project</h3>
+<p>To add the SSD1306 driver to a project, include its manifest:</p>
+<pre><code>&quot;include&quot;: [
+	/* other includes here */
+	&quot;$(MODULES)/drivers/ssd1306/manifest.json&quot;,
+],
+</code></pre>
+<p>If using Commodetto or Piu, set the <code>screen</code> property of the <code>config</code> object in the manifest to <code>ssd1306</code> to make SSD1306 the default display driver. Since there is no touch input, disable that in the manifest by setting the touch driver name to an empty string.</p>
+<pre><code>&quot;config&quot;: {
+	&quot;screen&quot;: &quot;ssd1306&quot;,
+	&quot;touch&quot;: &quot;&quot;,
+},
+</code></pre>
+<h3>Pixel format</h3>
+<p>The SSD1306 driver requires 8-bit gray (<code>gray256</code>) pixels as input. When building with <code>mcconfig</code>, set the pixel format to <code>gray256</code> on the command line:</p>
+<pre><code>mcconfig -m -p esp -f gray256
+</code></pre>
+<h3>Defines</h3>
+<p>In the <code>defines</code> object, declare the pixel <code>width</code> and <code>height</code>. The default connection is SPI, but it is recommended to explicitly set the connection type in the application manifest:</p>
+<pre><code>&quot;defines&quot;: {
+	&quot;ssd1306&quot;: {
+		&quot;width&quot;: 128,
+		&quot;height&quot;: 32,
+		&quot;spi&quot;: true,
+		&quot;i2c&quot;: false,
+	}
+}
+</code></pre>
+<h3>Dither</h3>
+<p>The SSD1306 driver implements optional dithering. Dithering allows an approximation of gray pixels on black and white OLED displays. Enabling dithering uses about an additional 520 bytes of RAM and renders slower. Whether dithering is best for a given application depends on what it draws and the required frame rate. Dithering is disabled by default. To enable dithering, set the <code>dither</code> property to <code>true</code> in the <code>defines</code> section of the manifest.</p>
+<pre><code>&quot;defines&quot;: {
+	&quot;ssd1306&quot;: {
+		/* other properties here */
+		&quot;dither&quot;: true,
+	}
+}
+</code></pre>
+<h3>Using SPI</h3>
+<p>When using a SPI interface, the <code>defines</code> object must contain the <code>spi_port</code>, along with the <code>DC</code> and <code>CS</code> pin numbers. If a <code>RST</code> pin is provided, the device will be reset when the constructor is invoked. If the <code>cs_port</code>, <code>dc_port</code>, or <code>rst_port</code> properties are not provided, they default to NULL.</p>
+<pre><code>&quot;defines&quot;: {
+	&quot;ssd1306&quot;: {
+		/* other properties here */	
+		&quot;cs_pin&quot;: 4,
+		&quot;dc_pin&quot;: 2,
+		&quot;rst_pin&quot;: 0,
+		&quot;spi_port&quot;: &quot;#HSPI&quot;,
+		&quot;spi&quot;: true,
+		&quot;i2c&quot;: false,
+	}
+}
+</code></pre>
+<p>The <code>hz</code> property, when present, specifies the SPI bus speed.</p>
+<h3>Using I2C</h3>
+<p>When using an I2C interface, the <code>defines</code> object may contain the I2C address of the device. If not provided, it defaults to <code>0x3C</code> or may be passed the constructor as the <code>address</code> property of the dictionary. The <code>scl_pin</code> and <code>sda_pin</code> properties define the pins to use for I2C. If not present, they may be provided by the constructor as the <code>scl</code> and <code>sda</code> properties of the dictionary. If they are not passed to the constructor, the default I2C interface is used.</p>
+<pre><code>&quot;defines&quot;: {
+	&quot;ssd1306&quot;: {
+		/* other properties here */	
+		&quot;scl_pin&quot;: 4,
+		&quot;sda_pin&quot;: 5,
+		&quot;address&quot;: 0x3c,
+		&quot;spi&quot;: false,
+		&quot;i2c&quot;: true,
+	}
+}
+</code></pre>
+<p>The <code>hz</code> property, when present, specifies the I2C bus speed.</p>
+<p><strong>Note</strong>: The I2C interface typically operates at a slower speed, so SPI is preferred when available.</p>
+<h3>Drawing</h3>
+<p>The SSD1306 driver always updates the full display area; partial updates are not supported. Piu automatically takes care of this, so script using Piu do not need to take this into account. Using Poco, an easy way to update the entire screen is to call <code>poco.begin()</code> with no parameters.</p>
+<p>It may be possible to implement partial updates quantized to 8-pixel high full width bands.</p>
+
+</div>
+
+        </div>
+    </body>
+</html>

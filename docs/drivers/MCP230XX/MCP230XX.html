@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moddable</title>
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata|Open+Sans" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/hljs.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/markdown.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
+</head>
+    <body>
+<div id="header">
+    <div class="package"></div>
+    <a href="https:&#x2F;&#x2F;github.com&#x2F;moddable-opensource&#x2F;moddable" class="badge" title="Github.com"><img src="/assets/images/github.png" alt="Github" /></a>
+    <a href="/" class="home"><strong>Moddable</strong> <span class="headline">Moddable SDK</span></a>
+</div>
+        <div id="container">
+            <div id="sidebar">
+<ul class="list">
+    <li>
+        <h4><a href="/">Home</a></h4>
+        <ul>
+            <li><a href="https://www.moddable.com">Moddable</a></li>
+            <li><a href="/">Documentation</a></li>
+        </ul>
+    </li>
+    <li>
+        <h4><a href="/">Resources</a></h4>
+        <ul>
+            <li><a href="https://github.com/moddable-opensource/moddable">GitHub</a></li>
+            <li><a href="/">Link 2</a></li>
+        </ul>
+    </li>
+</ul>
+            </div>
+
+<div id="content">
+<h1>MCP230XX</h1>
+<p>Copyright 2017 Moddable Tech, Inc.</p>
+<p>Revised: Dec 21, 2017</p>
+<p>The <a href="http://www.microchip.com/wwwproducts/en/MCP23008">MCP23008</a> device provides 8-bit, general purpose, parallel I/O expansion for I2C bus applications. (Description from MCP23008 product page)</p>
+<p>The <a href="http://www.microchip.com/wwwproducts/en/MCP23017">MCP23017</a> device provides 16-bit, general purpose, parallel I/O expansion for I2C bus applications. (Description from MCP23017 product page)</p>
+<h3>Module &quot;MCP230XX&quot;</h3>
+<p>The driver module &quot;MCP230XX&quot; exports the following:</p>
+<pre><code class="language-js"><span class="hljs-keyword">export</span> { 
+  MCP23008, 
+  MCP23017
+};
+</code></pre>
+<h3>MCP23008 Class</h3>
+<p>The <code>MCP23008</code> class produces instances that represent a single MCP23008 IC on the I2C bus. The <code>MCP23008</code> class extends an internal <code>Expander</code> class, which extends the <code>SMBus</code> class. <code>Expander</code> is not exported.</p>
+<p>Instance objects of <code>MCP23008</code> contain 8 <code>Pin</code> instance object entries.</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> Timer <span class="hljs-keyword">from</span> <span class="hljs-string">"timer"</span>;
+<span class="hljs-keyword">import</span> {MCP23008} <span class="hljs-keyword">from</span> <span class="hljs-string">"MCP230XX"</span>;
+
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+  <span class="hljs-keyword">let</span> leds = <span class="hljs-keyword">new</span> MCP23008(); <span class="hljs-comment">// defaults to 0x20!</span>
+  <span class="hljs-keyword">let</span> mask = <span class="hljs-number">0x88</span>;
+
+  Timer.repeat(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    mask = ((mask &lt;&lt; <span class="hljs-number">1</span>) | (mask &gt;&gt; <span class="hljs-number">7</span>)) &amp; <span class="hljs-number">0xFF</span>;
+
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">8</span>; i++) {
+      leds[i].write(mask &amp; (<span class="hljs-number">1</span> &lt;&lt; i) ? <span class="hljs-number">1</span> : <span class="hljs-number">0</span>);
+    }
+  }, <span class="hljs-number">50</span>);
+}
+</code></pre>
+<p><img src="ESP8266-MCP23008-leds.png" alt="" /></p>
+<h4>Constructor Description</h4>
+<h5><code>MCP23008([dictionary])</code></h5>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>dictionary</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">An object with properties to initialize the result. Supported parameters are specified in the <a href="#MCP23008-dictionary">Dictionary</a> section below.</td>
+</tr>
+</tbody>
+</table>
+<pre><code>let leds = new MCP23008({ sda: 4, scl: 5 });
+</code></pre>
+<p><a id="MCP23008-dictionary"></a></p>
+<h4>Dictionary</h4>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default Value</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>address</code></td>
+<td><code>number</code></td>
+<td><code>0x20</code></td>
+<td style="text-align:left">The address of the I2C device</td>
+</tr>
+<tr>
+<td><code>hz</code></td>
+<td><code>number</code></td>
+<td>100kHz</td>
+<td style="text-align:left">The clock speed of the I2C device.</td>
+</tr>
+<tr>
+<td><code>sda</code></td>
+<td><code>number</code></td>
+<td>4</td>
+<td style="text-align:left">The I2C sda (data) pin.</td>
+</tr>
+<tr>
+<td><code>scl</code></td>
+<td><code>number</code></td>
+<td>5</td>
+<td style="text-align:left">The I2C scl (clock) pin.</td>
+</tr>
+<tr>
+<td><code>inputs</code></td>
+<td><code>number</code> (byte)</td>
+<td><code>0b11111111</code></td>
+<td style="text-align:left">A byte representing the input/output initialization state of the 8 GPIO pins. <code>1</code> for input, <code>0</code> for output</td>
+</tr>
+<tr>
+<td><code>pullups</code></td>
+<td><code>number</code> (byte)</td>
+<td><code>0b00000000</code></td>
+<td style="text-align:left">A byte representing the pullup initialization state of the 8 GPIO pins. <code>1</code> for pullup, <code>0</code> for default</td>
+</tr>
+</tbody>
+</table>
+<h4>Properties</h4>
+<p>All properties are read-only.</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Value</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>length</code></td>
+<td><code>number</code></td>
+<td><code>8</code></td>
+<td style="text-align:left">Number of pins in collection</td>
+</tr>
+<tr>
+<td><code>offset</code></td>
+<td><code>number</code></td>
+<td><code>0</code></td>
+<td style="text-align:left">Register offset</td>
+</tr>
+<tr>
+<td><code>IODIR</code></td>
+<td><code>number</code></td>
+<td><code>0x00</code></td>
+<td style="text-align:left"><code>IODIR</code> register</td>
+</tr>
+<tr>
+<td><code>GPIO</code></td>
+<td><code>number</code></td>
+<td><code>0x06</code></td>
+<td style="text-align:left"><code>GPIO</code> register</td>
+</tr>
+<tr>
+<td><code>GPPU</code></td>
+<td><code>number</code></td>
+<td><code>0x09</code></td>
+<td style="text-align:left"><code>GPPU</code> register</td>
+</tr>
+<tr>
+<td>0-8</td>
+<td><code>pin</code></td>
+<td></td>
+<td style="text-align:left"><code>Pin</code> instances (see the section <a href="#pin-class">Pin Class</a>)</td>
+</tr>
+</tbody>
+</table>
+<h4>Methods</h4>
+<h5><code>write(byte)</code></h5>
+<p>Temporarily sets the mode of all pins to output and writes all pins at once.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> expander = <span class="hljs-keyword">new</span> MCP23008(); <span class="hljs-comment">// defaults to 0x20!</span>
+expander.write(<span class="hljs-number">0b11111111</span>); <span class="hljs-comment">// Set all pins to 1</span>
+</code></pre>
+<h5><code>read()</code></h5>
+<p>Temporarily sets the mode of all pins to input, reads all pins at once, and returns their values.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> expander = <span class="hljs-keyword">new</span> MCP23008(); <span class="hljs-comment">// defaults to 0x20!</span>
+trace(<span class="hljs-string">`<span class="hljs-subst">${expander.read()}</span>\n`</span>); 
+</code></pre>
+<h3>MCP23017 Class</h3>
+<p>The <code>MCP23017</code> class produces instances that represent a single MCP23017 IC on the I2C bus. The <code>MCP23017</code> class extends an internal <code>Expander</code> class, which extends the <code>SMBus</code> class.</p>
+<p>Instance objects of <code>MCP23017</code> contain 16 <code>Pin</code> instance object entries.</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> Timer <span class="hljs-keyword">from</span> <span class="hljs-string">"timer"</span>;
+<span class="hljs-keyword">import</span> {MCP23017} <span class="hljs-keyword">from</span> <span class="hljs-string">"MCP230XX"</span>;
+
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+  <span class="hljs-keyword">let</span> leds = <span class="hljs-keyword">new</span> MCP23017(); <span class="hljs-comment">// defaults to 0x20!</span>
+  <span class="hljs-keyword">let</span> mask = <span class="hljs-number">0x8888</span>;
+
+  Timer.repeat(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    mask = ((mask &lt;&lt; <span class="hljs-number">1</span>) | (mask &gt;&gt; <span class="hljs-number">15</span>)) &amp; <span class="hljs-number">0xFFFF</span>;
+
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">16</span>; i++) {
+      leds[i].write(mask &amp; (<span class="hljs-number">1</span> &lt;&lt; i) ? <span class="hljs-number">1</span> : <span class="hljs-number">0</span>);
+    }
+  }, <span class="hljs-number">50</span>);
+}
+</code></pre>
+<p><img src="ESP8266-MCP23017-leds.png" alt="" /></p>
+<h4>Constructor Description</h4>
+<h5><code>MCP23017([dictionary])</code></h5>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>dictionary</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">An object with properties to initialize the result. Supported parameters are specified in the <a href="#MCP23017-dictionary">Dictionary</a> section below.</td>
+</tr>
+</tbody>
+</table>
+<pre><code>let leds = new MCP23017({ sda: 4, scl: 5 });
+</code></pre>
+<p><a id="MCP23017-dictionary"></a></p>
+<h4>Dictionary</h4>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default Value</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>address</code></td>
+<td><code>number</code></td>
+<td><code>0x20</code></td>
+<td style="text-align:left">The address of the I2C device</td>
+</tr>
+<tr>
+<td><code>hz</code></td>
+<td><code>number</code></td>
+<td>100kHz</td>
+<td style="text-align:left">The clock speed of the I2C device.</td>
+</tr>
+<tr>
+<td><code>sda</code></td>
+<td><code>number</code></td>
+<td>4</td>
+<td style="text-align:left">The I2C sda (data) pin.</td>
+</tr>
+<tr>
+<td><code>scl</code></td>
+<td><code>number</code></td>
+<td>5</td>
+<td style="text-align:left">The I2C scl (clock) pin.</td>
+</tr>
+<tr>
+<td><code>inputs</code></td>
+<td><code>number</code> (word)</td>
+<td><code>0b1111111111111111</code></td>
+<td style="text-align:left">A word representing the input/output initialization state of the 16 GPIO pins. <code>1</code> for input, <code>0</code> for output</td>
+</tr>
+<tr>
+<td><code>pullups</code></td>
+<td><code>number</code> (word)</td>
+<td><code>0b0000000000000000</code></td>
+<td style="text-align:left">A word representing the pullup initialization state of the 16 GPIO pins. <code>1</code> for pullup, <code>0</code> for default</td>
+</tr>
+</tbody>
+</table>
+<h4>Properties</h4>
+<p>All properties are read-only.</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Value</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>length</code></td>
+<td><code>number</code></td>
+<td><code>16</code></td>
+<td style="text-align:left">Number of pins in collection</td>
+</tr>
+<tr>
+<td><code>offset</code></td>
+<td><code>number</code></td>
+<td><code>1</code></td>
+<td style="text-align:left">Register offset</td>
+</tr>
+<tr>
+<td><code>IODIR</code></td>
+<td><code>number</code></td>
+<td><code>0x00</code></td>
+<td style="text-align:left"><code>IODIR</code> register</td>
+</tr>
+<tr>
+<td><code>GPIO</code></td>
+<td><code>number</code></td>
+<td><code>0x0C</code></td>
+<td style="text-align:left"><code>GPIO</code> register</td>
+</tr>
+<tr>
+<td><code>GPPU</code></td>
+<td><code>number</code></td>
+<td><code>0x12</code></td>
+<td style="text-align:left"><code>GPPU</code> register</td>
+</tr>
+<tr>
+<td>0-16</td>
+<td><code>pin</code></td>
+<td></td>
+<td style="text-align:left"><code>Pin</code> instances (see the section <a href="#pin-class">Pin Class</a>)</td>
+</tr>
+</tbody>
+</table>
+<h4>Methods</h4>
+<h5><code>write(word)</code></h5>
+<p>Temporarily sets the mode of all pins to output and writes all pins at once.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> expander = <span class="hljs-keyword">new</span> MCP23017(); <span class="hljs-comment">// defaults to 0x20!</span>
+expander.write(<span class="hljs-number">0b1111111111111111</span>); <span class="hljs-comment">// Set all pins to 1</span>
+</code></pre>
+<h5><code>read()</code></h5>
+<p>Temporarily sets the mode of all pins to input, reads all pins at once, and returns their values.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> expander = <span class="hljs-keyword">new</span> MCP23017(); <span class="hljs-comment">// defaults to 0x20!</span>
+trace(<span class="hljs-string">`<span class="hljs-subst">${expander.read()}</span>\n`</span>); 
+</code></pre>
+<h3>Pin Class</h3>
+<p>The <code>Pin</code> class represents a single pin within a <code>MCP23008</code> or <code>MCP23017</code> instance object. The class is not exported; <code>Pin</code> instances are automatically created by <code>MCP23008</code> and <code>MCP23017</code> instances.</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> Timer <span class="hljs-keyword">from</span> <span class="hljs-string">"timer"</span>;
+<span class="hljs-keyword">import</span> { MCP23008 } <span class="hljs-keyword">from</span> <span class="hljs-string">"MCP230XX"</span>;
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+	<span class="hljs-keyword">const</span> leds = <span class="hljs-keyword">new</span> MCP23008({
+		<span class="hljs-attr">inputs</span>: <span class="hljs-number">0b00000000</span>
+	});
+  
+  	<span class="hljs-comment">// leds[0], leds[1], etc. are Pin instances</span>
+	leds[<span class="hljs-number">0</span>].write(<span class="hljs-number">1</span>);
+	leds[<span class="hljs-number">1</span>].write(<span class="hljs-number">0</span>);
+	leds[<span class="hljs-number">2</span>].write(<span class="hljs-number">1</span>);
+	leds[<span class="hljs-number">3</span>].write(<span class="hljs-number">0</span>);
+	leds[<span class="hljs-number">4</span>].write(<span class="hljs-number">1</span>);
+	leds[<span class="hljs-number">5</span>].write(<span class="hljs-number">0</span>);
+	leds[<span class="hljs-number">6</span>].write(<span class="hljs-number">1</span>);
+	leds[<span class="hljs-number">7</span>].write(<span class="hljs-number">0</span>);
+}
+</code></pre>
+<p><img src="ESP8266-MCP23008-leds.png" alt="" /></p>
+<h4>Constructor Description</h4>
+<h5><code>Pin(dictionary)</code></h5>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>dictionary</code></td>
+<td><code>object</code></td>
+<td style="text-align:left">An object with properties to initialize the result. The required parameters are specified in the <a href="#Pin-dictionary">Dictionary</a> section below.</td>
+</tr>
+</tbody>
+</table>
+<p><a id="Pin-dictionary"></a></p>
+<h4>Dictionary</h4>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pin</code></td>
+<td><code>number</code></td>
+<td style="text-align:left">The GPIO pin number</td>
+</tr>
+<tr>
+<td><code>expander</code></td>
+<td><code>expander</code></td>
+<td style="text-align:left">The instance of <code>Expander</code> that created this <code>Pin</code> instance</td>
+</tr>
+</tbody>
+</table>
+<h4>Properties</h4>
+<p>All properties are read-only.</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pin</code></td>
+<td><code>number</code></td>
+<td style="text-align:left">The GPIO pin number</td>
+</tr>
+<tr>
+<td><code>expander</code></td>
+<td><code>expander</code></td>
+<td style="text-align:left">The instance of <code>Expander</code> that this <code>Pin</code> belongs to</td>
+</tr>
+</tbody>
+</table>
+<h4>Methods</h4>
+<h5><code>mode(mode)</code></h5>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Type</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>mode</code></td>
+<td><code>number</code></td>
+<td style="text-align:left">A number representing the desired mode. May be input, input pullup, or output.</td>
+</tr>
+</tbody>
+</table>
+<p>Sets the pin's mode to the specified mode.</p>
+<h5><code>read()</code></h5>
+<p>Sets the pin's mode to input, reads the value of the pin object, and returns the value.</p>
+<h5><code>write(value)</code></h5>
+<p>Sets the pin's mode to output and writes the value to the pin object.</p>
+<h3>Manifest Example</h3>
+<pre><code>{
+  &quot;include&quot;: [
+    &quot;$(MODDABLE)/examples/manifest_base.json&quot;,
+    &quot;$(MODULES)/drivers/mcp230xx/manifest.json&quot;
+  ],
+  &quot;modules&quot;: {
+    &quot;*&quot;: [
+      &quot;./main&quot;,
+    ]
+  },
+  &quot;platforms&quot;: {
+    &quot;esp&quot;: {
+      &quot;modules&quot;: {
+        &quot;*&quot;: &quot;$(MODULES)/pins/i2c/esp/*&quot;,
+      },
+    },
+    &quot;esp32&quot;: {
+      &quot;modules&quot;: {
+        &quot;*&quot;: &quot;$(MODULES)/pins/i2c/esp32/*&quot;,
+      },
+    },
+  }
+}
+</code></pre>
+
+</div>
+
+        </div>
+    </body>
+</html>

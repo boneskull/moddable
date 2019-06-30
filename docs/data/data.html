@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moddable</title>
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata|Open+Sans" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/hljs.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/markdown.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
+</head>
+    <body>
+<div id="header">
+    <div class="package"></div>
+    <a href="https:&#x2F;&#x2F;github.com&#x2F;moddable-opensource&#x2F;moddable" class="badge" title="Github.com"><img src="/assets/images/github.png" alt="Github" /></a>
+    <a href="/" class="home"><strong>Moddable</strong> <span class="headline">Moddable SDK</span></a>
+</div>
+        <div id="container">
+            <div id="sidebar">
+<ul class="list">
+    <li>
+        <h4><a href="/">Home</a></h4>
+        <ul>
+            <li><a href="https://www.moddable.com">Moddable</a></li>
+            <li><a href="/">Documentation</a></li>
+        </ul>
+    </li>
+    <li>
+        <h4><a href="/">Resources</a></h4>
+        <ul>
+            <li><a href="https://github.com/moddable-opensource/moddable">GitHub</a></li>
+            <li><a href="/">Link 2</a></li>
+        </ul>
+    </li>
+</ul>
+            </div>
+
+<div id="content">
+<h1>Data</h1>
+<p>Copyright 2017 Moddable Tech, Inc.<BR>
+Revised: November 21, 2018</p>
+<p><strong>Warning</strong>: These notes are preliminary. Omissions and errors are likely. If you encounter problems, please ask for assistance.</p>
+<h2>Table of Contents</h2>
+<ul>
+<li><a href="#base64">Base64</a></li>
+<li><a href="#hex">Hex</a></li>
+</ul>
+<p><a id="base64"></a></p>
+<h2>class Base64</h2>
+<p>The <code>Base64</code> class provides static functions to encode and decode using the Base64 algorithm defined in <a href="https://tools.ietf.org/html/rfc4648">RFC 4648</a>.</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> Base64 <span class="hljs-keyword">from</span> <span class="hljs-string">"base64"</span>;
+</code></pre>
+<h3><code>static decode(str)</code></h3>
+<p>The <code>decode</code> function takes a <code>String</code> encoded in Base64 and returns an <code>ArrayBuffer</code> with the decoded bytes.</p>
+<pre><code class="language-js">trace(Base64.decode(<span class="hljs-string">"aGVsbG8sIHdvcmxk"</span>) + <span class="hljs-string">"\n"</span>);
+<span class="hljs-comment">// output: "hello, world"</span>
+</code></pre>
+<h3><code>static encode(data)</code></h3>
+<p>The <code>encode</code> function takes a <code>String</code> or <code>ArrayBuffer</code> and returns an <code>ArrayBuffer</code> containing the data with Base64 encoding applied.</p>
+<pre><code class="language-js">trace(Base64.encode(<span class="hljs-string">"hello, world"</span>) + <span class="hljs-string">"\n"</span>);
+<span class="hljs-comment">// output: "aGVsbG8sIHdvcmxk"</span>
+</code></pre>
+<blockquote>
+<p><strong>Note</strong>: When a string is provided, its contents are treated as UTF-8 encoded characters when performing Base64 encoding.</p>
+</blockquote>
+<p><a id="hex"></a></p>
+<h2>class Hex</h2>
+<p>The <code>Hex</code> class provides static functions to convert between an <code>ArrayBuffer</code> and hexadecimal encoded <code>String</code> values.</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> Hex <span class="hljs-keyword">from</span> <span class="hljs-string">"hex"</span>;
+</code></pre>
+<h3><code>static toBuffer(string [, separator])</code></h3>
+<p>The <code>toBuffer</code> function converts a <a href="https://en.wikipedia.org/wiki/Hexadecimal">hexadecimal</a> encoded <code>String</code>, with optional separator, to an <code>ArrayBuffer</code>.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> b0 = Hex.toBuffer(<span class="hljs-string">"0123456789abcdef"</span>);
+<span class="hljs-keyword">let</span> b1 = Hex.toBuffer(<span class="hljs-string">"01:23:45:67:89:AB:CD:EF"</span>, <span class="hljs-string">":"</span>);
+</code></pre>
+<p>The hexadecimal digits may be uppercase or lowercase. If the optional separator argument is provided, it must appear between each pair of hexadecimal digits.</p>
+<h3><code>static toString(buffer [, separator]);</code></h3>
+<p>The <code>toString</code> function converts an <code>ArrayBuffer</code> to a hexadecimal encoded <code>String</code>.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> buffer = Hex.toBuffer(<span class="hljs-string">"0123456789abcdef"</span>);
+<span class="hljs-keyword">let</span> s0 = Hex.toString(buffer, <span class="hljs-string">"."</span>);
+<span class="hljs-comment">// s0 is 01.23.45.67.89.AB.CD.EF</span>
+<span class="hljs-keyword">let</span> s1 = Hex.toString(buffer);
+<span class="hljs-comment">// s1 is 0123456789ABCDEF</span>
+</code></pre>
+
+</div>
+
+        </div>
+    </body>
+</html>

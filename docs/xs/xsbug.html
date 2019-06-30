@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moddable</title>
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata|Open+Sans" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/hljs.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/markdown.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
+</head>
+    <body>
+<div id="header">
+    <div class="package"></div>
+    <a href="https:&#x2F;&#x2F;github.com&#x2F;moddable-opensource&#x2F;moddable" class="badge" title="Github.com"><img src="/assets/images/github.png" alt="Github" /></a>
+    <a href="/" class="home"><strong>Moddable</strong> <span class="headline">Moddable SDK</span></a>
+</div>
+        <div id="container">
+            <div id="sidebar">
+<ul class="list">
+    <li>
+        <h4><a href="/">Home</a></h4>
+        <ul>
+            <li><a href="https://www.moddable.com">Moddable</a></li>
+            <li><a href="/">Documentation</a></li>
+        </ul>
+    </li>
+    <li>
+        <h4><a href="/">Resources</a></h4>
+        <ul>
+            <li><a href="https://github.com/moddable-opensource/moddable">GitHub</a></li>
+            <li><a href="/">Link 2</a></li>
+        </ul>
+    </li>
+</ul>
+            </div>
+
+<div id="content">
+<h1>xsbug</h1>
+<p>The <code>xsbug</code> JavaScript source level debugger is a full featured debugger that supports debugging modules and applications for <a href="../xs/XS%20Platforms.html">XS platforms</a>. The <code>xsbug</code> debugger is automatically launched when deploying debug builds and connects to devices via USB or over Wi-Fi. Similar to other debuggers, <code>xsbug</code> supports setting breakpoints, browsing source code, the call stack and variables. The <code>xsbug</code> debugger additionally provides real-time instrumentation to track memory usage and profile application and resource consumption.</p>
+<p>A video demonstration of xsbug is available <a href="https://youtu.be/vqu8gDV7AOo">here</a>.</p>
+<h2>Machine Tabs</h2>
+<p>Figure 1 shows the machine tab view. At the top of the window, there are tabs for all XS virtual machines connected to <strong>xsbug</strong> (highlighted in red in the image below). The orange bullet signifies a &quot;broken&quot; virtual machine. Select the tab to see where and why the virtual machine is broken.</p>
+<blockquote>
+<p><strong>Note:</strong> A virtual machine is &quot;broken&quot; when stopped at a breakpoint, <code>debugger</code> statement or exception.</p>
+</blockquote>
+<p><strong>Figure 1.</strong> Machine tab view</p>
+<p><img src="../assets/xsbug/machines.png" alt="" /></p>
+<p>The left pane displays:</p>
+<ul>
+<li>The <strong>Kill</strong> <img src="../assets/xsbug/kill.png" alt="" />, <strong>Break</strong> <img src="../assets/xsbug/break.png" alt="" />, <strong>Run</strong> <img src="../assets/xsbug/run.png" alt="" />, <strong>Step</strong> <img src="../assets/xsbug/step.png" alt="" />, <strong>Step In</strong>  <img src="../assets/xsbug/step-in.png" alt="" /> and <strong>Step Out</strong>  <img src="../assets/xsbug/step-out.png" alt="" /> buttons. Corresponding menu items and shortcuts are also available in the <strong>Debug</strong> menu to control the virtual machine.</li>
+<li>The <strong>Instrumentation</strong> panel. Use this to track memory usage and profile application and resource consumption in real-time.</li>
+<li>The <strong>Calls</strong> stack panel. Select a row in this panel to see where the call happened.</li>
+<li>The <strong>Locals</strong>, <strong>Modules</strong>, and <strong>Globals</strong> panels. Use these to inspect values of local and global variables and see which modules are loaded. Dictionaries and arrays have the <img src="../assets/xsbug/arrow.png" alt="" /> icon next to their name. You can inspect the values of a dictionary's properties or an array's items by tapping the name to expand the row.</li>
+</ul>
+<p>The right panes display:</p>
+<ul>
+<li>The selected file.</li>
+<li>The console. Each virtual machine has its own console.</li>
+</ul>
+<h2>Breakpoints Tab</h2>
+<p>Figure 2 shows the Breakpoints tab view. Select the first tab (highlighted in red in the image below) to browse and search files and folders to set and clear breakpoints. Breakpoints can be edited even when no virtual machines are connected to <strong>xsbug</strong>.</p>
+<p>To disable/enable a breakpoint, click on the breakpoint in the breakpoint tab then select the <strong>Disable Breakpoint</strong> or <strong>Enable Breakpoint</strong> option in the <strong>Debug</strong> menu.</p>
+<p>To add files and folders to <strong>xsbug</strong>, select the <strong>Open File...</strong> and <strong>Open Folder...</strong> items in the <strong>File</strong> menu, or drag and drop files and folders into the <strong>xsbug</strong> window.</p>
+<p>To remove files and folders from <strong>xsbug</strong>, use the <strong>Close</strong> <img src="../assets/xsbug/close.png" alt="" /> button in the header of a files and folders panel.</p>
+<p><strong>Figure 2.</strong> Breakpoints tab view</p>
+<p><img src="../assets/xsbug/breakpoints.png" alt="" /></p>
+<p>The left pane displays:</p>
+<ul>
+<li>The <strong>Breakpoints</strong> themselves. Tap a row in this panel to see where the breakpoint is. In the header of this panel, there is a <strong>Trash</strong> <img src="../assets/xsbug/trash.png" alt="" /> button to clear all breakpoints.</li>
+<li>The <strong>Search</strong> panel. Use this to recursively search all the files in all the folders added to <strong>xsbug</strong>.</li>
+<li>Zero or more files and folders panels. Tap folder rows to browse, select a file row to display the file.</li>
+</ul>
+<p>The right pane displays:</p>
+<ul>
+<li>The selected file.</li>
+<li>The <strong>xsbug</strong> log, which merges the output of the consoles of all connected virtual machines. The log survives the disconnection of virtual machines.</li>
+</ul>
+<h2>File Pane</h2>
+<p>Figure 3. shows the File pane (highlighted in red). Selecting a row in the <strong>Breakpoints</strong> or <strong>Calls</strong> panels, or selecting a file in a folder panel opens a right pane with source code.</p>
+<p><strong>Figure 3.</strong> File pane</p>
+<p><img src="../assets/xsbug/file.png" alt="" /></p>
+<p>In the header of the pane:</p>
+<ul>
+<li>Tapping the parts of the path open folders in the Finder or Explorer.</li>
+<li>The <strong>Edit</strong> <img src="../assets/xsbug/edit.png" alt="" /> button opens the file in its default editor.</li>
+<li>The <strong>Find</strong> <img src="../assets/xsbug/find.png" alt="" /> button extends the header with a field to search the file.</li>
+<li>The <strong>Close</strong> <img src="../assets/xsbug/close.png" alt="" /> button closes the file pane.</li>
+</ul>
+<h2>Preferences Pane</h2>
+<p>Figure 4. shows the Preferences pane. Selecting the <strong>Preferences</strong> item from the <strong>xsbug</strong> menu opens a right pane with preferences panels.</p>
+<p><strong>Figure 4.</strong> Preferences pane</p>
+<p><img src="../assets/xsbug/preferences.png" alt="" /></p>
+<p>The <strong>Break</strong> preferences panel toggles the <strong>Break On Start</strong> and <strong>Break On Exceptions</strong> flags for all virtual machines.</p>
+<p>The <strong>Instruments</strong> preferences panel allows you to select whether you want the instrumentation panel to automatically show while all virtual machines are running and hide when a virtual machine breaks.</p>
+<p>The <strong>Network</strong> preferences panel displays the interfaces <strong>xsbug</strong> is listening on, and provides an edit field to change the port number <strong>xsbug</strong> is listening with. The default port number is <strong>5002</strong>. Changing the port number kills all connected virtual machines.</p>
+
+</div>
+
+        </div>
+    </body>
+</html>

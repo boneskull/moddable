@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moddable</title>
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata|Open+Sans" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/hljs.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/markdown.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
+</head>
+    <body>
+<div id="header">
+    <div class="package"></div>
+    <a href="https:&#x2F;&#x2F;github.com&#x2F;moddable-opensource&#x2F;moddable" class="badge" title="Github.com"><img src="/assets/images/github.png" alt="Github" /></a>
+    <a href="/" class="home"><strong>Moddable</strong> <span class="headline">Moddable SDK</span></a>
+</div>
+        <div id="container">
+            <div id="sidebar">
+<ul class="list">
+    <li>
+        <h4><a href="/">Home</a></h4>
+        <ul>
+            <li><a href="https://www.moddable.com">Moddable</a></li>
+            <li><a href="/">Documentation</a></li>
+        </ul>
+    </li>
+    <li>
+        <h4><a href="/">Resources</a></h4>
+        <ul>
+            <li><a href="https://github.com/moddable-opensource/moddable">GitHub</a></li>
+            <li><a href="/">Link 2</a></li>
+        </ul>
+    </li>
+</ul>
+            </div>
+
+<div id="content">
+<h1>AudioOut</h1>
+<p>Copyright 2018 Moddable Tech, Inc.</p>
+<p>Revised: May 31, 2018</p>
+<p><strong>Warning</strong>: These notes are preliminary. Omissions and errors are likely. If you encounter problems, please ask for assistance.</p>
+<h2>class AudioOut</h2>
+<p>The <code>AudioOut</code> class provides audio playback with a four stream mixer.</p>
+<pre><code>import AudioOut from &quot;pins/i2s&quot;;
+</code></pre>
+<h3>Play a sound</h3>
+<p>The following example plays a single bell sound. The audio is stored in a resource. The format of the resource is Moddable Audio, which is uncompressed audio with a small header containing the audio encoding.</p>
+<pre><code>let bell = new Resource(&quot;bell.maud&quot;);
+let audio = new AudioOut({sampleRate: 11025, bitsPerSample: 16, numChannels: 1, streams: 1});
+audio.enqueue(0, AudioOut.Samples, bell);
+audio.start();
+</code></pre>
+<p>The constructor configures the <code>sampleRate</code>, <code>bitsPerSample</code>, and <code>numChannels</code> for the output. The supported configurations depend on the host hardware. The constructor also configures the maximum number of parallel streams supported by the instance, one in this example.</p>
+<h3>Play a sound repeatedly</h3>
+<p>The following example plays the same bell sound four times in row by passing 4 for the optional <code>repeat</code> parameter of the <code>enqueue</code> function.</p>
+<pre><code>let audio = new AudioOut({sampleRate: 11025, bitsPerSample: 16, numChannels: 1, streams: 1});
+audio.enqueue(0, AudioOut.Samples, bell, 4);
+audio.start();
+</code></pre>
+<p>Set the repeat parameter to <code>Infinity</code> to repeat the sound indefinitely:</p>
+<pre><code>audio.enqueue(0, AudioOut.Samples, bell, Infinity);
+</code></pre>
+<h3>Receive a callback</h3>
+<p>To receive a callback after a buffer completes playback, enqueue a <code>Callback</code> command:</p>
+<pre><code>audio.enqueue(0, AudioOut.Samples, bell, 2);
+audio.enqueue(0, AudioOut.Callback, 5);
+audio.start();
+audio.callback = id =&gt; trace(`audio callback id ${id}\n`);
+</code></pre>
+<p>This example traces the value <code>5</code> to the console after the bell sound plays twice.</p>
+<h3>Play part of a sound</h3>
+<p>To play part of a sound, pass the optional <code>start</code> and <code>count</code> parameters to the <code>enqueue</code> function. The start and count parameters use sample number as units, not bytes. The following example plays the second second of the bell sound once followed by the first second twice.</p>
+<pre><code>let audio = new AudioOut({sampleRate: 11025, bitsPerSample: 16, numChannels: 1, streams: 1});
+audio.enqueue(0, AudioOut.Samples, bell, 1, 11025, 11025);
+audio.enqueue(0, AudioOut.Samples, bell, 2, 0, 11025);
+audio.start();
+</code></pre>
+<h3>Play sounds in parallel</h3>
+<p>To play sounds in parallel, enqueue them to separate stream. The following sample plays the bell sound once on stream zero in parallel with the beep sound four times on stream one.</p>
+<pre><code>let audio = new AudioOut({sampleRate: 11025, bitsPerSample: 16, numChannels: 1, streams: 2});
+audio.enqueue(0, AudioOut.Samples, bell);
+audio.enqueue(1, AudioOut.Samples, beep, 4);
+audio.start();
+</code></pre>
+<h3>Flush enqueued audio</h3>
+<p>The audio queued on a given stream may be flushed by calling <code>enqueue</code> with the <code>Flush</code> command. The following example flushes stream 1.</p>
+<pre><code>audio.enqueue(1, AudioOut.Flush);
+</code></pre>
+<h3>Stop playback</h3>
+<p>To stop playback of all streams, call <code>stop</code>.</p>
+<pre><code>audio.stop();
+</code></pre>
+<p>The <code>stop</code> function does not flush any enqueued samples. Calling <code>start</code> resumes playback where the audio was stopped.</p>
+<h3>Simple Attack-Sustain-Decay</h3>
+<p>Audio samples often consist of three sections, an initial attack followed by a sustain section that can be seamlessly looped indefinitely, followed by a final decay section for the end of the sample. The <code>AudioOut</code> instance can be used to play these kinds of audio samples for durations that are unknown when playback begins, for example playing a sample for the length of time the user holds down a button.</p>
+<p>This is done by using the ability to repeat a sample an infinite number of times, until the next sample is queued. To begin the sample playback, enqueue both the attack and sustain sections.</p>
+<pre><code>audio.enqueue(0, AudioOut.Samples, aSample, 1, aSample.attackStart, aSample.attackCount);
+audio.enqueue(0, AudioOut.Samples, aSample, Infinity, aSample.sustainStart, aSample.sustainCount);
+</code></pre>
+<p>When it is time to end playback of the sample, enqueue the decay section. This will terminate the enqueue sustain section when it completes the current repetition:</p>
+<pre><code>audio.enqueue(0, AudioOut.Samples, aSample, 1, aSample.decayStart, aSample.decayCount);
+</code></pre>
+<h3>constructor(dictionary)</h3>
+<p>The constructor accepts a dictionary to configure the audio output.</p>
+<pre><code>let audio = new AudioOut({sampleRate: 11025, bitsPerSample: 16, numChannels: 2, streams: 3});
+</code></pre>
+<p>The following properties are defined.</p>
+<ul>
+<li><strong>sampleRate</strong> -- The number of samples per second of audio to playback. Sample rates from 8000 to 48000 are supported, though this may be limited on a particular device.</li>
+<li><strong>bitsPersample</strong> -- The number of bits per sample, either 8 or 16.</li>
+<li><strong>numChannels</strong> -- The number of channels in each audio sample, 1 for mono and 2 for stereo.</li>
+<li><strong>streams</strong> -- The maximum number of simultaneous streams supported by this audio out instance. Valid values are from 1 to 4, with a default value of 1.</li>
+</ul>
+<p>All audio buffers played on a given an instance of <code>AudioOut</code> must have the same sample rate, bits per sample, and number of channels as the AudioOut instance is initialized to in its constructor.</p>
+<p>When an audio out is instantiated, it is in the stopped state. It is necessary to call <code>start</code> to begin audio playback.</p>
+<h3>close()</h3>
+<p>Call the <code>close</code> function to free all resources associated with the audio output. If audio is playing at the time <code>close</code> is called, it is immediately stopped.</p>
+<pre><code>audio.close();
+</code></pre>
+<h3>start()</h3>
+<p>Call the <code>start</code> function to begin playing audio. If no audio is enqueued for playback, silence is played.</p>
+<pre><code>audio.start();
+</code></pre>
+<h3>stop()</h3>
+<p>Call the <code>stop</code> function to immediately suspend audio playback.</p>
+<pre><code>audio.stop();
+</code></pre>
+<p>Calling <code>stop</code> has no effect on the state of any audio queued for playback on any streams. Calling <code>start</code> after <code>stop</code> will resume playback at the point it was suspended.</p>
+<h3>enqueue(stream, command, buffer, repeat, offset, count)</h3>
+<p>The enqueue function has several different functions, all related to the audio queued for playback:</p>
+<ul>
+<li>Enqueuing audio samples for playback on a stream</li>
+<li>Enqueuing a callback at a particular point in a stream's playback</li>
+<li>Flushing the audio queued for playback on a stream</li>
+</ul>
+<p>All invocations of the <code>enqueue</code> function include the first parameter, the target stream number, a value from 0 to one less than the number of streams configured using the constructor.</p>
+<h4>Enqueuing audio samples</h4>
+<p>Audio samples to play may be provided either as a MAUD audio resource or as raw audio samples. In both cases, the samples must be in the same format as the audio output (e.g. have the same sample rate, bits per sample, and number of channels).</p>
+<p>To <code>enqueue</code> audio samples with a Moddable Audio header (MAUD), call enqueue with a buffer of samples:</p>
+<pre><code>audio.enqueue(0, AuioOut.Samples, buffer);
+</code></pre>
+<p>To <code>enqueue</code> a buffer of uncompressed audio samples with no header call enqueue with a buffer of samples:</p>
+<pre><code>audio.enqueue(0, AudioOut.RawSamples, buffer);
+</code></pre>
+<p>To play the buffer several times, specify the optional <code>repeat</code> count. The repeat count is either a positive integer or <code>Infinity</code>.</p>
+<pre><code>audio.enqueue(0, AudioOut.Samples, bufferOne, 4);
+audio.enqueue(0, AudioOut.Samples, bufferTwo, Infinity);
+</code></pre>
+<p>If the repeat count is <code>Infinity</code>, the buffer is repeated until the audio out instance is closed, the streaming is flushed, or another buffer of audio is enqueued. In the final case, the currently playing buffer plays to completion, and then the following buffer is played.</p>
+<p>A subset of the samples in the buffer may be selected for playback by using the optional <code>offset</code> and <code>count</code> parameters. Both parameters are in units of samples, not bytes. The <code>offset</code> parameter indicates the number of samples into the buffer to begin playback. If the <code>count</code> parameter is not provided, playback proceeds to the end of the buffer. It the <code>count</code> parameter is provided, only the number of samples it specifies are played.</p>
+<h4>Enqueuing callbacks</h4>
+<p>To schedule a callback at a particular point in a stream, call enqueue with an integer value for the buffer argument. When the buffer preceding the callback completes playback, the instance's <code>callback</code> function will be invoked.</p>
+<pre><code>audio.enqueue(0, AudioOut.Samples, bufferOne);
+audio.enqueue(0, AudioOut.Callback, 1);
+audio.enqueue(0, AudioOut.Samples, bufferTwo);
+audio.enqueue(0, AudioOut.Callback, 2);
+audio.callback = id =&gt; trace(`finished playing buffer ${id}\n`);
+</code></pre>
+<h4>Dequeuing audio samples</h4>
+<p>All of the samples and callbacks enqueued on a specified stream may be dequeued by calling <code>enqueue</code> with only the <code>stream</code> parameter:</p>
+<pre><code>audio.enqueue(3, AudioOut.Flush);
+</code></pre>
+<h4>Changing volume</h4>
+<p>To change the volume, enqueue a <code>Volume</code> command on a stream. The volume command does not change the volume of samples already enqueued, only those enqueued after the <code>Volume</code> command.</p>
+<pre><code>audio.enqueue(0, AudioOut.Volume, 128);
+</code></pre>
+<p>Values for the volume command range from 0 for silent, to 256 for full volume.</p>
+<h2>MAUD format</h2>
+<p>The <code>maud</code> format, &quot;Moddable Audio&quot;, is a simple audio format intended to be compact and trivially parsed. The <code>enqueue</code> function of <code>AudioOut</code> class accepts samples in the <code>maud</code> format. The <code>wav2maud</code> tool in the Moddable SDK converts WAV files to <code>maud</code> resources.</p>
+<p>The format has a twelve byte header followed immediately by audio samples.</p>
+<ul>
+<li>offset 0 -- ASCII 'm'</li>
+<li>offset 1 -- ASCII 'a'</li>
+<li>offset 2 -- version number (1)</li>
+<li>offset 3 -- bits per sample (8 or 16)</li>
+<li>offset 4 -- sample rate (between 8000 and 48000, inclusive). 2 bytes, unsigned, little-endian</li>
+<li>offset 6 -- number of channels (1 or 2)</li>
+<li>offset 7 -- sample format (0 for uncompressed, 1 for IMA ADPCM)</li>
+<li>offset 8 -- sample count. 4 bytes, unsigned little-endian</li>
+</ul>
+<p>Audio samples immediately follow the header. If there are two channels, the channels are interleaved. 16-bit samples are signed little-endian values. 8-bit samples are signed values.</p>
+<p>IMA ADPCM are based on the algorithm described in &quot;Recommended Practices for Enhancing Digital Audio Compatibility in Multimedia Systems&quot; Revision 3.00 from October 21, 1992. Audio compression is approximately 4:1 for 16 bit samples. Only single channel audio is supported. Each compressed chunk contains 129 samples and uses 68 bytes. Chunks are decompressed one at a time, on demand during playback to minimize in-memory buffers.</p>
+<h2>Manifest defines</h2>
+<p>The <code>audioOut</code> module is be configured at build time.</p>
+<h3>Defines for all targets</h3>
+<ul>
+<li><code>MODDEF_AUDIOOUT_STREAMS</code> -- maximum number of simultaneous audio streams. The maximum is 4 and the default is 4.</li>
+<li><code>MODDEF_AUDIOOUT_BITSPERSAMPLE</code> -- number of bits per sample. macOS supports 8 and 16. ESP32 and ESP8266 support 16 only. The default is 16.</li>
+<li><code>MODDEF_AUDIOOUT_QUEUELENGTH</code> -- maximum number of items that may be queued on a single stream. Default is 8.</li>
+</ul>
+<h3>Defines for ESP32</h3>
+<ul>
+<li><code>MODDEF_AUDIOOUT_I2S_NUM</code> -- The ESP32 I2S unit number. Default is 0.</li>
+<li><code>MODDEF_AUDIOOUT_I2S_BCK_PIN</code> -- The I2S clock pin. The default is 26.</li>
+<li><code>MODDEF_AUDIOOUT_I2S_LR_PIN</code> -- The I2S LR pin. The default is 25.</li>
+<li><code>MODDEF_AUDIOOUT_I2S_DATAOUT_PIN</code> -- The I2S data pin. The default is 22.</li>
+<li><code>MODDEF_AUDIOOUT_I2S_BITSPERSAMPLE</code> - Number of bits per sample to transmit over I2S, either 16 or 32. Default is 16.</li>
+</ul>
+<h3>Defines for ESP8266</h3>
+<ul>
+<li><code>MODDEF_AUDIOOUT_I2S_PDM</code> -- If zero, PCM samples are transmitted over I2S. If non-zero, samples are transmitted using PDM. Set to 32 for no oversampling, 64 for 2x oversampling, and 128 for 4x oversampling. Default is 0.</li>
+</ul>
+
+</div>
+
+        </div>
+    </body>
+</html>

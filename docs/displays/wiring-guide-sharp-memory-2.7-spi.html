@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moddable</title>
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata|Open+Sans" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/hljs.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/markdown.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
+</head>
+    <body>
+<div id="header">
+    <div class="package"></div>
+    <a href="https:&#x2F;&#x2F;github.com&#x2F;moddable-opensource&#x2F;moddable" class="badge" title="Github.com"><img src="/assets/images/github.png" alt="Github" /></a>
+    <a href="/" class="home"><strong>Moddable</strong> <span class="headline">Moddable SDK</span></a>
+</div>
+        <div id="container">
+            <div id="sidebar">
+<ul class="list">
+    <li>
+        <h4><a href="/">Home</a></h4>
+        <ul>
+            <li><a href="https://www.moddable.com">Moddable</a></li>
+            <li><a href="/">Documentation</a></li>
+        </ul>
+    </li>
+    <li>
+        <h4><a href="/">Resources</a></h4>
+        <ul>
+            <li><a href="https://github.com/moddable-opensource/moddable">GitHub</a></li>
+            <li><a href="/">Link 2</a></li>
+        </ul>
+    </li>
+</ul>
+            </div>
+
+<div id="content">
+<h1>Sharp Memory Display Wiring Guide</h1>
+<p>Copyright 2018 Moddable Tech, Inc.<br />
+Revised: October 23, 2018</p>
+<p><img src="./images/Sharp_Memory_LCD_LS027B7DH01.jpg" alt="" /></p>
+<h2>Specs</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"></th>
+<th style="text-align:left"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><strong>Part</strong></td>
+<td style="text-align:left">LS027B7DH01A</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>Size</strong></td>
+<td style="text-align:left">2.7&quot;, 240 x 400</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>Type</strong></td>
+<td style="text-align:left">Sharp Memory TFT-LCD, Monochrome</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>Interface</strong></td>
+<td style="text-align:left">SPI</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>Drivers</strong></td>
+<td style="text-align:left">video <a href="../../documentation/drivers/ls013b4dn04/ls013b4dn04.html">ls013b4dn04</a>, no touch</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>Availability</strong></td>
+<td style="text-align:left"><a href="https://www.digikey.com/product-detail/en/sharp-microelectronics/LS027B7DH01A/425-2908-ND/5054067?utm_adgroup=Optoelectronics&amp;gclid=Cj0KCQiAvrfSBRC2ARIsAFumcm-L2iz88RlcYf9Z1MU0J1ZW97VgAa0oPoDBgqYSIIRUyZnhGNURyY4aAjIgEALw_wcB">Sharp Memory 2,7&quot; LCD on Digi-Key</a></td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>Description</strong></td>
+<td style="text-align:left">The Sharp Memory display is a blend of an eInk (e-paper) display and an LCD. It has the very-low power draw of eInk and fast-refresh rates of an LCD.<BR><BR>Moddable uses the [Kuzyatech Sharp Memory display breakout board] (https://www.tindie.com/products/kuzyatech/sharp-memory-lcd-breakout-a2/) to interface with the display FFC and boost the ESP8266 power to the 5V needed to drive the display.</td>
+</tr>
+</tbody>
+</table>
+<h2>Moddable example code</h2>
+<p>The <a href="../../examples/piu/balls/">balls</a> example is good for testing this display. To run a debug build, use the following build command:</p>
+<pre><code>cd $MODDABLE/examples/piu/balls
+mcconfig -d -m -p esp/sharp_memory  
+</code></pre>
+<h2>ESP8266 pinout</h2>
+<table>
+<thead>
+<tr>
+<th>Sharp Memory Display</th>
+<th>ESP8266</th>
+<th>ESP8266 Devboard label</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VIN</td>
+<td>3.3V</td>
+<td></td>
+</tr>
+<tr>
+<td>GND</td>
+<td>GND</td>
+<td></td>
+</tr>
+<tr>
+<td>EXTMODE</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>DISP</td>
+<td>3.3V</td>
+<td></td>
+</tr>
+<tr>
+<td>EXTCOMM</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>SCS</td>
+<td>GPIO 4</td>
+<td>(D2)</td>
+</tr>
+<tr>
+<td>SI</td>
+<td>GPIO 13</td>
+<td>(D7)</td>
+</tr>
+<tr>
+<td>SCK</td>
+<td>GPIO 14</td>
+<td>(D5)</td>
+</tr>
+</tbody>
+</table>
+<p><img src="images/wiring-Kuzyatech-sharp-2.7.jpg" alt="Generic SPI Display" /></p>
+
+</div>
+
+        </div>
+    </body>
+</html>

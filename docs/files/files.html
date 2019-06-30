@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moddable</title>
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata|Open+Sans" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/hljs.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/markdown.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
+</head>
+    <body>
+<div id="header">
+    <div class="package"></div>
+    <a href="https:&#x2F;&#x2F;github.com&#x2F;moddable-opensource&#x2F;moddable" class="badge" title="Github.com"><img src="/assets/images/github.png" alt="Github" /></a>
+    <a href="/" class="home"><strong>Moddable</strong> <span class="headline">Moddable SDK</span></a>
+</div>
+        <div id="container">
+            <div id="sidebar">
+<ul class="list">
+    <li>
+        <h4><a href="/">Home</a></h4>
+        <ul>
+            <li><a href="https://www.moddable.com">Moddable</a></li>
+            <li><a href="/">Documentation</a></li>
+        </ul>
+    </li>
+    <li>
+        <h4><a href="/">Resources</a></h4>
+        <ul>
+            <li><a href="https://github.com/moddable-opensource/moddable">GitHub</a></li>
+            <li><a href="/">Link 2</a></li>
+        </ul>
+    </li>
+</ul>
+            </div>
+
+<div id="content">
+<h1>Files</h1>
+<p>Copyright 2017-2018 Moddable Tech, Inc.<BR>
+Revised: November 6, 2018</p>
+<p><strong>Warning</strong>: These notes are preliminary. Omissions and errors are likely. If you encounter problems, please ask for assistance.</p>
+<h2>Table of Contents</h2>
+<ul>
+<li><a href="#spiffs">Notes on SPIFFS file system</a></li>
+<li><a href="#file">File</a></li>
+<li><a href="#file-iterator">File Iterator</a></li>
+<li><a href="#file-system">File System</a></li>
+<li><a href="#zip">Zip</a></li>
+<li><a href="#resource">Resource</a></li>
+<li><a href="#preference">Preference</a></li>
+<li><a href="#flash">Flash</a></li>
+</ul>
+<p><a id="spiffs"></a></p>
+<h2>Notes on SPIFFS file system</h2>
+<p>On embedded systems, the <code>File</code> class is implemented using the <a href="https://github.com/pellepl/spiffs">SPIFFS</a> file system.</p>
+<p>SPIFFS is a flat file system, meaning that there are no directories and all files are at the root.</p>
+<p>The SPIFFS file system requires some additional memory. Including SPIFFS in the build increase RAM use by about 500 bytes. Using the SPIFFS file system requires about another 3 KB of RAM. To minimize the memory impact, the <code>File</code> class only instantiates the SPIFFS file system when necessary -- when a file is open and when a file is deleted. The SPIFFS file system is automatically closed when not in use.</p>
+<p>If the SPIFFS file system has not been initialized, it is formatted with the <code>SPIFFS_format</code> API when first used. Initialization takes up to one minute.</p>
+<p><a id="file"></a></p>
+<h2>class File</h2>
+<ul>
+<li><strong>Source code:</strong> <a href="../../modules/files/file">file</a></li>
+<li><strong>Relevant Examples:</strong> <a href="../../examples/files/files/">files</a></li>
+</ul>
+<p>The <code>File</code> class provides access to files.</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> {File} <span class="hljs-keyword">from</span> <span class="hljs-string">"file"</span>;
+</code></pre>
+<h3><code>constructor(path [, write])</code></h3>
+<p>The <code>File</code> constructor opens a file for read or write. The optional write argument selects the mode. The default value for write is <code>false</code>. When opened, the file position is 0.</p>
+<p>If the file does not exist, an exception is thrown when opening in read mode. When opening in write mode, a new file is created if it does not already exist.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> file = <span class="hljs-keyword">new</span> File(<span class="hljs-string">"preferences.json"</span>);
+</code></pre>
+<hr />
+<h3><code>read(type [, count])</code></h3>
+<p>The <code>read</code> function reads from the current position. The data is read into a <code>String</code> or <code>ArrayBuffer</code> based on the value of the <code>type</code> argument. The <code>count</code> argument is the number of bytes to read. The default value of <code>count</code> is the number of bytes between the current <code>position</code> and the file <code>length</code>.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> file = <span class="hljs-keyword">new</span> File(<span class="hljs-string">"preferences.json"</span>);
+<span class="hljs-keyword">let</span> preferences = <span class="hljs-built_in">JSON</span>.parse(file.read(<span class="hljs-built_in">String</span>));
+file.close();
+</code></pre>
+<hr />
+<h3><code>write(value [, ...values])</code></h3>
+<p>The <code>write</code> function writes one or more values to the file starting at the current <code>position</code>. The values may be either a <code>String</code> or <code>ArrayBuffer</code>.</p>
+<pre><code class="language-js">File.delete(<span class="hljs-string">"preferences.json"</span>);
+<span class="hljs-keyword">let</span> file = <span class="hljs-keyword">new</span> File(<span class="hljs-string">"preferences.json"</span>, <span class="hljs-literal">true</span>);
+file.write(<span class="hljs-built_in">JSON</span>.stringify(preferences));
+file.close();
+</code></pre>
+<hr />
+<h3><code>length</code> property</h3>
+<p>The <code>length</code> property is a number indicating the number of bytes in the file. It is read-only.</p>
+<hr />
+<h3><code>position</code> property</h3>
+<p>The <code>position</code> property is a number indicating the byte offset into the file, for the next read or write operation.</p>
+<hr />
+<h3><code>static delete(path)</code></h3>
+<p>The static <code>delete</code> function removes the file at the specified path.</p>
+<pre><code class="language-js">File.delete(<span class="hljs-string">"test.txt"</span>);
+</code></pre>
+<hr />
+<h3><code>static exists(path)</code></h3>
+<p>The static <code>exists</code> function returns a boolean indicating whether a file exists at the specified path.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> exists = File.exists(<span class="hljs-string">"test.txt"</span>);
+</code></pre>
+<hr />
+<h3><code>static rename(from, to)</code></h3>
+<p>The static <code>rename</code> function renames the file specified by the <code>from</code> argument to the name specified by the <code>to</code> argument.</p>
+<pre><code class="language-js">File.rename(<span class="hljs-string">"test.txt"</span>, <span class="hljs-string">"betterName.txt"</span>);
+</code></pre>
+<hr />
+<h3>Example: Get file size</h3>
+<p>This example opens a file in read-only mode to retrieve the file's length. If the file does not exist, it is not created and an exception is thrown.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> file = <span class="hljs-keyword">new</span> File(<span class="hljs-string">"test.txt"</span>);
+trace(<span class="hljs-string">`File length <span class="hljs-subst">${file.length}</span>\n`</span>);
+file.close();
+</code></pre>
+<hr />
+<h3>Example: Read file as String</h3>
+<p>This example retrieves the entire content of a file into a <code>String</code>. If there is insufficient memory available to store the string or the file does not exist, an exception is thrown.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> file = <span class="hljs-keyword">new</span> File(<span class="hljs-string">"test.txt"</span>);
+trace(file.read(<span class="hljs-built_in">String</span>));
+file.close();
+</code></pre>
+<hr />
+<h3>Example: Read file into ArrayBuffers</h3>
+<p>This example reads a file into one or more <code>ArrayBuffer</code> objects. The final <code>ArrayBuffer</code> is smaller than 1024 when the file size is not an integer multiple of 1024.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> file = <span class="hljs-keyword">new</span> File(<span class="hljs-string">"test.txt"</span>);
+<span class="hljs-keyword">while</span> (file.position &lt; file.length) {
+	<span class="hljs-keyword">let</span> buffer = file.read(<span class="hljs-built_in">ArrayBuffer</span>, <span class="hljs-number">1024</span>);
+}
+file.close();
+</code></pre>
+<hr />
+<h3>Example: Write string to file</h3>
+<p>This example deletes a file, opens it for write (which creates a new empty file), and then writes two <code>String</code> values to the file. The script then moves the read/write position to the start of the file, and reads the entire file contents into a single <code>String</code>, which is traced to the console.</p>
+<pre><code class="language-js">File.delete(<span class="hljs-string">"test.txt"</span>);
+
+<span class="hljs-keyword">let</span> file = <span class="hljs-keyword">new</span> File(<span class="hljs-string">"test.txt"</span>, <span class="hljs-literal">true</span>);
+file.write(<span class="hljs-string">"This is a test.\n"</span>);
+file.write(<span class="hljs-string">"This is the end of the test.\n"</span>);
+
+file.position = <span class="hljs-number">0</span>;
+<span class="hljs-keyword">let</span> content = file.read(<span class="hljs-built_in">String</span>);
+trace(content);
+
+file.close();
+</code></pre>
+<hr />
+<p><a id="file-iterator"></a></p>
+<h2>class File Iterator</h2>
+<ul>
+<li><strong>Source code:</strong> <a href="../../modules/files/file">file</a></li>
+<li><strong>Relevant Examples:</strong> <a href="../../examples/files/files/">files</a></li>
+</ul>
+<p>The File <code>Iterator</code> class enumerates the files and subdirectories in a directory.</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> {Iterator} <span class="hljs-keyword">from</span> <span class="hljs-string">"file"</span>;
+</code></pre>
+<blockquote>
+<p><strong>Note</strong>: Because the SPIFFS file system is a flat file system,  no subdirectories are returned on devices that use it.</p>
+</blockquote>
+<h3><code>constructor(path)</code></h3>
+<p>The constructor takes as its sole argument the path of the directory to iterate over.</p>
+<blockquote>
+<p><strong>Note</strong>: For the SPIFFS flat file system, always pass &quot;/&quot; for the <code>path</code> argument to the constructor. This ensures compatibility with file systems that implement directories.</p>
+</blockquote>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> root = <span class="hljs-keyword">new</span> Iterator(<span class="hljs-string">"/"</span>);
+</code></pre>
+<hr />
+<h3><code>next()</code></h3>
+<p>The <code>next</code> function is called repeatedly, each time retrieving information about one file. When all files have been returned, the <code>next</code> function returns <code>undefined</code>. For each file and subdirectory, next returns an object. The object always contains a <code>name</code> property with the file name. If the object contains a <code>length</code> property, it references a file and the <code>length</code> property is the size of the file in bytes. If the <code>length</code> property is absent, it references a directory.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> item = root.next();
+</code></pre>
+<hr />
+<h3>Example: List contents of a directory</h3>
+<p>This example lists all the files and subdirectories in a directory.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> root = <span class="hljs-keyword">new</span> Iterator(<span class="hljs-string">"/"</span>);
+<span class="hljs-keyword">let</span> item;
+<span class="hljs-keyword">while</span> (item = root.next()) {
+	<span class="hljs-keyword">if</span> (<span class="hljs-literal">undefined</span> === item.length)
+		trace(<span class="hljs-string">`Directory: <span class="hljs-subst">${item.name}</span>\n`</span>);
+	<span class="hljs-keyword">else</span>
+		trace(<span class="hljs-string">`File: <span class="hljs-subst">${item.name}</span>, <span class="hljs-subst">${item.length}</span> bytes\n`</span>);
+}
+</code></pre>
+<p>The iterator's <code>next</code> function returns an object.  If the object has a <code>length</code> property, it is a file; if the <code>length</code> property is undefined, it is a directory.</p>
+<hr />
+<p><a id="file-system"></a></p>
+<h2>class File System</h2>
+<ul>
+<li><strong>Source code:</strong> <a href="../../modules/files/file">file</a></li>
+</ul>
+<p>The File <code>System</code> class provides information about the file system.</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> {System} <span class="hljs-keyword">from</span> <span class="hljs-string">"file"</span>;
+</code></pre>
+<h3><code>static config()</code></h3>
+<p>The <code>config</code> function returns a dictionary with information about the file system. At this time, the dictionary has a single property, <code>maxPathLength</code>, which indicates the length of the longest file path in bytes.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> maxPathLength = System.config().maxPathLength;
+</code></pre>
+<hr />
+<h3><code>static info()</code></h3>
+<p>The <code>info</code> function returns a dictionary with information about the free and used space in the file system. The <code>used</code> property of the dictionary gives the number of bytes in use and the <code>total</code> property indicates the maximum capacity of the file system in bytes.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> info = System.info();
+<span class="hljs-keyword">let</span> percentFree = <span class="hljs-number">1</span> - (info.used / info.total);
+</code></pre>
+<hr />
+<p><a id="zip"></a></p>
+<h2>class ZIP</h2>
+<ul>
+<li><strong>Source code:</strong> <a href="../../modules/files/zip">zip</a></li>
+<li><strong>Relevant Examples:</strong> <a href="../../examples/files/zip/">zip</a></li>
+</ul>
+<p>The <code>ZIP</code> class implements read-only file system access to the contents of a ZIP file stored in memory. Typically these are stored in flash memory.</p>
+<p>The <code>ZIP</code> implementation requires all files in the ZIP file to be uncompressed. The default in ZIP files is to compress files, so special steps are necessary to build a compatible ZIP file.</p>
+<p>The <a href="https://linux.die.net/man/1/zip"><code>zip</code></a> command line tool creates uncompressed ZIP files when a compression level of zero is specified. The following command line creates a ZIP file named <code>test.zip</code> with the uncompressed contents of the directory <code>test</code>.</p>
+<pre><code>zip -0r test.zip test
+</code></pre>
+<h3><code>constructor(buffer)</code></h3>
+<p>The <code>ZIP</code> constructor instantiates a <code>ZIP</code> object to access the contents of the buffer as a read-only file system. The buffer may be either an <code>ArrayBuffer</code> or a Host Buffer.</p>
+<p>The constructor validates that the buffer contains a ZIP archive, throwing an exception if it does not.</p>
+<p>A ZIP archive is stored in memory. If it is ROM, it will be accessed using a Host Buffer, a variant of an <code>ArrayBuffer</code>. The host platform software provides the Host Buffer instance through a platform specific mechanism. This example uses the <code>Resource</code> constructor to create the Host Buffer.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> buffer = <span class="hljs-keyword">new</span> Resource(<span class="hljs-string">"test.zip"</span>);
+<span class="hljs-keyword">let</span> archive = <span class="hljs-keyword">new</span> ZIP(buffer);
+</code></pre>
+<hr />
+<h3><code>file(path)</code></h3>
+<p>The <code>file</code> function instantiates an object to access the content of the specified path within the ZIP archive. The returned instance implements the same API as the <code>File</code> class.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> file = archive.file(<span class="hljs-string">"small.txt"</span>);
+</code></pre>
+<hr />
+<h3><code>iterate(path)</code></h3>
+<p>The <code>iterate</code> function instantiates an object to access the content of the specified directory path within the ZIP archive. The returned instance implements the same API as the Iterator class. Directory paths end with a slash (&quot;<code>/</code>&quot;) character and, with the exception of the root path, do not begin with a slash.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> root = archive.iterate(<span class="hljs-string">"/"</span>);
+</code></pre>
+<hr />
+<h3><code>map(path)</code></h3>
+<p>The <code>map</code> function returns a Host Buffer that references the bytes of the file at the specified path.</p>
+<hr />
+<h3>Example: Reading a file from ZIP archive</h3>
+<p>The <code>ZIP</code> instance's <code>file</code> function provides an instance used to access a file. Though instantiated differently, the ZIP file instance shares the same API with the <code>File</code> class.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> file = archive.file(<span class="hljs-string">"small.txt"</span>);
+trace(<span class="hljs-string">`File size: <span class="hljs-subst">${file.length}</span> bytes\n`</span>);
+<span class="hljs-keyword">let</span> string = file.read(<span class="hljs-built_in">String</span>);
+trace(string);
+file.close();
+</code></pre>
+<hr />
+<h3>Example: List contents of a ZIP archive's directory</h3>
+<p>The following example iterates the files and directories at the root of the archive. Often the root contains only a single directory.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> root = archive.iterate(<span class="hljs-string">"/"</span>);
+<span class="hljs-keyword">let</span> item;
+<span class="hljs-keyword">while</span> (item = root.next()) {
+    <span class="hljs-keyword">if</span> (<span class="hljs-literal">undefined</span> == item.length)
+        trace(<span class="hljs-string">`Directory: <span class="hljs-subst">${item.name}</span>\n`</span>);
+    <span class="hljs-keyword">else</span>
+        trace(<span class="hljs-string">`File: <span class="hljs-subst">${item.name}</span>, <span class="hljs-subst">${item.length}</span> bytes\n`</span>);
+}
+</code></pre>
+<p>The ZIP iterator expects directory paths to end with a slash (&quot;<code>/</code>&quot;). To iterate the contents of a directory named &quot;test&quot; at the root, use the following code:</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> iterator = archive.iterate(<span class="hljs-string">"test/"</span>);
+</code></pre>
+<hr />
+<p><a id="resource"></a></p>
+<h2>class Resource</h2>
+<ul>
+<li><strong>Source code:</strong> <a href="../../modules/files/resource">resource</a></li>
+<li><strong>Relevant Examples:</strong> <a href="../../examples/files/zip/">zip</a>, many <a href="../../examples/commodetto">Commodetto examples</a> including <a href="../../examples/commodetto/sprite">sprite</a> and <a href="../../examples/commodetto/text">text</a></li>
+</ul>
+<p>The <code>Resource</code> class provides access to assets from an application's resource map.</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> Resource <span class="hljs-keyword">from</span> <span class="hljs-string">"Resource"</span>;
+</code></pre>
+<h3><code>constructor(path)</code></h3>
+<p>The <code>Resource</code> constructor takes a single argument, the resource path, and returns an <code>ArrayBuffer</code> or Host Buffer containing the resource data.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> resource = <span class="hljs-keyword">new</span> Resource(<span class="hljs-string">"logo.bmp"</span>);
+trace(<span class="hljs-string">`resource size is <span class="hljs-subst">${resource.byteLength}</span>\n`</span>);
+</code></pre>
+<hr />
+<h3><code>static exists(path)</code></h3>
+<p>The static <code>exists</code> function returns a boolean indicating whether a resource exists at the specified path.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> path = <span class="hljs-string">"test.zip"</span>;
+<span class="hljs-keyword">if</span> (Resource.exists(path))
+	trace(<span class="hljs-string">`File <span class="hljs-subst">${path}</span> exists\n`</span>);
+</code></pre>
+<hr />
+<h3><code>slice(begin[, end])</code></h3>
+<p>The <code>slice</code> function returns a portion of the resource in an <code>ArrayBuffer</code>. The default value of <code>end</code> is the resource size.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> resource = <span class="hljs-keyword">new</span> Resource(<span class="hljs-string">"table.dat"</span>);
+<span class="hljs-keyword">let</span> buffer1 = resource.slice(<span class="hljs-number">5</span>);		<span class="hljs-comment">// Get a buffer starting from offset 5</span>
+<span class="hljs-keyword">let</span> buffer2 = resource.slice(<span class="hljs-number">0</span>, <span class="hljs-number">10</span>);		<span class="hljs-comment">// Get a buffer of the first 10 bytes</span>
+</code></pre>
+<hr />
+<p><a id="preference"></a></p>
+<h2>class Preference</h2>
+<ul>
+<li><strong>Source code:</strong> <a href="../../modules/files/preference/">preference</a></li>
+<li><strong>Relevant Examples:</strong> <a href="../../examples/files/preference/">preference</a>, <a href="../../examples/piu/preferences/">preferences</a></li>
+</ul>
+<p>The <code>Preference</code> class provides storage of persistent preference storage. Preferences are appropriate for storing small amounts of data that needs to persist between runs of an application.</p>
+<pre><code class="language-js"><span class="hljs-keyword">import</span> Preference <span class="hljs-keyword">from</span> <span class="hljs-string">"preference"</span>;
+</code></pre>
+<p>Preferences are grouped by domain. A domain contains one or more keys. Each domain/key pair holds a single value, which is either a <code>Boolean</code>, integer (e.g. <code>Number</code> with no fractional part), <code>String</code> or <code>ArrayBuffer</code>.</p>
+<pre><code class="language-js"><span class="hljs-keyword">const</span> domain = <span class="hljs-string">"wifi"</span>;
+<span class="hljs-keyword">let</span> ssid = Preference.get(domain, <span class="hljs-string">"ssid"</span>);
+<span class="hljs-keyword">let</span> password = Preference.get(domain, <span class="hljs-string">"psk"</span>);
+</code></pre>
+<p>Preference values are limited to 63 bytes. Key and domain names are limited to 32 bytes.</p>
+<p>On embedded devices the storage space for preferences is limited. The amount depends on the device, but it can be as little as 4 KB. Consequently, applications should take care to keep their  preferences as small as practical.</p>
+<blockquote>
+<p><strong>Note</strong>: On embedded devices, preferences are stored in SPI flash which has a limited number of erase cycles. Applications should minimize the number of write operations (set and delete). In practice, this isn't a significant concern. However, an application that updates preferences once per minute, for example, could eventually exceed the available erase cycles for the preference storage area in SPI flash.</p>
+</blockquote>
+<h3><code>static set(domain, key, value)</code></h3>
+<p>The static <code>set</code> function sets a preference value.</p>
+<pre><code class="language-js">Preference.set(<span class="hljs-string">"wifi"</span>, <span class="hljs-string">"ssid"</span>, <span class="hljs-string">"linksys"</span>);
+Preference.set(<span class="hljs-string">"wifi"</span>, <span class="hljs-string">"password"</span>, <span class="hljs-string">"admin"</span>);
+Preference.set(<span class="hljs-string">"wifi"</span>, <span class="hljs-string">"channel"</span>, <span class="hljs-number">6</span>);
+</code></pre>
+<hr />
+<h3><code>static get(domain, key)</code></h3>
+<p>The static <code>get</code> function reads a preference value. If the preference does not exist, <code>get</code> returns <code>undefined</code>.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> value = Preference.get(<span class="hljs-string">"settings"</span>, <span class="hljs-string">"timezone"</span>);
+<span class="hljs-keyword">if</span> (value !== <span class="hljs-literal">undefined</span>)
+	trace(<span class="hljs-string">`timezone <span class="hljs-subst">${value}</span>\n`</span>);
+</code></pre>
+<hr />
+<h3><code>static delete(domain, key)</code></h3>
+<p>The static <code>delete</code> function removes a preference. If the preference does not exist, no error is thrown.</p>
+<pre><code class="language-js">Preference.delete(<span class="hljs-string">"wifi"</span>, <span class="hljs-string">"password"</span>);
+</code></pre>
+<hr />
+<h3><code>static keys(domain)</code></h3>
+<p>Returns an array of all keys under the given domain.</p>
+<pre><code class="language-js"><span class="hljs-keyword">let</span> wifiKeys = Preference.keys(<span class="hljs-string">"wifi"</span>);
+<span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> key <span class="hljs-keyword">of</span> wifiKeys)
+	trace(<span class="hljs-string">`<span class="hljs-subst">${key}</span>: <span class="hljs-subst">${Preference.get(<span class="hljs-string">"wifi"</span>, key)}</span>\n`</span>);
+</code></pre>
+<hr />
+<p><a id="flash"></a></p>
+<h2>class Flash</h2>
+<p>This class is experimental and not yet documented.</p>
+
+</div>
+
+        </div>
+    </body>
+</html>

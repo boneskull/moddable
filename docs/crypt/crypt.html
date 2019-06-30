@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moddable</title>
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata|Open+Sans" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/hljs.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/markdown.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
+</head>
+    <body>
+<div id="header">
+    <div class="package"></div>
+    <a href="https:&#x2F;&#x2F;github.com&#x2F;moddable-opensource&#x2F;moddable" class="badge" title="Github.com"><img src="/assets/images/github.png" alt="Github" /></a>
+    <a href="/" class="home"><strong>Moddable</strong> <span class="headline">Moddable SDK</span></a>
+</div>
+        <div id="container">
+            <div id="sidebar">
+<ul class="list">
+    <li>
+        <h4><a href="/">Home</a></h4>
+        <ul>
+            <li><a href="https://www.moddable.com">Moddable</a></li>
+            <li><a href="/">Documentation</a></li>
+        </ul>
+    </li>
+    <li>
+        <h4><a href="/">Resources</a></h4>
+        <ul>
+            <li><a href="https://github.com/moddable-opensource/moddable">GitHub</a></li>
+            <li><a href="/">Link 2</a></li>
+        </ul>
+    </li>
+</ul>
+            </div>
+
+<div id="content">
+<h1>Crypt</h1>
+<p>Copyright 2017 Moddable Tech, Inc.</p>
+<p>Revised: November 7, 2017</p>
+<p><strong>Warning</strong>: These notes are preliminary. Omissions and errors are likely. If you encounter problems, please ask for assistance.</p>
+<h2>class Digest (Crypt)</h2>
+<p>The Digest class creates cryptographic hashes using a variety of algorithms.</p>
+<pre><code>import {Digest} from &quot;crypt&quot;;
+</code></pre>
+<h3>MD5 Hash</h3>
+<pre><code>let digest = new Digest(&quot;MD5&quot;);
+digest.write(&quot;hello, world);
+trace(`MD5 Hash: ${digest.close()}\n`);
+</code></pre>
+<h3>SHA1 Hash</h3>
+<pre><code>let digest = new Digest(&quot;SHA1&quot;);
+digest.write(&quot;hello,&quot;);
+digest.write(&quot; world&quot;);
+trace(`SHA1 Hash: ${digest.close()}\n`);
+</code></pre>
+<h3>new Digest(type)</h3>
+<p>The <code>Digest</code> constructor takes the type of the hash to calculate as its sole argument.</p>
+<pre><code>let digest = new Digest(&quot;SHA1&quot;);
+</code></pre>
+<p>The following hash functions are supported:</p>
+<ul>
+<li>MD5</li>
+<li>SHA1</li>
+<li>SHA224</li>
+<li>SHA256</li>
+<li>SHA384</li>
+<li>SHA512</li>
+</ul>
+<h3>write(message)</h3>
+<p>The <code>write</code> function adds a message to the hash being calculated. There is no restriction on the length of the message. The message argument to write may be a <code>String</code> or <code>ArrayBuffer</code>. The <code>write</code> function may be called more than once for a given digest calculation.</p>
+<pre><code>digest.write(&quot;123&quot;);
+digest.write(&quot;456&quot;);
+</code></pre>
+<h3>close()</h3>
+<p>The <code>close</code> function returns the the calculated hash. The hash is returned as an <code>ArrayBuffer</code>. The <code>close</code> function may only be called once, as it frees all resources associated with the digest calculation.</p>
+<!-- 11/7/2017 BSF
+We should probably document the reset function here with an example.
+-->
+<!-- 11/7/2017 BSF
+There are also blockSize and outputSize accessor/getter functions in addition to process and update helper functions. Should those be documented here?
+-->
+<!-- 11/7/2017 BSF
+BlockCipher, StreamCipher and Mode classes need to be documented. They are used in the cryptblockcipher example app.
+-->
+
+</div>
+
+        </div>
+    </body>
+</html>

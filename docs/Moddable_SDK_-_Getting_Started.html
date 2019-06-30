@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moddable</title>
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata|Open+Sans" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/hljs.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/markdown.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
+</head>
+    <body>
+<div id="header">
+    <div class="package"></div>
+    <a href="https:&#x2F;&#x2F;github.com&#x2F;moddable-opensource&#x2F;moddable" class="badge" title="Github.com"><img src="/assets/images/github.png" alt="Github" /></a>
+    <a href="/" class="home"><strong>Moddable</strong> <span class="headline">Moddable SDK</span></a>
+</div>
+        <div id="container">
+            <div id="sidebar">
+<ul class="list">
+    <li>
+        <h4><a href="/">Home</a></h4>
+        <ul>
+            <li><a href="https://www.moddable.com">Moddable</a></li>
+            <li><a href="/">Documentation</a></li>
+        </ul>
+    </li>
+    <li>
+        <h4><a href="/">Resources</a></h4>
+        <ul>
+            <li><a href="https://github.com/moddable-opensource/moddable">GitHub</a></li>
+            <li><a href="/">Link 2</a></li>
+        </ul>
+    </li>
+</ul>
+            </div>
+
+<div id="content">
+<h1>Moddable SDK - Getting Started</h1>
+<p>Copyright 2016-2019 Moddable Tech, Inc.<BR>
+Revised: May 21, 2019</p>
+<p>This document provides an introduction to getting started building apps with the Moddable SDK. It describes how to configure the host build environments, install the required SDKs, drivers and development tools, build applications, and use <code>xsbug</code>, the JavaScript source code debugger.</p>
+<h2>Table of Contents</h2>
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#mac">macOS</a>
+_ <a href="#host-mac">Host environment setup</a>
+_ <a href="#esp8266-mac">ESP8266</a> * <a href="#esp32-mac">ESP32</a></li>
+<li><a href="#windows">Windows</a>
+_ <a href="#host-windows">Host environment setup</a>
+_ <a href="#esp8266-windows">ESP8266</a> * <a href="#esp32-windows">ESP32</a></li>
+<li><a href="#linux">Linux</a>
+_ <a href="#host-linux">Host environment setup</a>
+_ <a href="#esp8266-linux">ESP8266</a> * <a href="#esp32-linux">ESP32</a></li>
+<li><a href="#debugging-applications">Debugging applications</a></li>
+<li><a href="#arduino-version">ESP8266 Arduino version 2.4</a></li>
+</ul>
+<p><a id="overview"></a></p>
+<h2>Overview</h2>
+<p>Before you can build applications, you need to set up your host environment and install the required drivers and development tools for your target device. Fo example, if you want to build applications for Moddable One using a Mac, you'll need to follow the macOS host environment and ESP8266 setup instructions below.</p>
+<p>A full list of supported target devices is available in the <strong>Target platforms</strong> section of the <a href="https://github.com/Moddable-OpenSource/moddable/tree/public/examples">examples readme</a>.</p>
+<p>Additional getting started guides are available for the following devices:</p>
+<ul>
+<li><a href="./devices/moddable-one.html">Moddable One</a></li>
+<li><a href="./devices/moddable-two.html">Moddable Two</a></li>
+<li><a href="./devices/moddable-three.html">Moddable Three</a></li>
+<li><a href="https://github.com/Moddable-OpenSource/moddable/blob/public/documentation/devices/gecko/GeckoBuild.html">Silicon Labs Gecko devices</a></li>
+<li><a href="https://github.com/Moddable-OpenSource/moddable/blob/public/documentation/devices/qca4020/README.html">Qualcomm QCA4020</a></li>
+</ul>
+<p><a id="mac"></a></p>
+<h2>macOS</h2>
+<p><a id="host-mac"></a></p>
+<h3>Host environment setup</h3>
+<blockquote>
+<p>The Moddable SDK requires macOS Sierra version 10.12 or newer and Xcode version 9 or newer.</p>
+</blockquote>
+<ol>
+<li>
+<p>Download and install <a href="https://developer.apple.com/xcode/">Xcode</a>. Launch Xcode to install additional command line components when prompted.</p>
+</li>
+<li>
+<p>Create a <code>Projects</code> directory in your home directory at <code>~/Projects</code> for the Moddable SDK repository.</p>
+<blockquote>
+<p>Note: The Moddable SDK repository can be downloaded to any directory. These setup instructions assume the Moddable SDK is downloaded to the <code>~/Projects</code> directory.</p>
+</blockquote>
+</li>
+<li>
+<p>Download the <a href="https://github.com/Moddable-OpenSource/moddable">Moddable repository</a>, or use the <code>git</code> command line tool as follows:</p>
+<pre><code>cd ~/Projects
+git clone https://github.com/Moddable-OpenSource/moddable
+</code></pre>
+</li>
+<li>
+<p>Setup the <code>MODDABLE</code> environment variable to point at your local Moddable SDK repository directory and edit the <code>PATH</code> environment variable in your <code>~/.profile</code> to include the build directory:</p>
+<pre><code>export MODDABLE=&quot;/Users/&lt;user&gt;/Projects/moddable&quot;
+export PATH=&quot;${MODDABLE}/build/bin/mac/release:$PATH&quot;
+</code></pre>
+</li>
+<li>
+<p>Build the Moddable command line tools, simulator, and debugger from the command line:</p>
+<pre><code>cd ${MODDABLE}/build/makefiles/mac
+make
+</code></pre>
+</li>
+<li>
+<p>Launch the <code>xsbug</code> debugger from the command line:</p>
+<pre><code>open ${MODDABLE}/build/bin/mac/release/xsbug.app
+</code></pre>
+</li>
+<li>
+<p>Verify the host environment setup by building the starter <code>helloworld</code> application for the desktop simulator target:</p>
+<pre><code>cd ${MODDABLE}/examples/helloworld
+mcconfig -d -m -p mac
+</code></pre>
+</li>
+</ol>
+<p><a id="esp8266-mac"></a></p>
+<h3>ESP8266 (Moddable Zero) setup</h3>
+<ol>
+<li>
+<p>Complete <a href="#host-mac">&quot;Host environment setup&quot;</a> for macOS.</p>
+</li>
+<li>
+<p>Create an <code>esp</code> directory in your home directory at <code>~/esp</code> for required third party SDKs and tools.</p>
+</li>
+<li>
+<p>Download and install the Silicon Labs <a href="https://www.silabs.com/products/development-tools/software/usb-to-uart-bridge-vcp-drivers">CP210x USB to UART VCP driver</a>.</p>
+</li>
+<li>
+<p>Download and untar the <a href="http://www.moddable.tech/private/esp8266.toolchain.darwin.tgz">Xtensa lx106 architecture GCC toolchain</a>. Copy the <code>toolchain</code> directory into the <code>~/esp</code> directory.</p>
+</li>
+<li>
+<p>Download the <a href="https://github.com/esp8266/Arduino/releases/download/2.3.0/esp8266-2.3.0.zip">ESP8266 core for Arduino repository</a>. Copy the extracted <code>esp8266-2.3.0</code> folder into your <code>~/esp</code> directory.</p>
+</li>
+<li>
+<p>Clone the <a href="https://github.com/espressif/ESP8266_RTOS_SDK">ESP8266 SDK based on FreeRTOS</a> repository into the <code>~/esp</code> directory:</p>
+<pre><code>cd ~/esp
+git clone https://github.com/espressif/ESP8266_RTOS_SDK.git
+</code></pre>
+<p>We need the v3.0rc1 version:</p>
+<pre><code>cd ESP8266_RTOS_SDK
+git checkout v3.0-rc1
+</code></pre>
+</li>
+<li>
+<p>Install the required Python packages:</p>
+<pre><code>pip install --user pyserial
+</code></pre>
+</li>
+<li>
+<p>Connect the ESP8266 to your computer with a USB cable.</p>
+</li>
+<li>
+<p>Verify the setup by building <code>helloworld</code> for the <code>esp</code> target:</p>
+<pre><code>cd ${MODDABLE}/examples/helloworld
+mcconfig -d -m -p esp
+</code></pre>
+<p>For Moddable Zero applications that rely on the screen or use I2C pins, build for the <code>esp</code> target with the <code>moddable_zero</code> subplatform.</p>
+<pre><code>cd ${MODDABLE}/examples/piu/balls
+mcconfig -d -m -p esp/moddable_zero
+</code></pre>
+</li>
+</ol>
+<p><a id="esp32-mac"></a></p>
+<h3>ESP32 setup</h3>
+<ol>
+<li>
+<p>Complete <a href="#host-mac">&quot;Host environment setup&quot;</a> for macOS.</p>
+</li>
+<li>
+<p>Create an <code>esp32</code> directory in your home directory at <code>~/esp32</code> for required third party SDKs and tools.</p>
+</li>
+<li>
+<p>Download and install the Silicon Labs <a href="https://www.silabs.com/products/development-tools/software/usb-to-uart-bridge-vcp-drivers">CP210x USB to UART VCP driver</a>.</p>
+</li>
+<li>
+<p>Download and untar the <a href="https://dl.espressif.com/dl/xtensa-esp32-elf-osx-1.22.0-80-g6c4433a-5.2.0.tar.gz">ESP32 GCC toolchain</a>. Copy the extracted <code>xtensa-esp32-elf</code> directory into your <code>~/esp32</code> directory.</p>
+</li>
+<li>
+<p>Clone the <code>ESP-IDF</code> GitHub repository into your <code>~/esp32</code> directory. Make sure to specify the <code>--recursive</code> option:</p>
+<pre><code>cd ~/esp32
+git clone --recursive https://github.com/espressif/esp-idf.git
+</code></pre>
+<p>Use the v3.1 version:</p>
+<pre><code>cd esp-idf
+git checkout release/v3.1
+git submodule update
+</code></pre>
+</li>
+<li>
+<p>Set the <code>IDF_PATH</code> environment variable in your <code>~/.profile</code> to the <code>esp-idf</code> directory:</p>
+<pre><code>export IDF_PATH=&quot;/Users/&lt;user&gt;/esp32/esp-idf&quot;
+</code></pre>
+<blockquote>
+<p>Note: Close and reopen the Terminal window to enable the <code>IDF_PATH</code> environment variable.</p>
+</blockquote>
+</li>
+<li>
+<p>Install the Python <code>pip</code> package management system:</p>
+<pre><code>cd ~/esp32
+sudo easy_install pip
+</code></pre>
+</li>
+<li>
+<p>Install the required Python packages:</p>
+<pre><code>python -m pip install --user -r $IDF_PATH/docs/requirements.txt
+</code></pre>
+</li>
+<li>
+<p>Update the <code>PATH</code> environment variable in your <code>~/.profile</code> to include the toolchain directory:</p>
+<pre><code>export PATH=$PATH:$HOME/esp32/xtensa-esp32-elf/bin
+</code></pre>
+</li>
+<li>
+<p>Connect the ESP32 device to your macOS host with a USB cable and determine the serial port of the ESP32 device.</p>
+<p>To determine the serial port, examine the list of devices before and after plugging in your ESP32 device and note the new serial port that shows up. To see a list of serial devices, use the following command in Terminal:</p>
+<pre><code>ls /dev/cu.*
+</code></pre>
+</li>
+<li>
+<p>Set the <code>UPLOAD_PORT</code> environment variable in your <code>~/.profile</code> to the ESP32 serial port:</p>
+<pre><code>export UPLOAD_PORT=/dev/cu.SLAB_USBtoUART
+</code></pre>
+</li>
+<li>
+<p>Verify the setup by building <code>helloworld</code> for the <code>esp32</code> target:</p>
+<pre><code>cd ${MODDABLE}/examples/helloworld
+mcconfig -d -m -p esp32
+</code></pre>
+<p>For ESP32-based Moddable Zero applications that rely on the screen or use I2C pins, build for the <code>esp32</code> target with the <code>moddable_zero</code> subplatform.</p>
+<pre><code>cd ${MODDABLE}/examples/piu/balls
+mcconfig -d -m -p esp32/moddable_zero
+</code></pre>
+<blockquote>
+<p>Note that the first time you build an application for the ESP32 target, the toolchain may prompt you to enter configuration options. If this happens, accept the defaults.</p>
+</blockquote>
+<blockquote>
+<p>If you encounter SSL certificate errors while building the ESP-IDF, you may need to install Python 2.7 and the required packages manually. We've used <a href="https://brew.sh/">brew</a> to install the additional components:</p>
+</blockquote>
+<pre><code>brew install python
+brew install python@2
+pip install future
+pip install pyserial
+pip install cryptography
+</code></pre>
+</li>
+</ol>
+<p><a id="windows"></a></p>
+<h2>Windows</h2>
+<p><a id="host-windows"></a></p>
+<h4>Host environment setup</h4>
+<blockquote>
+<p>The Moddable SDK requires Windows 7 Pro SP1 or newer and Microsoft Visual Studio Community 2017 or newer.</p>
+</blockquote>
+<ol>
+<li>
+<p>Download <a href="https://www.visualstudio.com/downloads/">Microsoft Visual Studio 2017 Community Edition installer</a>. Launch the installer, choose the &quot;Desktop development for C++&quot; option and install.</p>
+</li>
+<li>
+<p>Create a <code>Projects</code> directory in your <code>%USERPROFILE%</code> directory, e.g. <code>C:\Users\&lt;your-user-name&gt;</code> for the Moddable SDK repository.</p>
+<blockquote>
+<p>Note: The Moddable SDK repository can be downloaded to any directory. These setup instructions assume the Moddable SDK is downloaded to the <code>%USERPROFILE%</code> directory.</p>
+</blockquote>
+</li>
+<li>
+<p>Download the <a href="https://github.com/Moddable-OpenSource/moddable">Moddable repository</a>, or use the <code>git</code> command line tool as follows:</p>
+<pre><code>cd C:\Users\&lt;user&gt;\Projects
+git clone https://github.com/Moddable-OpenSource/moddable
+</code></pre>
+</li>
+<li>
+<p>Setup the <code>MODDABLE</code> environment variable to point at your local Moddable SDK repository directory:</p>
+<pre><code>set MODDABLE=C:\Users\&lt;user&gt;\Projects\moddable
+</code></pre>
+</li>
+<li>
+<p>Edit the system <code>PATH</code> environment variable to include the build directory:</p>
+<pre><code>%MODDABLE%\build\bin\win\release
+</code></pre>
+<blockquote>
+<p>Environment variables should be set from the System Control Panel. The steps required vary depending on the Windows OS version.</p>
+</blockquote>
+</li>
+<li>
+<p>Launch the &quot;Developer Command Prompt for VS 2017&quot; command line console. Build the Moddable command line tools, simulator, and debugger from the command line:</p>
+<pre><code>cd %MODDABLE%\build\makefiles\win
+build
+</code></pre>
+</li>
+<li>
+<p>Launch the <code>xsbug</code> debugger from the command line:</p>
+<pre><code>xsbug
+</code></pre>
+</li>
+<li>
+<p>Verify the host environment setup by building the starter <code>helloworld</code> application for the desktop simulator target:</p>
+<pre><code>cd %MODDABLE%\examples\helloworld
+mcconfig -d -m -p win
+</code></pre>
+</li>
+</ol>
+<p><a id="esp8266-windows"></a></p>
+<h3>ESP8266 (Moddable Zero) setup</h3>
+<ol>
+<li>
+<p>Complete <a href="#host-windows">&quot;Host environment setup&quot;</a> for Windows.</p>
+</li>
+<li>
+<p>Create an <code>esp</code> directory in your home <code>%USERPROFILE%</code> directory, e.g. <code>C:\Users\&lt;your-user-name&gt;</code>.</p>
+</li>
+<li>
+<p>Download and install the Silicon Labs <a href="https://www.silabs.com/products/development-tools/software/usb-to-uart-bridge-vcp-drivers">CP210x USB to UART VCP driver</a>.</p>
+</li>
+<li>
+<p>Download the <a href="https://github.com/igrr/esptool-ck/releases/download/0.4.13/esptool-0.4.13-win32.zip">esptool</a>. Unzip the archive and copy the <code>esptool.exe</code> executable from the <code>esptool-0.4.13-win32</code> directory into the <code>esp</code> directory.</p>
+</li>
+<li>
+<p>Download and unzip the <a href="http://www.moddable.tech/private/cygwin.win32.zip">Cygwin toolchain support package</a>. Copy the <code>cygwin</code> directory into the <code>esp</code> directory.</p>
+</li>
+<li>
+<p>Download and unzip the <a href="http://www.moddable.tech/private/esp8266.toolchain.win32.zip">Xtensa lx106 architecture GCC toolchain</a>. Copy the <code>xtensa-lx106-elf</code> directory into the <code>esp</code> directory.</p>
+</li>
+<li>
+<p>Download the <a href="https://github.com/esp8266/Arduino/releases/download/2.3.0/esp8266-2.3.0.zip">ESP8266 core for Arduino repository</a>. Copy the extracted <code>esp8266-2.3.0</code> folder into your <code>esp</code> directory.</p>
+</li>
+<li>
+<p>Clone the <a href="https://github.com/espressif/ESP8266_RTOS_SDK">ESP8266 SDK based on FreeRTOS</a> repository into the <code>~/esp</code> directory:</p>
+<pre><code>cd C:\Users\&lt;user&gt;\esp
+git clone https://github.com/espressif/ESP8266_RTOS_SDK.git
+</code></pre>
+<p>We need the v3.0rc1 version:</p>
+<pre><code>cd ESP8266_RTOS_SDK
+git checkout v3.0-rc1
+</code></pre>
+</li>
+<li>
+<p>Connect the ESP8266 to your computer with a USB cable.</p>
+</li>
+<li>
+<p>Launch the Windows Device Manager, open the &quot;Ports (COM &amp; LPT)&quot; section, and verify the &quot;Silicon Labs CP210x USB to UART Bridge&quot; is displayed. Note the COM port (e.g. COM3) for the next step.</p>
+<blockquote>
+<p>The Device Manager interface may vary depending on the Windows OS version.</p>
+</blockquote>
+</li>
+<li>
+<p>Set the <code>BASE_DIR</code> and <code>UPLOAD_PORT</code> environment variables to your <code>%USERPROFILE%</code> directory and device COM port:</p>
+<pre><code>set BASE_DIR=%USERPROFILE%
+set UPLOAD_PORT=COM3
+</code></pre>
+</li>
+<li>
+<p>Edit the system <code>PATH</code> environment variable to include the <code>cygwin\bin</code> directory:</p>
+<pre><code>%BASE_DIR%\esp\cygwin\bin
+</code></pre>
+</li>
+<li>
+<p>Launch the &quot;Developer Command Prompt for VS 2017&quot; command line console. Verify the setup by building <code>helloworld</code> for the <code>esp</code> target:</p>
+<pre><code>cd %MODDABLE%\examples\helloworld
+mcconfig -d -m -p esp
+</code></pre>
+<p>For Moddable Zero applications that rely on the screen or use I2C pins, build for the <code>esp</code> target with the <code>moddable_zero</code> subplatform.</p>
+<pre><code>cd %MODDABLE%\examples\piu\balls
+mcconfig -d -m -p esp/moddable_zero
+</code></pre>
+</li>
+</ol>
+<p><a id="esp32-windows"></a></p>
+<h3>ESP32 setup</h3>
+<ol>
+<li>
+<p>Complete <a href="#host-windows">&quot;Host environment setup&quot;</a> for Windows.</p>
+</li>
+<li>
+<p>Download and install the Silicon Labs <a href="https://www.silabs.com/products/development-tools/software/usb-to-uart-bridge-vcp-drivers">CP210x USB to UART VCP driver</a>.</p>
+</li>
+<li>
+<p>Download the Espressif <a href="https://dl.espressif.com/dl/esp32_win32_msys2_environment_and_toolchain-20181001.zip">all-in-one Windows toolchain and MSYS2</a> zip archive. Copy the extracted <code>msys32</code> directory into your home <code>%USERPROFILE%</code> directory, e.g. <code>C:\Users\&lt;your-user-name&gt;\msys32</code>.</p>
+</li>
+<li>
+<p>Open a MSYS2 MINGW32 terminal window from a Windows command line console:</p>
+<pre><code>%USERPROFILE%\msys32\mingw32.exe
+</code></pre>
+</li>
+<li>
+<p>From the MINGW32 terminal window, create an <code>esp</code> directory in the home <code>~</code> directory:</p>
+<pre><code>mkdir ~/esp
+</code></pre>
+</li>
+<li>
+<p>Clone the <code>ESP-IDF</code> GitHub repository into the <code>~/esp</code> directory. Make sure to specify the <code>--recursive</code> option:</p>
+<pre><code>cd ~/esp
+git clone --recursive https://github.com/espressif/esp-idf.git
+</code></pre>
+<p>Use the v3.1 version:</p>
+<pre><code>cd esp-idf
+git checkout release/v3.1
+git submodule update
+</code></pre>
+</li>
+<li>
+<p>Create a new script file <code>esp32_moddable.sh</code> in your <code>%USERPROFILE%\msys32\etc\profile.d\</code> directory. Add an export command for the ESP-IDF path to the script file:</p>
+<pre><code>export IDF_PATH=&quot;C:/Users/&lt;your-user-name&gt;/msys32/home/&lt;your-user-name&gt;/esp/esp-idf&quot;
+</code></pre>
+</li>
+<li>
+<p>Connect the ESP32 to your computer with a USB cable.</p>
+</li>
+<li>
+<p>Launch the Windows Device Manager, open the &quot;Ports (COM &amp; LPT)&quot; section, and verify the &quot;Silicon Labs CP210x USB to UART Bridge&quot; is displayed. Note the COM port (e.g. COM3) for the next step.</p>
+<blockquote>
+<p>The Device Manager interface may vary depending on the Windows OS version.</p>
+</blockquote>
+</li>
+<li>
+<p>Set the <code>BASE_DIR</code>, <code>UPLOAD_PORT</code> and <code>SERIAL2XSBUG</code> Windows environment variables to your <code>%USERPROFILE%</code> directory, device COM port and serial2xsbug.exe tool path. Note that forward slashes are required in the tool path:</p>
+<pre><code>set BASE_DIR=%USERPROFILE%
+set UPLOAD_PORT=COM3
+set SERIAL2XSBUG=/c/Users/&lt;your-user-name&gt;/Projects/moddable/build/bin/win/release/serial2xsbug.exe
+</code></pre>
+</li>
+<li>
+<p>Launch the &quot;Developer Command Prompt for VS 2017&quot; command line console. Verify the setup by building <code>helloworld</code> for the <code>esp32</code> target:</p>
+<pre><code>cd %MODDABLE%\examples\helloworld
+mcconfig -d -m -p esp32
+</code></pre>
+<p>For ESP32-based Moddable Zero applications that rely on the screen or use I2C pins, build for the <code>esp32</code> target with the <code>moddable_zero</code> subplatform.</p>
+<pre><code>cd %MODDABLE%\examples\piu\balls
+mcconfig -d -m -p esp32/moddable_zero
+</code></pre>
+<blockquote>
+<p>The mcconfig tool launches a MINGW32 shell to configure the ESP32 firmware build. After this configuration completes, the MINGW32 shell closes and control is returned back to the Developer Command Prompt. Press any key to complete the build and Flash the binary to the device. Another MINGW32 shell opens to complete the build.</p>
+</blockquote>
+<blockquote>
+<p>Note that the first time you build an application for the ESP32 target, the toolchain may prompt you to enter configuration options. If this happens, accept the defaults.</p>
+</blockquote>
+</li>
+</ol>
+<p><a id="linux"></a></p>
+<h2>Linux</h2>
+<p><a id="host-linux"></a></p>
+<h3>Host environment setup</h3>
+<blockquote>
+<p>The Moddable SDK has been tested on the Ubuntu 16.04 LTS (64-bit) and Raspberry Pi Desktop (32-bit) operating systems. These setup instructions assume that a GCC toolchain has already been installed.</p>
+</blockquote>
+<ol>
+<li>
+<p>Install the development version of the GTK+ 3 library:</p>
+<pre><code>sudo apt-get install libgtk-3-dev
+</code></pre>
+</li>
+<li>
+<p>Create a <code>Projects</code> directory in your home directory at <code>~/Projects</code> for the Moddable SDK repository.</p>
+<blockquote>
+<p>Note: The Moddable SDK repository can be downloaded to any directory. These setup instructions assume the Moddable SDK is downloaded to the <code>~/Projects</code> directory.</p>
+</blockquote>
+</li>
+<li>
+<p>Download the <a href="https://github.com/Moddable-OpenSource/moddable">Moddable repository</a>, or use the <code>git</code> command line tool as follows:</p>
+<pre><code>cd ~/Projects
+git clone https://github.com/Moddable-OpenSource/moddable
+</code></pre>
+</li>
+<li>
+<p>Setup the <code>MODDABLE</code> environment variable in your <code>~/.bashrc</code> file to point at your local Moddable SDK repository directory:</p>
+<pre><code>MODDABLE=~/Projects/moddable
+export MODDABLE
+</code></pre>
+</li>
+<li>
+<p>Build the Moddable command line tools, simulator, and debugger from the command line:</p>
+<pre><code>cd $MODDABLE/build/makefiles/lin
+make
+</code></pre>
+</li>
+<li>
+<p>Update the <code>PATH</code> environment variable in your <code>~/.bashrc</code> to include the tools directory:</p>
+<pre><code>export PATH=$PATH:$MODDABLE/build/bin/lin/release
+</code></pre>
+</li>
+<li>
+<p>Install the Screen Test desktop simulator and xsbug debugger applications:</p>
+<pre><code>cd $MODDABLE/build/makefiles/lin
+make install
+</code></pre>
+<p>When prompted, enter your <code>sudo</code> password to copy the application's desktop, executable and icon files into the standard <code>/usr/share/applications</code>, <code>/usr/bin</code>, and <code>/usr/share/icon/hicolor</code> directories.</p>
+</li>
+<li>
+<p>Launch the xsbug debugger:</p>
+<pre><code>xsbug
+</code></pre>
+</li>
+<li>
+<p>Verify the host environment setup by building the starter <code>helloworld</code> application for the desktop simulator target:</p>
+<pre><code>cd $MODDABLE/examples/helloworld
+mcconfig -d -m -p lin
+</code></pre>
+</li>
+</ol>
+<p><a id="esp8266-linux"></a></p>
+<h3>ESP8266 (Moddable Zero) setup</h3>
+<ol>
+<li>
+<p>Complete <a href="#host-linux">&quot;Host environment setup&quot;</a> for Linux.</p>
+</li>
+<li>
+<p>Create an <code>esp</code> directory in your home directory at <code>~/esp</code> for required third party SDKs and tools.</p>
+</li>
+<li>
+<p>Download and untar the <a href="http://www.moddable.tech/private/esp8266.toolchain.linux.tgz">Xtensa lx106 architecture GCC toolchain</a>. Copy the <code>toolchain</code> directory into the <code>~/esp</code> directory.</p>
+</li>
+<li>
+<p>Download the <a href="https://github.com/esp8266/Arduino/releases/download/2.3.0/esp8266-2.3.0.zip">ESP8266 core for Arduino repository</a>. Copy the extracted <code>esp8266-2.3.0</code> folder into your <code>~/esp</code> directory.</p>
+</li>
+<li>
+<p>Clone the <a href="https://github.com/espressif/ESP8266_RTOS_SDK">ESP8266 SDK based on FreeRTOS</a> repository into the <code>~/esp</code> directory:</p>
+<pre><code>cd ~/esp
+git clone https://github.com/espressif/ESP8266_RTOS_SDK.git
+</code></pre>
+<p>We need the v3.0rc1 version:</p>
+<pre><code>cd ESP8266_RTOS_SDK
+git checkout v3.0-rc1
+</code></pre>
+</li>
+<li>
+<p>Connect the ESP8266 to your computer with a USB cable.</p>
+</li>
+<li>
+<p>Verify the setup by building <code>helloworld</code> for the <code>esp</code> target:</p>
+<pre><code>cd $MODDABLE/examples/helloworld
+mcconfig -d -m -p esp
+</code></pre>
+<p>For Moddable Zero applications that rely on the screen or use I2C pins, build for the <code>esp</code> target with the <code>moddable_zero</code> subplatform.</p>
+<pre><code>cd $MODDABLE/examples/piu/balls
+mcconfig -d -m -p esp/moddable_zero
+</code></pre>
+<blockquote>
+<p>The ESP8266 communicates with the Linux host via the ttyUSB0 device. On Ubuntu Linux the ttyUSB0 device is owned by the <code>dialout</code> group. If you get a <strong>permission denied error</strong> when flashing the ESP8266, add your user to the <code>dialout</code> group:</p>
+</blockquote>
+<pre><code>sudo adduser &lt;username&gt; dialout
+sudo reboot
+</code></pre>
+</li>
+</ol>
+<p><a id="esp32-linux"></a></p>
+<h3>ESP32 setup</h3>
+<ol>
+<li>
+<p>Complete <a href="#host-linux">&quot;Host environment setup&quot;</a> for Linux.</p>
+</li>
+<li>
+<p>Create an <code>esp32</code> directory in your home directory at <code>~/esp32</code> for required third party SDKs and tools.</p>
+</li>
+<li>
+<p>Download and untar the <a href="https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz">64-bit</a> or <a href="https://dl.espressif.com/dl/xtensa-esp32-elf-linux32-1.22.0-80-g6c4433a-5.2.0.tar.gz">32-bit</a> ESP32 GCC toolchain compatible with your Linux host. Copy the extracted <code>xtensa-esp32-elf</code> directory into your <code>~/esp32</code> directory.</p>
+</li>
+<li>
+<p>Clone the <code>ESP-IDF</code> GitHub repository into your <code>~/esp32</code> directory. Make sure to specify the <code>--recursive</code> option:</p>
+<pre><code>cd ~/esp32
+git clone --recursive https://github.com/espressif/esp-idf.git
+</code></pre>
+<p>Use the v3.1 version:</p>
+<pre><code>cd esp-idf
+git checkout release/v3.1
+git submodule update
+</code></pre>
+</li>
+<li>
+<p>Install the packages required to compile with the <code>ESP-IDF</code>:</p>
+<pre><code>sudo apt-get install gcc git wget make libncurses-dev flex bison gperf python python-pip python-setuptools python-serial
+</code></pre>
+</li>
+<li>
+<p>Set the <code>IDF_PATH</code> environment variable in your <code>~/.bashrc</code> to the <code>esp-idf</code> directory:</p>
+<pre><code>IDF_PATH=~/esp32/esp-idf
+export IDF_PATH
+</code></pre>
+</li>
+<li>
+<p>Install the Python <code>pip</code> package management system:</p>
+<pre><code>cd ~/esp32
+sudo easy_install pip
+</code></pre>
+</li>
+<li>
+<p>Install the required Python packages:</p>
+<pre><code>python -m pip install --user -r $IDF_PATH/docs/requirements.txt
+</code></pre>
+</li>
+<li>
+<p>Update the <code>PATH</code> environment variable in your <code>~/.bashrc</code> to include the toolchain directory:</p>
+<pre><code>export PATH=$PATH:$HOME/esp32/xtensa-esp32-elf/bin
+</code></pre>
+</li>
+<li>
+<p>Connect the ESP32 device to your Linux host with a USB cable.</p>
+</li>
+<li>
+<p>Determine the USB device path used by the ESP32 device, e.g. <code>/dev/ttyUSB0</code>:</p>
+<pre><code>ls /dev
+</code></pre>
+</li>
+<li>
+<p>Set the <code>UPLOAD_PORT</code> environment variable in your <code>~/.bashrc</code> to the ESP32 serial port:</p>
+<pre><code>UPLOAD_PORT=/dev/ttyUSB0
+export UPLOAD_PORT
+</code></pre>
+</li>
+<li>
+<p>Verify the setup by building <code>helloworld</code> for the <code>esp32</code> target:</p>
+<pre><code>cd $MODDABLE/examples/helloworld
+mcconfig -d -m -p esp32
+</code></pre>
+<p>For ESP32-based Moddable Zero applications that rely on the screen or use I2C pins, build for the <code>esp32</code> target with the <code>moddable_zero</code> subplatform.</p>
+<pre><code>cd ${MODDABLE}/examples/piu/balls
+mcconfig -d -m -p esp32/moddable_zero
+</code></pre>
+<blockquote>
+<p>The ESP32 communicates with the Linux host via the ttyUSB0 device. On Ubuntu Linux the ttyUSB0 device is owned by the <code>dialout</code> group. If you get a <strong>permission denied error</strong> when flashing the ESP32, add your user to the <code>dialout</code> group:</p>
+</blockquote>
+<pre><code>sudo adduser &lt;username&gt; dialout
+sudo reboot
+</code></pre>
+<blockquote>
+<p>Note that the first time you build an application for the ESP32 target, the toolchain may prompt you to enter configuration options. If this happens, accept the defaults.</p>
+</blockquote>
+</li>
+</ol>
+<p><a id="debugging-applications"></a></p>
+<h2>Debugging applications</h2>
+<p>The <code>xsbug</code> JavaScript source level debugger is built as part of the Moddable SDK build described above. <code>xsbug</code> is a full featured debugger that supports debugging modules and applications for <a href="xs/XS%20Platforms.html">XS platforms</a>. The <code>xsbug</code> debugger is automatically launched when deploying debug builds and connects to devices via USB or over Wi-Fi. Similar to other debuggers, <code>xsbug</code> supports setting breakpoints, browsing source code, the call stack and variables. The <code>xsbug</code> debugger additionally provides real-time instrumentation to track memory usage and profile application and resource consumption.</p>
+<p>For additional details on <code>xsbug</code> please refer to the <a href="xs/xsbug.html">xsbug</a> document.</p>
+<p><a id="arduino-version"></a></p>
+<h2>ESP8266 Arduino version 2.4</h2>
+<p>The Moddable SDK on ESP8266 is hosted by the <a href="https://github.com/esp8266/Arduino">ESP8266 core for Arduino</a>. The Moddable SDK uses version 2.3. Version 2.4 is supported as well. At this time, we do not recommend using version 2.4 as it requires more ROM and more RAM without providing significant benefits for most uses of the Moddable SDK. The team responsible for ESP8266 core for Arduino is aware of <a href="https://github.com/esp8266/Arduino/issues/3740">these</a> <a href="https://github.com/esp8266/Arduino/issues/4089">issues</a> and actively working to address them.</p>
+<p>You can use version 2.4 today if building on macOS or Linux. Follow the instructions above, but use the <a href="https://github.com/esp8266/Arduino/releases/download/2.4.0/esp8266-2.4.0.zip">version 2.4</a> of ESP8266 Core for Arduino. Next, in <code>{MODDABLE}/tools/mcconfig/make.esp.mk</code> change <code>ESP_SDK_RELEASE ?= esp8266-2.3.0</code> to <code>ESP_SDK_RELEASE ?= esp8266-2.4.0</code>. Finally, delete the contents of $<code>{MODDABLE}/build/bin/esp/</code> and <code>${MODDABLE}/build/tmp/esp/</code> and build as above.</p>
+
+</div>
+
+        </div>
+    </body>
+</html>

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moddable</title>
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata|Open+Sans" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/hljs.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/markdown.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
+</head>
+    <body>
+<div id="header">
+    <div class="package"></div>
+    <a href="https:&#x2F;&#x2F;github.com&#x2F;moddable-opensource&#x2F;moddable" class="badge" title="Github.com"><img src="/assets/images/github.png" alt="Github" /></a>
+    <a href="/" class="home"><strong>Moddable</strong> <span class="headline">Moddable SDK</span></a>
+</div>
+        <div id="container">
+            <div id="sidebar">
+<ul class="list">
+    <li>
+        <h4><a href="/">Home</a></h4>
+        <ul>
+            <li><a href="https://www.moddable.com">Moddable</a></li>
+            <li><a href="/">Documentation</a></li>
+        </ul>
+    </li>
+    <li>
+        <h4><a href="/">Resources</a></h4>
+        <ul>
+            <li><a href="https://github.com/moddable-opensource/moddable">GitHub</a></li>
+            <li><a href="/">Link 2</a></li>
+        </ul>
+    </li>
+</ul>
+            </div>
+
+<div id="content">
+<h1>ILI9341 display driver</h1>
+<p>Copyright 2017 Moddable Tech, Inc.</p>
+<p>Revised: December 31, 2017</p>
+<p><strong>Warning</strong>: These notes are preliminary. Omissions and errors are likely. If you encounter problems, please ask for assistance.</p>
+<p>The <a href="https://cdn-shop.adafruit.com/datasheets/ILI9341.pdf">ILI9341</a> LCD controller drives 16-bits per pixel (RGB565LE) displays. Displays are up to 240 pixels wide and 320 pixels high.</p>
+<p>The ILI9341 driver has been successfully used with the <a href="https://www.crystalfontz.com/controllers/Ilitek/ILI9163C/136/">ILI9163C</a> display controller with a 128 x 128 pixel square display at 16-bits per pixel.</p>
+<h3>Adding ILI9341 to a project</h3>
+<p>To add the ILI9341 driver to a project, include its manifest:</p>
+<pre><code>&quot;include&quot;: [
+	/* other includes here */
+	&quot;$(MODULES)/drivers/ili9341/manifest.json&quot;,
+],
+</code></pre>
+<p>If using Commodetto or Piu, set the <code>screen</code> property of the <code>config</code> object in the manifest to <code>ili9341</code> to make ILI9341 the default display driver. If there is no touch input, set the touch driver name to an empty string to disable it.</p>
+<pre><code>&quot;config&quot;: {
+	&quot;screen&quot;: &quot;ili9341&quot;,
+	&quot;touch&quot;: &quot;&quot;,
+},
+</code></pre>
+<p><strong>Note</strong>: The <code>manifest_piu.json</code> manifest includes ILI9341. Therefore, projects using <code>manifest_piu.json</code> do not need to include it themselves.</p>
+<h3>Pixel formats</h3>
+<p>The ILI9341 driver supports many different pixel formats as input. 16-bit color pixels are the native format of the driver, and so are most commonly used. When building with <code>mcconfig</code>, set the pixel format to <code>rgb565le</code> on the command line:</p>
+<pre><code>mcconfig -m -p esp -f rgb565le
+</code></pre>
+<p>Other formats supported directly by the ILI9341 driver are 8-bit gray (<code>gray256</code>), 8-bit color (<code>rgb332</code>), and 4-bit gray (<code>gray16</code>).</p>
+<p>In addition, 4-bit color (<code>clut16</code>) is also supported. There is no default color table; the application must set the color table. Using Poco, the color table is passed as the <code>clut</code> property in the dictionary of the constructor. Using Piu, the color table is automatically loaded from a <code>Resource</code> named <code>main.cct</code>. It may also be set explicitly on the application's <code>clut</code> property. See the PIU <a href="../../../examples/piu/clut">clut</a> example for a working example of changing the color table from a script.</p>
+<p>While most projects will use the 16-bit RGB pixels, the other pixel formats are useful:</p>
+<ul>
+<li>to test how an applications renders on display with lower color resolutions</li>
+<li>to reduce the size of color image resources in ROM</li>
+<li>to reduce RAM use (smaller size pixels use smaller a smaller rendering buffer, e.g. a 4-bit gray pixel 75% less RAM than a 16-bit RGB pixel)</li>
+</ul>
+<h3>Defines</h3>
+<p>In the <code>defines</code> object, declare the pixel <code>width</code> and <code>height</code>.</p>
+<pre><code>&quot;defines&quot;: {
+	&quot;ili9341&quot;: {
+		&quot;width&quot;: 128,
+		&quot;height&quot;: 128,
+	}
+}
+</code></pre>
+<p>The optional <code>registers</code> property is used to override the default initialization of registers on the ILI9341. The register property is compiled in C as part of the driver source code, so it has access to the same #define constants as the driver, hence the use of <code>kDelayMS</code>, <code>MODDEF_ILI9341_FLIPY</code>, and <code>MODDEF_ILI9341_FLIPX</code> below. The list of register commands is terminated with pseudo-registers <code>kDelayMS</code> with a value of 0.</p>
+<pre><code>&quot;defines&quot;: {
+	&quot;ili9341&quot;: {
+		/* other properties here */
+		&quot;registers&quot;: [
+			&quot;0xCB, 5, 0x39, 0x2C, 0x00, 0x34, 0x02,&quot;,
+			&quot;0xCF, 3, 0x00, 0xC1, 0X30,&quot;,
+			&quot;0xE8, 3, 0x85, 0x00, 0x78,&quot;,
+			&quot;0xEA, 2, 0x00, 0x00,&quot;,
+			&quot;0xED, 4, 0x64, 0x03, 0x12, 0x81,&quot;,
+			&quot;0xF7, 1, 0x20,&quot;,
+			&quot;0xC0, 1, 0x23,&quot;,
+			&quot;0xC1, 1, 0x10,&quot;,
+			&quot;0xC5, 2, 0x3e, 0x28,&quot;,
+			&quot;0xC7, 1, 0x86,&quot;,
+			&quot;0x36, 1, (0x48 ^ (MODDEF_ILI9341_FLIPY ? 0x80 : 0)) ^ (MODDEF_ILI9341_FLIPX ? 0x40 : 0),&quot;,
+			&quot;0x3A, 1, 0x55,&quot;,
+			&quot;0xB1, 2, 0x00, 0x18,&quot;,
+			&quot;0xB6, 3, 0x08, 0x82, 0x27,&quot;,
+			&quot;0xF2, 1, 0x00,&quot;,
+			&quot;0x26, 1, 0x01,&quot;,
+			&quot;0xE0, 15, 0x0F, 0x31, 0x2B, 0x0C, 0x0E, 0x08, 0x4E, 0xF1, 0x37, 0x07, 0x10, 0x03, 0x0E, 0x09, 0x00,&quot;,
+			&quot;0xE1, 15, 0x00, 0x0E, 0x14, 0x03, 0x11, 0x07, 0x31, 0xC1, 0x48, 0x08, 0x0F, 0x0C, 0x31, 0x36, 0x0F,&quot;,
+			&quot;0x11, 0,&quot;,
+			&quot;0x29, 0,&quot;,
+			&quot;kDelayMS, 0&quot;,
+		]
+	}
+}
+</code></pre>
+<h3>Configuring SPI</h3>
+<p>The <code>defines</code> object must contain the <code>spi_port</code>, along with the <code>DC</code> and <code>CS</code> pin numbers. If a <code>RST</code> pin is provided, the device will be reset when the constructor is invoked. If the <code>cs_port</code>, <code>dc_port</code>, or <code>rst_port</code> properties are not provided, they default to NULL.</p>
+<pre><code>&quot;defines&quot;: {
+	&quot;ili9341&quot;: {
+		/* other properties here */	
+		&quot;cs_pin&quot;: 4,
+		&quot;dc_pin&quot;: 2,
+		&quot;rst_pin&quot;: 0,
+		&quot;spi_port&quot;: &quot;#HSPI&quot;
+	}
+}
+</code></pre>
+<p>The <code>hz</code> property, when present, specifies the SPI bus speed. The default value is 40,000,000 Hz which is near the maximum SPI speed supported by the ILI9341.</p>
+<h3>Async</h3>
+<p>The ILI9341 driver implements asynchronous SPI transactions to optimize throughput and minimize CPU time required during transmission. To avoid requiring extra RAM to store the pixels being transmitted, the ILI9341 driver transmits directly from the buffers provided by the script. This means that the buffer provided the ILI9341 <code>send</code> call must remain unchanged until the next call to <code>send</code>, <code>continue</code> or <code>end</code> returns.</p>
+<p>Using Poco or Piu, to enable asynchronous operation of ILI9341, the number of pixels in the render buffer must be two full scan lines or more. This is the default so scripts only need to consider this if they are calling the ILI9341 constructor directly. To set the number of pixels in the render buffer, set the <code>pixels</code>  property to the number of pixels in the dictionary passed to the ILI9341 constructor.</p>
+
+</div>
+
+        </div>
+    </body>
+</html>

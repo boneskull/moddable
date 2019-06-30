@@ -555,4 +555,4 @@ Contains an overview, networking features, programming model, memory model, etc.
 [tools]:https://developer.qualcomm.com/hardware/qca4020-qca4024/tools-qca4020
 [armdevsite]:https://developer.arm.com/open-source/gnu-toolchain/gnu-rm/downloads
 [armtoolslink]:https://developer.arm.com/-/media/Files/downloads/gnu-rm/6-2017q2/gcc-arm-none-eabi-6-2017-q2-update-linux.tar.bz2
-[modstart]: https://github.com/Moddable-OpenSource/moddable/blob/public/documentation/Moddable%20SDK%20-%20Getting%20Started.md
+[modstart]: https://github.com/Moddable-OpenSource/moddable/blob/public/documentation/Moddable_SDK_-_Getting_Started.md

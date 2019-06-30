@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moddable</title>
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata|Open+Sans" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/hljs.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/markdown.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css" />
+</head>
+    <body>
+<div id="header">
+    <div class="package"></div>
+    <a href="https:&#x2F;&#x2F;github.com&#x2F;moddable-opensource&#x2F;moddable" class="badge" title="Github.com"><img src="/assets/images/github.png" alt="Github" /></a>
+    <a href="/" class="home"><strong>Moddable</strong> <span class="headline">Moddable SDK</span></a>
+</div>
+        <div id="container">
+            <div id="sidebar">
+<ul class="list">
+    <li>
+        <h4><a href="/">Home</a></h4>
+        <ul>
+            <li><a href="https://www.moddable.com">Moddable</a></li>
+            <li><a href="/">Documentation</a></li>
+        </ul>
+    </li>
+    <li>
+        <h4><a href="/">Resources</a></h4>
+        <ul>
+            <li><a href="https://github.com/moddable-opensource/moddable">GitHub</a></li>
+            <li><a href="/">Link 2</a></li>
+        </ul>
+    </li>
+</ul>
+            </div>
+
+<div id="content">
+<h1>Sharp Memory Screen 1.3&quot; Wiring Guide</h1>
+<p>Copyright 2018 Moddable Tech, Inc.<br />
+Revised: December 10, 2018</p>
+<p><img src="images/sharp-memory-display-1.3.jpg" alt="Sharp Memory Display 1.3&quot;" /></p>
+<h2>Specs</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"></th>
+<th style="text-align:left"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><strong>Part</strong></td>
+<td style="text-align:left">LS013B4DN04 LCD Module (<a href="https://cdn-shop.adafruit.com/datasheets/LS013B4DN04-3V_FPC-204284.pdf">datasheet</a>)</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>Size</strong></td>
+<td style="text-align:left">1.3&quot;, 96 x 96, 168 x 144</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>Type</strong></td>
+<td style="text-align:left">LCD, Monochrome</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>Interface</strong></td>
+<td style="text-align:left">SPI</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>Drivers</strong></td>
+<td style="text-align:left">video <a href="../../documentation/drivers/ls013b4dn04/ls013b4dn04.html">ls013b4dn04</a>, no touch</td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>Availability</strong></td>
+<td style="text-align:left"><a href="https://www.adafruit.com/product/3502">Sharp Memory Monochrome Display on Adafruit</a><BR><a href="https://www.digikey.com/product-detail/en/1393/1528-1183-ND/5353643">Sharp Memory Reflective Display on Digi-Key</a><BR><a href="https://www.sparkfun.com/products/retired/13192">Sharp Memory Reflective Display on Sparkfun</a></td>
+</tr>
+<tr>
+<td style="text-align:center"><strong>Description</strong></td>
+<td style="text-align:left">These interesting displays have the ultra-low power usage of eInk and the fast-refresh rates of an LCD. The <a href="https://www.adafruit.com/product/1393">older 96 x 96 version</a> has an mirror-like display where the active pixels are reflective.</td>
+</tr>
+</tbody>
+</table>
+<h2>Moddable example code</h2>
+<p>The <a href="../../examples/piu/transitions/">transitions</a> example is good for testing this display.  To run a debug build, use the following build command:</p>
+<pre><code>cd $MODDABLE/examples/piu/transitions
+mcconfig -d -m -p esp/sharp_memory_square  
+</code></pre>
+<h2>ESP8266 Pinout</h2>
+<table>
+<thead>
+<tr>
+<th>1.3&quot; Memory Display</th>
+<th>ESP8266</th>
+<th>ESP8266 Devboard label</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3v3</td>
+<td>3.3V</td>
+<td></td>
+</tr>
+<tr>
+<td>GND</td>
+<td>GND</td>
+<td></td>
+</tr>
+<tr>
+<td>CLK</td>
+<td>GPIO 14</td>
+<td>(D5)</td>
+</tr>
+<tr>
+<td>DI</td>
+<td>GPIO 13</td>
+<td>(D7)</td>
+</tr>
+<tr>
+<td>CS</td>
+<td>GPIO 15</td>
+<td>(D8)</td>
+</tr>
+</tbody>
+</table>
+<p><img src="images/sharp-memory-1.3-wiring.jpg" alt="Generic SPI Display" /></p>
+
+</div>
+
+        </div>
+    </body>
+</html>
